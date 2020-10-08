@@ -1,0 +1,7 @@
+# This is Git's per-user configuration file.
+[user]
+	email = [redacted]
+	name = [redacted]
+
+[credential]
+	helper = cache --timeout=360000
