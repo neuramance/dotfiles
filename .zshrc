@@ -24,3 +24,4 @@ alias lsa="gls -a --color=auto --group-directories-first"
 LS_COLORS='di=34:fi=0:ln=93:ex=32'
 
 alias sshhm="ssh bitnami@52.88.130.137"
+alias glog="git log --graph --oneline"

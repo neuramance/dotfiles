@@ -25,3 +25,8 @@ set report=0
 
 :highlight Comment ctermfg=lightblue
 :highlight String ctermfg=lightgreen
+
+noremap <Up> <Nop>
+noremap <Down> <Nop>
+noremap <Left> <Nop>
+noremap <Right> <Nop>
