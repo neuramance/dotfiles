@@ -7,8 +7,8 @@ set shiftwidth=4
 set autoindent
 set noexpandtab
 
-set colorcolumn=81
-highlight ColorColumn ctermbg=white
+"set colorcolumn=81
+"highlight ColorColumn ctermbg=white
 
 set number
 syntax on
