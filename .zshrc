@@ -102,6 +102,8 @@ set LS_COLORS='di=34:fi=0:ln=93:ex=32'
 # Example aliases
 alias c="clear"
 alias glog="git log --graph --oneline --all"
+alias gits="git status"
+alias gita="git add ."
 
 case `uname` in
   Darwin)
