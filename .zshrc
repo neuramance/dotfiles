@@ -104,6 +104,7 @@ alias c="clear"
 alias glog="git log --graph --oneline --all"
 alias gits="git status"
 alias gita="git add ."
+alias brewb="brew bundle -f dump"
 
 case `uname` in
   Darwin)
