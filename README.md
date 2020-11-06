@@ -11,6 +11,11 @@ Then install [Homebrew](https://brew.sh/) and run:
 
 Everything should now be installed
 
+### Initializing everything:
+skhd
+
+	brew services start skhd
+
 ### Exporting Homebrew's 'Brewfile':
 
     brew bundle dump
