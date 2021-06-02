@@ -1,4 +1,4 @@
-PROMPT="%F{blue}%n %F{white}%m %F{magenta}%~ %F{white}$ "
+PROMPT="%F{blue}%n%F{white}-%F{green}%m %F{magenta}%~ %F{white}$ "
 
 export EDITOR=vim
 
