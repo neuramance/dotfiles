@@ -1,5 +1,0 @@
-# open Terminal
-cmd - return : open -na Terminal ~
-
-# open Finder
-cmd - 0x32 : open /Users/austin
