@@ -1,32 +1,19 @@
-set exrc
-set secure
-
-set tabstop=4
-set softtabstop=4
-set shiftwidth=4
-set autoindent
-set noexpandtab
-
-"set colorcolumn=81
-"highlight ColorColumn ctermbg=white
-
-set number
 syntax on
-highlight LineNr ctermfg=white
+set number
+set noswapfile
+set hlsearch
+set ignorecase
+set incsearch
+set ruler
+set ai
 
-set encoding=utf-8
-set spelllang=en_us
+set tabstop=2
+set shiftwidth=2
+set expandtab
 
-set mouse=a
-set ttymouse=xterm2
+highlight Comment ctermfg=lightblue
+highlight String ctermfg=lightgreen
 
-set statusline=2
-set report=0
+inoremap jj <ESC>
+let mapleader = "'"
 
-:highlight Comment ctermfg=lightblue
-:highlight String ctermfg=lightgreen
-
-noremap <Up> <Nop>
-noremap <Down> <Nop>
-noremap <Left> <Nop>
-noremap <Right> <Nop>
