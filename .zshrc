@@ -5,6 +5,7 @@ export EDITOR=vim
 set LS_COLORS='di=34:fi=0:ln=93:ex=32'
 
 alias c="clear"
+alias zshconf="vim ~/.zshrc"
 alias glg="git log --graph --oneline --all"
 alias gits="git status"
 alias gita="git add ."
