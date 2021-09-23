@@ -92,7 +92,7 @@ set LS_COLORS='di=34:fi=0:ln=93:ex=32'
 
 # some more ls aliases
 alias ll='ls -alF'
-alias la='ls -A'
+alias la='ls -a'
 alias l='ls -CF'
 
 # Add an "alert" alias for long running commands.  Use like so:
@@ -120,3 +120,7 @@ if ! shopt -oq posix; then
   fi
 fi
 
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
