@@ -101,6 +101,7 @@ alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo
 
 # Alias definitions.
 alias c="clear"
+alias lsa="ls -a"
 alias glg="git log --graph --oneline --all"
 alias gits="git status"
 alias gita="git add ."
