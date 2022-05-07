@@ -20,3 +20,9 @@ alias py="python3"
 alias pip="pip3"
 
 alias brewb="brew bundle -f dump"
+
+alias car='cargo run'
+alias care='cargo run --example'
+alias cac='cargo clean'
+alias cab='cargo build'
+alias cabr='cargo build --release'
