@@ -36,16 +36,17 @@ alias caf='cargo fmt'
 
 # AWS
 alias cdks='cdk synth'
+alias cdkd='cdk deploy'
 alias cdkls='cdk ls'
-alias bfs='bun run fs'
 
 # Moom
 alias moomexport='defaults export com.manytricks.Moom /Users/$USER/Documents/ComputerBackup/Moom.plist'
 alias moomload='defaults import com.manytricks.Moom /Users/$USER/Documents/ComputerBackup/Moom.plist'
 
-# Bun completions
-[ -s "/Users/wires/.bun/_bun" ] && source "/Users/wires/.bun/_bun"
-
 # Bun
+[ -s "/Users/wires/.bun/_bun" ] && source "/Users/wires/.bun/_bun"
+alias brd='bun run dev'
+alias brf='bun run format'
+alias bfs='bun run fs'
 export BUN_INSTALL="/Users/wires/.bun"
-export PATH="$BUN_INSTALL/bin:~/.local/bin:$PATH"
+export PATH="$BUN_INSTALL/bin:~/.local/bin:/Users/wires/Library/Python/3.9/bin:$PATH"
