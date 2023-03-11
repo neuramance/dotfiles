@@ -33,11 +33,16 @@ alias cac='cargo clean'
 alias cab='cargo build'
 alias cabr='cargo build --release'
 alias caf='cargo fmt'
+. "$HOME/.cargo/env"
 
 # AWS
 alias cdks='cdk synth'
 alias cdkd='cdk deploy'
 alias cdkls='cdk ls'
+
+# Amzn
+alias a='kinit -f && mwinit -o'
+alias bb=brazil-build
 
 # Moom
 alias moomexport='defaults export com.manytricks.Moom /Users/$USER/Documents/ComputerBackup/Moom.plist'
@@ -50,3 +55,6 @@ alias brf='bun run format'
 alias bfs='bun run fs'
 export BUN_INSTALL="/Users/wires/.bun"
 export PATH="$BUN_INSTALL/bin:~/.local/bin:/Users/wires/Library/Python/3.9/bin:$PATH"
+
+export PATH=$PATH:/Users/redacted/.toolbox/bin
+export JAVA_HOME="/Library/Java/JavaVirtualMachines/amazon-corretto-17.jdk/Contents/Home"

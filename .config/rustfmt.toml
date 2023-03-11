@@ -1,0 +1,27 @@
+# See https://rust-lang.github.io/rustfmt
+# Normalize line endings
+newline_style = "Unix"
+# Max to use the 100 char width for everything or default
+use_small_heuristics = "Max"
+
+# Allow use of unstable features below
+unstable_features = true
+version = "Two"
+# Code can be 100 characters, why not comments?
+comment_width = 100
+# Force contributors to follow the formatting requirement
+error_on_line_overflow = true
+error_on_unformatted = true
+# Next 4: why not?
+format_code_in_doc_comments = true
+format_macro_bodies = true
+format_macro_matchers = true
+format_strings = true
+# Better grepping
+imports_granularity = "Module"
+# Quicker manual lookup
+group_imports = "StdExternalCrate"
+# Why use an attribute if a normal doc comment would suffice?
+normalize_doc_attributes = true
+# Improve readability
+wrap_comments = true
