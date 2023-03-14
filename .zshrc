@@ -8,9 +8,12 @@ alias c='clear'
 alias cd..='cd ..'
 alias zconf='vim ~/.zshrc'
 alias ls='exa -bhl --no-user --no-permissions'
+alias sl='exa -bhl --no-user --no-permissions'
 alias lsa='exa -abhl --no-user --no-permissions'
+alias cat='bat'
 echopath() { sed 's/:/\n/g' <<< "$PATH" }
 set LS_COLORS='di=34:fi=0:ln=93:ex=32'
+alias speedtest='speedtest-rs --bytes --no-upload --simple'
 
 # Git
 alias gits='git status'
