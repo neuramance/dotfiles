@@ -3,12 +3,13 @@ PROMPT='%F{blue}%n%F{white}@%F{magenta}%m%F{white}:%F{green}%~%F{white}$ '
 
 export EDITOR=vim
 
-# Bash commands
+# Shell
 alias c='clear'
 alias cd..='cd ..'
 alias zconf='vim ~/.zshrc'
-alias ls='ls'
-alias lsa='ls -a'
+alias ls='exa -bhl --no-user --no-permissions'
+alias lsa='exa -abhl --no-user --no-permissions'
+echopath() { sed 's/:/\n/g' <<< "$PATH" }
 set LS_COLORS='di=34:fi=0:ln=93:ex=32'
 
 # Git
@@ -33,7 +34,6 @@ alias cac='cargo clean'
 alias cab='cargo build'
 alias cabr='cargo build --release'
 alias caf='cargo fmt'
-. "$HOME/.cargo/env"
 
 # AWS
 alias cdks='cdk synth'
