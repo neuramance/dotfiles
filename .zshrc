@@ -72,6 +72,7 @@ export JAVA_HOME="/Library/Java/JavaVirtualMachines/amazon-corretto-17.jdk/Conte
 
 # Youtube-dl
 alias youtube-dl='python3 /usr/local/bin/youtube-dl'
+alias ytd='youtube-dl -f bestaudio --extract-audio --audio-format wav --audio-quality 0'
 
 # Load Zsh Functions
 fpath+=~/.zfunc
