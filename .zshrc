@@ -37,15 +37,19 @@ alias caf="cargo fmt"
 alias py="python3"
 alias python="python3"
 alias pip="pip3"
+alias pr="poetry run"
 export PATH="`python3 -m site --user-base`/bin:$PATH"
 
 # Homebrew
 alias brewb="brew bundle -f dump"
 
+# Bun completions
+[ -s "/Users/redacted/.bun/_bun" ] && source "/Users/redacted/.bun/_bun"
+
 # Bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
 alias brd="bun run dev"
-alias brf="bun run format"
-alias bfs="bun run fs"
 
 # Node
 export NVM_DIR=~/.nvm
@@ -66,12 +70,12 @@ alias bb="brazil-build"
 export PATH="$PATH:/Users/redacted/.toolbox/bin"
 export JAVA_HOME="/Library/Java/JavaVirtualMachines/amazon-corretto-17.jdk/Contents/Home"
 
-# bun completions
-[ -s "/Users/redacted/.bun/_bun" ] && source "/Users/redacted/.bun/_bun"
+# Youtube-dl
+alias youtube-dl='python3 /usr/local/bin/youtube-dl'
 
-# bun
-export BUN_INSTALL="$HOME/.bun"
-export PATH="$BUN_INSTALL/bin:$PATH"
+# Load Zsh Functions
+fpath+=~/.zfunc
+autoload -Uz compinit && compinit
 
-# Dependent aliases
+# Dependent aliases (MUST BE AT BOTTOM)
 alias echopath="echo $PATH | tr ':' '\n'"
