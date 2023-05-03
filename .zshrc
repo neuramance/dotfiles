@@ -72,7 +72,8 @@ export JAVA_HOME="/Library/Java/JavaVirtualMachines/amazon-corretto-17.jdk/Conte
 
 # Youtube-dl
 alias youtube-dl='python3 /usr/local/bin/youtube-dl'
-alias ytd='youtube-dl -f bestaudio --extract-audio --audio-format wav --audio-quality 0'
+alias ytd='yt-dlp -f bestaudio --extract-audio --audio-format wav --audio-quality 0'.
+alias cddj='cd ~/Dropbox/rekordbox/contents_2717048890/unknownartist/unknownalbum'
 
 # Load Zsh Functions
 fpath+=~/.zfunc
