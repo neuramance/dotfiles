@@ -9,9 +9,9 @@ export LS_COLORS="di=36:fi=0:ln=93:ex=32"
 alias c="clear"
 alias cd..="cd .."
 alias zconf="code ~/.zshrc"
-alias ls="exa -bhlF --no-user --no-permissions --no-time --group-directories-first"
-alias sl="exa -bhlF --no-user --no-permissions --no-time --group-directories-first"
-alias lsa="exa -abhlF --no-user --no-permissions --no-time --group-directories-first"
+#alias ls="exa -bhlF --no-user --no-permissions --no-time --group-directories-first"
+#alias sl="exa -bhlF --no-user --no-permissions --no-time --group-directories-first"
+#alias lsa="exa -abhlF --no-user --no-permissions --no-time --group-directories-first"
 alias cat="bat"
 alias speedtest="speedtest-rs --bytes --no-upload --simple"
 
@@ -27,6 +27,7 @@ alias glg="git log --graph --oneline --all"
 alias car="cargo run"
 alias care="cargo run --example"
 alias cac="cargo clean"
+alias cc="cargo check"
 alias cab="cargo build"
 alias cabr="cargo build --release"
 alias carr="cargo run --release"
@@ -54,6 +55,7 @@ alias brd="bun run dev"
 # Node
 export NVM_DIR=~/.nvm
 source $(brew --prefix nvm)/nvm.sh
+export PATH="/opt/homebrew/opt/node@18/bin:$PATH"
 
 # AWS
 alias cdks="cdk synth"
@@ -78,6 +80,17 @@ alias cddj='cd ~/Dropbox/rekordbox/contents_2717048890/unknownartist/unknownalbu
 # Load Zsh Functions
 fpath+=~/.zfunc
 autoload -Uz compinit && compinit
+
+# Git User Switching
+gredacted () {
+    git config --global user.name "[redacted]"
+    git config --global user.email [redacted]
+}
+
+gwires () {
+    git config --global user.name "wiresv"
+    git config --global user.email [redacted]
+}
 
 # Dependent aliases (MUST BE AT BOTTOM)
 alias echopath="echo $PATH | tr ':' '\n'"
