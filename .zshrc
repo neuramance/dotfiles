@@ -9,9 +9,9 @@ export LS_COLORS="di=36:fi=0:ln=93:ex=32"
 alias c="clear"
 alias cd..="cd .."
 alias zconf="code ~/.zshrc"
-#alias ls="exa -bhlF --no-user --no-permissions --no-time --group-directories-first"
-#alias sl="exa -bhlF --no-user --no-permissions --no-time --group-directories-first"
-#alias lsa="exa -abhlF --no-user --no-permissions --no-time --group-directories-first"
+alias ls="eza -bhlF --no-user --no-permissions --no-time --group-directories-first"
+alias sl="eza -bhlF --no-user --no-permissions --no-time --group-directories-first"
+alias lsa="eza -abhlF --no-user --no-permissions --no-time --group-directories-first"
 alias cat="bat"
 alias speedtest="speedtest-rs --bytes --no-upload --simple"
 
@@ -52,45 +52,14 @@ export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
 alias brd="bun run dev"
 
-# Node
-export NVM_DIR=~/.nvm
-source $(brew --prefix nvm)/nvm.sh
-export PATH="/opt/homebrew/opt/node@18/bin:$PATH"
-
 # AWS
 alias cdks="cdk synth"
 alias cdkd="cdk deploy"
 alias cdkls="cdk ls"
 
-# Moom
-alias moomexport="defaults export com.manytricks.Moom /Users/$USER/Documents/ComputerBackup/Moom.plist"
-alias moomload="defaults import com.manytricks.Moom /Users/$USER/Documents/ComputerBackup/Moom.plist"
-
-# Amzn
-alias a="kinit -f && mwinit -o"
-alias bb="brazil-build"
-export PATH="$PATH:/Users/redacted/.toolbox/bin"
-export JAVA_HOME="/Library/Java/JavaVirtualMachines/amazon-corretto-17.jdk/Contents/Home"
-
-# Youtube-dl
-alias youtube-dl='python3 /usr/local/bin/youtube-dl'
-alias ytd='yt-dlp -f bestaudio --extract-audio --audio-format wav --audio-quality 0'.
-alias cddj='cd ~/Dropbox/rekordbox/contents_2717048890/unknownartist/unknownalbum'
-
 # Load Zsh Functions
 fpath+=~/.zfunc
 autoload -Uz compinit && compinit
-
-# Git User Switching
-gredacted () {
-    git config --global user.name "[redacted]"
-    git config --global user.email [redacted]
-}
-
-gwires () {
-    git config --global user.name "wiresv"
-    git config --global user.email [redacted]
-}
 
 # Dependent aliases (MUST BE AT BOTTOM)
 alias echopath="echo $PATH | tr ':' '\n'"
