@@ -51,9 +51,6 @@ alias cdks="cdk synth"
 alias cdkd="cdk deploy"
 alias cdkls="cdk ls"
 
-# bun completions
-[ -s "/Users/redacted/.bun/_bun" ] && source "/Users/redacted/.bun/_bun"
-
 # bun
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
