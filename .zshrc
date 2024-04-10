@@ -15,7 +15,7 @@ alias zconf="code ~/.zshrc"
 alias ls="eza -bhlF --no-user --no-permissions --no-time --group-directories-first"
 alias sl="eza -bhlF --no-user --no-permissions --no-time --group-directories-first"
 alias lsa="eza -abhlF --no-user --no-permissions --no-time --group-directories-first"
-alias cat="bat"
+alias cat="batcat"
 
 # git
 alias gits="git status"
@@ -26,6 +26,7 @@ alias gitp="git push"
 alias glg="git log --graph --oneline --all"
 
 # rust
+. "$HOME/.cargo/env"
 alias car="cargo run"
 alias care="cargo run --example"
 alias cac="cargo clean"
