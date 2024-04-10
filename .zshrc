@@ -54,7 +54,7 @@ alias cdkls="cdk ls"
 # bun
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
-alias brd="bun run dev"
+alias brd="bun run dev -- --open"
 
 # bun completions
 [ -s "/Users/wires/.bun/_bun" ] && source "/Users/wires/.bun/_bun"
