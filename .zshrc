@@ -15,7 +15,7 @@ alias zconf="code ~/.zshrc"
 alias ls="eza -bhlF --no-user --no-permissions --no-time --group-directories-first"
 alias sl="eza -bhlF --no-user --no-permissions --no-time --group-directories-first"
 alias lsa="eza -abhlF --no-user --no-permissions --no-time --group-directories-first"
-alias cat="batcat"
+alias cat="bat"
 
 # git
 alias gits="git status"
@@ -55,10 +55,16 @@ alias cdkls="cdk ls"
 # bun
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
-alias brd="bun run dev -- --open"
+alias brd="bun run dev"
+alias brdo="bun run dev -- --open"
 
 # bun completions
 [ -s "/Users/wires/.bun/_bun" ] && source "/Users/wires/.bun/_bun"
 
 # dependent aliases (MUST BE AT BOTTOM)
 alias echopath="echo $PATH | tr ':' '\n'"
+
+# pyenv
+export PYENV_ROOT="$HOME/.pyenv"
+[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init -)"
