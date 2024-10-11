@@ -5,13 +5,10 @@ PROMPT="%F{blue}%n%F{white}@%F{magenta}%m%F{white}:%F{green}%~%F{white}$ "
 export EDITOR=vim
 export LS_COLORS="di=36:fi=0:ln=93:ex=32"
 
-# zsh autocompletion
-autoload -Uz compinit && compinit
-
 # shell
 alias c="clear"
 alias cd..="cd .."
-alias zconf="code ~/.zshrc"
+alias zconf="cursor ~/.zshrc"
 alias ls="eza -bhlF --no-user --no-permissions --no-time --group-directories-first"
 alias sl="eza -bhlF --no-user --no-permissions --no-time --group-directories-first"
 alias lsa="eza -abhlF --no-user --no-permissions --no-time --group-directories-first"
@@ -46,6 +43,7 @@ export PATH="`python3 -m site --user-base`/bin:$PATH"
 
 # homebrew
 alias brewb="brew bundle -f dump"
+alias brewup="brew update && brew upgrade"
 
 # AWS
 alias cdks="cdk synth"
@@ -57,9 +55,10 @@ export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
 alias brd="bun run dev"
 alias brdo="bun run dev -- --open"
+alias brb="bun run build"
 
-# bun completions
-[ -s "/Users/wires/.bun/_bun" ] && source "/Users/wires/.bun/_bun"
+# speedtest
+alias speed="speedtest-cli --bytes --simple"
 
 # dependent aliases (MUST BE AT BOTTOM)
 alias echopath="echo $PATH | tr ':' '\n'"
@@ -73,3 +72,15 @@ eval "$(pyenv init -)"
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+# cursor (personal only)
+[[ $(hostname) == "m4c" ]] && {
+    function cursor {
+        open -a "/Applications/Cursor.app" "$@"
+    }
+}
+
+# zshrc remote machine copying
+copy_zshrc() {
+  scp ~/.zshrc "$1":~/.zshrc
+}
