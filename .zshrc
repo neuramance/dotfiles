@@ -23,7 +23,6 @@ alias gitp="git push"
 alias glg="git log --graph --oneline --all"
 
 # rust
-. "$HOME/.cargo/env"
 alias car="cargo run"
 alias care="cargo run --example"
 alias cac="cargo clean"
@@ -63,24 +62,33 @@ alias speed="speedtest-cli --bytes --simple"
 # dependent aliases (MUST BE AT BOTTOM)
 alias echopath="echo $PATH | tr ':' '\n'"
 
-# pyenv
-export PYENV_ROOT="$HOME/.pyenv"
-[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
-eval "$(pyenv init -)"
-
 # nvm
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
-# cursor (personal only)
+# personal only
 [[ $(hostname) == "m4c" ]] && {
+
+    # cursor
     function cursor {
         open -a "/Applications/Cursor.app" "$@"
     }
+
+    # pyenv
+    export PYENV_ROOT="$HOME/.pyenv"
+    [[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+    eval "$(pyenv init -)"
+
+    # rust
+    . "$HOME/.cargo/env"
 }
 
 # zshrc remote machine copying
 copy_zshrc() {
   scp ~/.zshrc "$1":~/.zshrc
+  scp ~/.zshrc "$1":/var/lib/postgresql/.zshrc
 }
+
+# postgres
+alias postgresmonitor="tail -f /var/log/postgresql/postgresql-*-main.log"
