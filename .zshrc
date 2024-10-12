@@ -90,5 +90,54 @@ copy_zshrc() {
   scp ~/.zshrc "$1":/var/lib/postgresql/.zshrc
 }
 
+# ssh, copying .rc files for persistent use
+function sshenv() {
+    if [ -z "$1" ]; then
+        echo "Usage: sshenv user@host"
+        return 1
+    fi
+    local REMOTE="$1"
+    local REMOTE_DIR=".austin_rc"
+
+    # Paths to local configuration files/directories
+    local LOCAL_ZSHRC="$HOME/.zshrc"
+    local LOCAL_VIMRC="$HOME/.vimrc"
+    local LOCAL_PSQLRC="$HOME/.psqlrc"
+    local LOCAL_CONFIG_DIR="$HOME/.config/"
+
+    # Remote host paths (relative to home directory)
+    local REMOTE_ZSHRC="$REMOTE_DIR/.zshrc"
+    local REMOTE_VIMRC="$REMOTE_DIR/.vimrc"
+    local REMOTE_PSQLRC="$REMOTE_DIR/.psqlrc"
+    local REMOTE_CONFIG_DIR="$REMOTE_DIR/.config/"
+
+    # Ensure the remote directory exists
+    ssh "$REMOTE" "mkdir -p ~/$REMOTE_DIR"
+
+    # Function to transfer file if it doesn't exist on the remote host
+    transfer_if_not_exists() {
+        local local_file="$1"
+        local remote_file="$2"
+        ssh "$REMOTE" "[ -e ~/$remote_file ]" || rsync -av --ignore-existing "$local_file" "$REMOTE:~/$remote_file"
+    }
+
+    # Transfer files only if they don't exist on the remote host
+    transfer_if_not_exists "$LOCAL_ZSHRC" "$REMOTE_ZSHRC"
+    transfer_if_not_exists "$LOCAL_VIMRC" "$REMOTE_VIMRC"
+    transfer_if_not_exists "$LOCAL_PSQLRC" "$REMOTE_PSQLRC"
+
+    # Check if the remote .config directory exists
+    ssh "$REMOTE" "[ -d ~/$REMOTE_CONFIG_DIR ]" || rsync -av --ignore-existing --exclude 'unnecessary_dir/' "$LOCAL_CONFIG_DIR" "$REMOTE:~/$REMOTE_CONFIG_DIR"
+
+    # SSH into the remote host with environment variables set
+    ssh -t "$REMOTE" "
+        export VIMINIT='source ~/$REMOTE_DIR/.vimrc';
+        export PSQLRC=~/$REMOTE_DIR/.psqlrc;
+        export XDG_CONFIG_HOME=~/$REMOTE_DIR/.config;
+        export ZDOTDIR=~/$REMOTE_DIR;
+        exec zsh -i;
+    "
+}
+
 # postgres
 alias postgresmonitor="tail -f /var/log/postgresql/postgresql-*-main.log"
