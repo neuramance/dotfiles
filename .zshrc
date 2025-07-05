@@ -8,7 +8,7 @@ export LS_COLORS="di=36:fi=0:ln=93:ex=32"
 # shell
 alias c="clear"
 alias cd..="cd .."
-alias zconf="cursor ~/.zshrc"
+alias zconf="code ~/.zshrc"
 alias ls="eza -bhlF --no-user --no-permissions --no-time --group-directories-first"
 alias sl="eza -bhlF --no-user --no-permissions --no-time --group-directories-first"
 alias lsa="eza -abhlF --no-user --no-permissions --no-time --group-directories-first"
@@ -43,6 +43,9 @@ export PATH="`python3 -m site --user-base`/bin:$PATH"
 # homebrew
 alias brewb="brew bundle -f dump"
 alias brewup="brew update && brew upgrade"
+
+# apt
+alias aptup="sudo apt update && apt upgrade"
 
 # AWS
 alias cdks="cdk synth"
@@ -141,3 +144,6 @@ function sshenv() {
 
 # postgres
 alias postgresmonitor="tail -f /var/log/postgresql/postgresql-*-main.log"
+
+# bun completions
+[ -s "/home/wuser/.bun/_bun" ] && source "/home/wuser/.bun/_bun"
