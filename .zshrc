@@ -45,7 +45,7 @@ alias brewb="brew bundle -f dump"
 alias brewup="brew update && brew upgrade"
 
 # apt
-alias aptup="sudo apt update && apt upgrade"
+alias aptup="sudo apt update && sudo apt upgrade"
 
 # AWS
 alias cdks="cdk synth"
