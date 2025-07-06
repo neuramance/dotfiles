@@ -60,9 +60,6 @@ alias brd="bun run dev"
 alias brdo="bun run dev -- --open"
 alias brb="bun run build"
 
-# speedtest
-alias speed="speedtest-cli --bytes --simple"
-
 # nvm
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
