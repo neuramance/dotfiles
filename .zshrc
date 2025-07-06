@@ -13,6 +13,7 @@ alias ls="eza -bhlF --no-user --no-permissions --no-time --group-directories-fir
 alias sl="eza -bhlF --no-user --no-permissions --no-time --group-directories-first"
 alias lsa="eza -abhlF --no-user --no-permissions --no-time --group-directories-first"
 alias cat="bat"
+alias atop="sudo asitop --color 7"
 
 # git
 alias gits="git status"
