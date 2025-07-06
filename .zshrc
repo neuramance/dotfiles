@@ -31,18 +31,18 @@ alias cc="cargo check"
 alias cab="cargo build"
 alias cabr="cargo build --release"
 alias carr="cargo run --release"
-alias cabr="cargo build --release && cargo run --release"
+alias cabrr="cargo build --release && cargo run --release"
 alias caf="cargo fmt"
+# . "$HOME/.cargo/env"
 
 # python
 alias py="python3"
 alias python="python3"
 alias pip="pip3"
-alias pr="poetry run"
 export PATH="`python3 -m site --user-base`/bin:$PATH"
 
 # homebrew
-alias brewb="brew bundle -f dump"
+alias brewbundle="brew bundle -f dump"
 alias brewup="brew update && brew upgrade"
 
 # apt
@@ -63,30 +63,15 @@ alias brb="bun run build"
 # speedtest
 alias speed="speedtest-cli --bytes --simple"
 
-# dependent aliases (MUST BE AT BOTTOM)
-alias echopath="echo $PATH | tr ':' '\n'"
-
 # nvm
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
-# personal only
-[[ $(hostname) == "m4c" ]] && {
+# postgres
+alias postgresmonitor="tail -f /var/log/postgresql/postgresql-*-main.log"
 
-    # cursor
-    function cursor {
-        open -a "/Applications/Cursor.app" "$@"
-    }
-
-    # pyenv
-    export PYENV_ROOT="$HOME/.pyenv"
-    [[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
-    eval "$(pyenv init -)"
-
-    # rust
-    . "$HOME/.cargo/env"
-}
+. "$HOME/.local/bin/env"
 
 # zshrc remote machine copying
 copy_zshrc() {
@@ -143,7 +128,5 @@ function sshenv() {
     "
 }
 
-# postgres
-alias postgresmonitor="tail -f /var/log/postgresql/postgresql-*-main.log"
-
-. "$HOME/.local/bin/env"
+# echo PATH formatted (dependent aliases, must be at .zshrc bottom)
+alias echopath="echo $PATH | tr ':' '\n'"
