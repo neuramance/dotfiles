@@ -8,7 +8,7 @@ export LS_COLORS="di=36:fi=0:ln=93:ex=32"
 # shell
 alias c="clear"
 alias cd..="cd .."
-alias zconf="cursor ~/.zshrc"
+alias zconf="code ~/.zshrc"
 alias ls="eza -bhlF --no-user --no-permissions --no-time --group-directories-first"
 alias sl="eza -bhlF --no-user --no-permissions --no-time --group-directories-first"
 alias lsa="eza -abhlF --no-user --no-permissions --no-time --group-directories-first"
@@ -141,3 +141,5 @@ function sshenv() {
 
 # postgres
 alias postgresmonitor="tail -f /var/log/postgresql/postgresql-*-main.log"
+
+. "$HOME/.local/bin/env"
