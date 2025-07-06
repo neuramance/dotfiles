@@ -44,6 +44,9 @@ export PATH="`python3 -m site --user-base`/bin:$PATH"
 alias brewb="brew bundle -f dump"
 alias brewup="brew update && brew upgrade"
 
+# apt
+alias aptup="sudo apt update && sudo apt upgrade"
+
 # AWS
 alias cdks="cdk synth"
 alias cdkd="cdk deploy"
