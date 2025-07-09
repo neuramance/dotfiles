@@ -68,8 +68,6 @@ export NVM_DIR="$HOME/.nvm"
 # postgres
 alias postgresmonitor="tail -f /var/log/postgresql/postgresql-*-main.log"
 
-. "$HOME/.local/bin/env"
-
 # zshrc remote machine copying
 copy_zshrc() {
   scp ~/.zshrc "$1":~/.zshrc
