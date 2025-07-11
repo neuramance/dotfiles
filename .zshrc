@@ -21,6 +21,7 @@ alias gita="git add ."
 alias gitd="git diff"
 alias gitc="git commit"
 alias gitp="git push"
+alias gitpu="git pull"
 alias glg="git log --graph --pretty=format:'%C(blue)%h %ad%C(auto)%d %C(black)%s' --abbrev=4 --all --date=format:'%y-%m-%d %H:%M'"
 
 # rust
@@ -134,7 +135,7 @@ function sshenv() {
 
 # uv Python package manager
 # echo PATH formatted (dependent aliases, must be at .zshrc bottom)
-alias echopath="echo $PATH | tr ':' '\n'"
+alias echopath="echo '$PATH' | tr ':' '\n'"
 . "$HOME/.local/bin/env"
 
 # bun completions
