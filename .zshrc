@@ -60,6 +60,9 @@ alias brd="bun run dev"
 alias brdo="bun run dev -- --open"
 alias brb="bun run build"
 
+# tmux
+alias tmls="tmux list-sessions"
+
 # nvm
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
