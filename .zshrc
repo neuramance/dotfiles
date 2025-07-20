@@ -62,6 +62,7 @@ alias brb="bun run build"
 
 # tmux
 alias tmls="tmux list-sessions"
+alias tmdev="~/.config/tmux/tmux-dev-a.sh"
 
 # nvm
 export NVM_DIR="$HOME/.nvm"
