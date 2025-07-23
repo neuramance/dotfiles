@@ -72,6 +72,9 @@ export NVM_DIR="$HOME/.nvm"
 # postgres
 alias postgresmonitor="tail -f /var/log/postgresql/postgresql-*-main.log"
 
+# claude
+alias clcost="bunx ccusage@latest" # --since 20250625
+
 # zshrc remote machine copying
 copy_zshrc() {
   scp ~/.zshrc "$1":~/.zshrc
