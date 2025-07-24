@@ -134,3 +134,6 @@ function sshenv() {
 # echo PATH formatted (dependent aliases, must be at .zshrc bottom)
 alias echopath="echo $PATH | tr ':' '\n'"
 . "$HOME/.local/bin/env"
+
+# bun completions
+[ -s "/Users/w/.bun/_bun" ] && source "/Users/w/.bun/_bun"
