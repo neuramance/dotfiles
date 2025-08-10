@@ -21,7 +21,7 @@ alias gita="git add ."
 alias gitd="git diff"
 alias gitc="git commit"
 alias gitp="git push"
-alias glg="git log --graph --oneline --all"
+alias glg="git log --graph --pretty=format:'%C(yellow)%h %ad%C(auto)%d %C(white)%s' --abbrev=4 --all --date=format:'%y-%m-%d %H:%M'"
 
 # rust
 alias car="cargo run"
@@ -73,7 +73,7 @@ export NVM_DIR="$HOME/.nvm"
 alias postgresmonitor="tail -f /var/log/postgresql/postgresql-*-main.log"
 
 # claude
-alias clcost="bunx ccusage@latest" # --since 20250625
+alias ccuse="bunx ccusage@latest" # --since 20250625
 
 # zshrc remote machine copying
 copy_zshrc() {

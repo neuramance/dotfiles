@@ -41,8 +41,8 @@ if [ $? != 0 ]; then
     tmux split-window -h -p 50 -t $SESSION_NAME:dev/git.1
 
     # Optional: Send commands to the dev/git panes.
-    tmux send-keys -t $SESSION_NAME:dev/git.1 "nvim ." C-m # Open editor in left pane
-    tmux send-keys -t $SESSION_NAME:dev/git.2 "lazygit" C-m # Open lazygit in right pane
+    tmux send-keys -t $SESSION_NAME:dev/git.1 "cmatrix -b" C-m # Open editor in left pane
+    tmux send-keys -t $SESSION_NAME:dev/git.2 "cmatrix -b" C-m # Open lazygit in right pane
 
 
     # --- FINAL SETUP ---
