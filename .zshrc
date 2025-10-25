@@ -1,5 +1,5 @@
 # zsh prompt: user@host:~$ 
-PROMPT="%F{blue}%n%F{white}@%F{magenta}%m%F{white}:%F{green}%~%F{white}$ "
+PROMPT="%F{blue}%n%F{black}@%F{magenta}%m%F{black}:%F{green}%~%F{black}$ "
 
 # environment vars
 export EDITOR=vim
@@ -21,7 +21,7 @@ alias gita="git add ."
 alias gitd="git diff"
 alias gitc="git commit"
 alias gitp="git push"
-alias glg="git log --graph --pretty=format:'%C(yellow)%h %ad%C(auto)%d %C(white)%s' --abbrev=4 --all --date=format:'%y-%m-%d %H:%M'"
+alias glg="git log --graph --pretty=format:'%C(blue)%h %ad%C(auto)%d %C(black)%s' --abbrev=4 --all --date=format:'%y-%m-%d %H:%M'"
 
 # rust
 alias car="cargo run"
@@ -63,6 +63,8 @@ alias brb="bun run build"
 # tmux
 alias tmls="tmux list-sessions"
 alias tmdev="~/.config/tmux/tmux-dev-a.sh"
+alias tma="tmux attach"
+alias tmka="tmux kill-server"
 
 # nvm
 export NVM_DIR="$HOME/.nvm"
