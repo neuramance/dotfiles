@@ -18,13 +18,13 @@ if [ $? != 0 ]; then
     # --- WINDOW 1: "claude" (4 Panes) ---
     # Pane 1 is created by default.
     # Split it horizontally to create top and bottom sections.
-    tmux split-window -v -p 50 -t $SESSION_NAME:claude.1
+    tmux split-window -v -t $SESSION_NAME:claude.1
 
     # Select the top pane (pane 1) and split it vertically.
-    tmux split-window -h -p 50 -t $SESSION_NAME:claude.1
+    tmux split-window -h -t $SESSION_NAME:claude.1
 
     # Select the bottom pane (now pane 3) and split it vertically.
-    tmux split-window -h -p 50 -t $SESSION_NAME:claude.3
+    tmux split-window -h -t $SESSION_NAME:claude.3
 
     # Optional: Send commands to each pane for a "ready-to-go" feel.
     tmux send-keys -t $SESSION_NAME:claude.1 "cmatrix -b" C-m
@@ -38,7 +38,7 @@ if [ $? != 0 ]; then
     tmux new-window -n "dev/git" -t $SESSION_NAME
 
     # Split the new window vertically into two equal panes.
-    tmux split-window -h -p 50 -t $SESSION_NAME:dev/git.1
+    tmux split-window -h -t $SESSION_NAME:dev/git.1
 
     # Optional: Send commands to the dev/git panes.
     tmux send-keys -t $SESSION_NAME:dev/git.1 "cmatrix -b" C-m # Open editor in left pane

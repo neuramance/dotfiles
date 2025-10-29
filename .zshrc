@@ -134,9 +134,10 @@ function sshenv() {
 }
 
 # uv Python package manager
+[ -f "$HOME/.local/bin/env" ] && . "$HOME/.local/bin/env"
+
 # echo PATH formatted (dependent aliases, must be at .zshrc bottom)
 alias echopath="echo '$PATH' | tr ':' '\n'"
-. "$HOME/.local/bin/env"
 
 # bun completions
-[ -s "/Users/w/.bun/_bun" ] && source "/Users/w/.bun/_bun"
+[ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
