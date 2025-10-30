@@ -4,6 +4,18 @@ PROMPT="%F{blue}%n%F{black}@%F{magenta}%m%F{black}:%F{green}%~%F{black}$ "
 # environment vars
 export EDITOR=vim
 export LS_COLORS="di=36:fi=0:ln=93:ex=32"
+export PAGER="less"
+export LESS="-FRX"
+export TMUX_GTA=20000
+
+# Fix terminal dimensions for tmux/WSL/Windows Terminal
+if [[ -n "$TMUX" ]]; then
+    # Get terminal size and export it
+    eval $(resize)
+fi
+
+# Set up trap to update dimensions on window resize
+trap 'eval $(resize)' WINCH
 
 # shell
 alias c="clear"
@@ -12,6 +24,7 @@ alias zconf="code ~/.zshrc"
 alias ls="eza -bhlF --no-user --no-permissions --no-time --group-directories-first"
 alias sl="eza -bhlF --no-user --no-permissions --no-time --group-directories-first"
 alias lsa="eza -abhlF --no-user --no-permissions --no-time --group-directories-first"
+export BAT_THEME="GitHub"
 alias cat="bat"
 alias atop="sudo asitop --color 7"
 
@@ -60,12 +73,11 @@ export PATH="$BUN_INSTALL/bin:$PATH"
 alias brd="bun run dev"
 alias brdo="bun run dev -- --open"
 alias brb="bun run build"
-
-# tmux
 alias tmls="tmux list-sessions"
-alias tmdev="~/.config/tmux/tmux-dev-a.sh"
+alias tmdev="script -c tmux /dev/null"
 alias tma="tmux attach"
 alias tmka="tmux kill-server"
+alias gtu="tmux setenv -g TMUX_GTA"
 
 # nvm
 export NVM_DIR="$HOME/.nvm"
@@ -141,3 +153,5 @@ alias echopath="echo '$PATH' | tr ':' '\n'"
 
 # bun completions
 [ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
+
+alias claude="/home/wuser/.claude/local/claude"

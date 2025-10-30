@@ -1,29 +1,5 @@
 {
   "env": {},
-  "hooks": {
-    "Notification": [
-      {
-        "hooks": [
-          {
-            "command": "afplay /System/Library/Sounds/Blow.aiff",
-            "type": "command"
-          }
-        ],
-        "matcher": ""
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "command": "afplay /System/Library/Sounds/Blow.aiff",
-            "type": "command"
-          }
-        ],
-        "matcher": ""
-      }
-    ]
-  },
   "includeCoAuthoredBy": false,
   "permissions": {
     "allow": [
@@ -50,8 +26,33 @@
       "Read(./build)"
     ]
   },
+  "hooks": {
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/wuser/.claude/play-notification.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/wuser/.claude/play-notification.sh"
+          }
+        ]
+      }
+    ]
+  },
   "statusLine": {
-    "command": "input=$(cat); cd \"$(echo \"$input\" | jq -r '.workspace.current_dir')\" 2>/dev/null; stats=$(git log --since=\"$(date +%Y-%m-%d) 00:00:00\" --until=\"$(date +%Y-%m-%d) 23:59:59\" --pretty=format: --numstat 2>/dev/null | awk '{added+=$1; removed+=$2} END {printf \"+%d/-%d\", added+0, removed+0}'); commits=$(git log --since=\"$(date +%Y-%m-%d) 00:00:00\" --until=\"$(date +%Y-%m-%d) 23:59:59\" --oneline 2>/dev/null | wc -l | tr -d ' '); printf \"\\033[33m$stats\\033[0m \\033[32m+${commits}\\033[0m\"",
-    "type": "command"
-  }
+    "type": "command",
+    "command": "input=$(cat); cd \"$(echo \"$input\" | jq -r '.workspace.current_dir')\" 2>/dev/null; added=$(git log --since=\"$(date +%Y-%m-%d) 00:00:00\" --until=\"$(date +%Y-%m-%d) 23:59:59\" --pretty=format: --numstat 2>/dev/null | awk '{added+=$1} END {printf \"%d\", added+0}'); removed=$(git log --since=\"$(date +%Y-%m-%d) 00:00:00\" --until=\"$(date +%Y-%m-%d) 23:59:59\" --pretty=format: --numstat 2>/dev/null | awk '{removed+=$2} END {printf \"%d\", removed+0}'); commits=$(git log --since=\"$(date +%Y-%m-%d) 00:00:00\" --until=\"$(date +%Y-%m-%d) 23:59:59\" --oneline 2>/dev/null | wc -l | tr -d ' '); printf \"\\033[34m+${added}\\033[0m/\\033[33m-${removed}\\033[0m \\033[32m+${commits}\\033[0m\""
+  },
+  "alwaysThinkingEnabled": false
 }
