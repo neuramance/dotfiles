@@ -26,6 +26,7 @@ alias sl="eza -bhlF --no-user --no-permissions --no-time --group-directories-fir
 alias lsa="eza -abhlF --no-user --no-permissions --no-time --group-directories-first"
 export BAT_THEME="GitHub"
 alias cat="bat"
+alias bat="batcat"
 alias atop="sudo asitop --color 7"
 
 # git
