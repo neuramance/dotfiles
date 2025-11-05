@@ -153,5 +153,3 @@ alias echopath="echo '$PATH' | tr ':' '\n'"
 
 # bun completions
 [ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
-
-alias claude="/home/wuser/.claude/local/claude"
