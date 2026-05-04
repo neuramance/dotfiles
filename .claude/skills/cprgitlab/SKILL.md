@@ -88,11 +88,18 @@ Write an MR title and body following this repo's conventions (peek at recent mer
 - [ ] <pre-merge gate 1 — verifiable from a fresh clone, e.g. build / type-check / unit test>
 - [ ] <pre-merge gate 2>
 - [ ] [deploy-time](<URL to tracking issue>) <verification that needs real secrets / a deployed service / external system>
+  verify: <single-line command runnable in the verify-deploy CI job>
+- [ ] [deploy-time](<URL to tracking issue>) <verification that genuinely needs a human eyeball>
+  manual-only: <one-line reason a programmatic check is not feasible>
 ```
 
 **Test plan convention** (the reviewer enforces this — the MR will be blocked if you violate it):
 - **At least one item must be a pre-merge gate** verifiable from a fresh clone with no external services, no secrets, no deployed env. Examples: `composer phpstan`, `npm run lint:js`, `docker compose build <service>`, `composer phpunit-isolated`, `python -m pytest tests/unit -m 'not eval'`, `python -m compileall <pkg>`, schema validation, lint on changed files. There is *always* something verifiable from the branch alone — even a build or import-check counts.
 - **Items requiring real secrets, a deployed service, external systems, or production data** must be tagged `[deploy-time](LINK)` where `LINK` is the issue tracking the verification (typically the Linear deploy issue you should also create at this point). The reviewer will leave these unchecked but annotate the description in place so the audit trail is honest.
+- **Every `[deploy-time]` item must declare exactly one B17-A marker** on a continuation line indented under the bullet:
+  - `verify: <single-line command>` — the post-deploy verifier (B17-B, [TODO-121](https://linear.app/gc5/issue/TODO-121)) runs this command after `deploy-agent` succeeds, ticks `[x]` on green, and posts the result back to the MR.
+  - `manual-only: <one-line reason>` — the verifier skips with a comment naming the item; reserve for genuinely human-eyeball checks (e.g. Langfuse UI inspection where no programmatic search-by-trace-tag exists).
+  - Items lacking both markers, or declaring both, are refused at MR-merge time by the reviewer-skill parser. If you can't articulate a runnable command for a deploy-time item, prefer `manual-only:` with the reason — don't paper over a missing gate.
 - **Common mistake** (do not repeat): writing every item as `curl https://prod/...` or "run eval suite against prod". That MR will get pushed back. If the only thing you can think to test is the live service, add a build / import / unit-fixture gate to the plan as well — and create the deploy tracking issue before opening the MR.
 - **Test the test before pasting it.** Bad gates that *false-pass* (return 0 when the invariant doesn't hold) silently let regressions through. Bad gates that *false-fail* erode trust in the convention. For every gate, mentally run it against both an "invariant holds" state and an "invariant violated" state — if you can't picture both, pick a simpler gate. The repo's CLAUDE.md "Authoring pre-merge gates" subsection has a concrete anti-pattern catalog (real bugs from this repo's MR history) and a step-by-step gate-authoring procedure. Read it before authoring test plans for any non-trivial MR. Especially relevant for agent-authored MRs: the most common failure mode is "I wrote what I meant, not what the command does" (e.g. `grep -F "FILENAME" path/FILENAME` searches the *content* for the literal string; `split('foo')[0]` truncates on the first `'foo'` in the file, including in comments).
 
@@ -276,14 +283,282 @@ You are an independent code reviewer. Review, fix, and merge MR !{iid}.
 
 ## Merge (Step 5) — only when all discussions are resolved
 16. Verify: all discussions resolved AND no new findings on latest diff.
-17. **Test plan gate (refuse-to-merge):** verify all of these before merging:
-    - The MR has at least one pre-merge gate.
-    - Every pre-merge gate is either ticked `[x]` (because you ran it green)
-      or has an attached [Warning] / "could not run" discussion.
-    - Every `[deploy-time]` item has a tracking link AND has been annotated
-      in the description with `(verification deferred to <link>)`.
-    If any of these fail, do NOT merge. Post a [Critical] discussion naming
-    the violation and stop.
+17. **Test plan gate (refuse-to-merge) — RUN THIS BASH BLOCK; do not eyeball it.**
+    Prose enforcement of the test-plan convention has historically failed
+    because reviewers can rationalize past unticked gates ("I ran them, the
+    description tick is just paperwork"). MR !76 merged with 0 of 5
+    pre-merge gates ticked despite the reviewer's summary claiming all five
+    ran green. This step replaces the prose gate with a parser that exits
+    non-zero on violations; you MUST run it and react to its exit code
+    before calling `glab mr merge`.
+
+    The parser enforces five rules:
+    - The `## Test plan` section has at least one pre-merge gate (any
+      `- [ ]` / `- [x]` line that is NOT `[deploy-time]`-tagged).
+    - Every unticked `[deploy-time]` gate carries `verification deferred to`
+      somewhere in its bullet block (you should already have appended this
+      in Step 7).
+    - Every `[deploy-time]` gate (ticked or not) declares **exactly one**
+      of the B17-A markers on a continuation line of the bullet block:
+      `verify: <single-line command>` for items the post-deploy verifier
+      can run, or `manual-only: <one-line reason>` for genuinely
+      human-eyeball items (Langfuse UI inspection, etc.). Both present →
+      refuse; neither present → refuse.
+    - **B17-C** (TODO-122): an optional `flaky: <N>` retry marker is
+      allowed on `verify:`-bearing items only. `N` must be an integer in
+      `[1, 5]`. `flaky:` paired with `manual-only:`, `flaky:` without a
+      `verify:`, `flaky: 0`, `flaky: 6`, or duplicate `flaky:` lines are
+      all parser errors — refuse the MR. The post-deploy verifier uses
+      this to retry nondeterministically-failing items (LLM-bound evals,
+      etc.) with `30s/90s/300s` exponential backoff before failing the
+      gate.
+    - Every unticked pre-merge gate carries an inline marker proving the
+      reviewer left it unticked deliberately: a substring matching
+      `Reviewer note:` (case-insensitive) or `could not run` somewhere in
+      the bullet block. If you ran a gate green, tick it `[x]` instead —
+      never annotate. If a gate could not run for a real reason (tooling
+      absent on the worktree, gate command itself defective), append
+      `_Reviewer note: <one-line reason; see discussion <link>>_` to the
+      bullet AND post the matching `[Warning]` discussion on the MR.
+
+    Run:
+
+    ```bash
+    DESC_JSON=$(glab api "projects/{project_id}/merge_requests/{iid}")
+    python3 - <<'PY' "$DESC_JSON"
+    import json, re, sys
+    desc = json.loads(sys.argv[1]).get("description", "") or ""
+    # B17-F (TODO-129) + B17-G (TODO-130): redact authored-but-not-rendered
+    # markdown shapes before any parsing, so markers hidden from the
+    # rendered MR view stay invisible to the parser. Symmetric with the
+    # runtime verifier (`ci/agentforge/verify-deploy.py::_redact_hidden`)
+    # — a marker not visible to a human reviewer must not be visible to
+    # either the merge-time SKILL parser or the post-deploy verifier.
+    # Line-count preserved (blank inside instead of removing) so any
+    # downstream line-index logic stays correct.
+    #
+    # Redacted shapes:
+    #   - Fenced code blocks (```)
+    #   - HTML comments (<!-- ... -->), possibly multi-line
+    #   - Link/image reference definitions ([label]: dest "title")
+    #     including multi-line titles in "...", '...', or (...)
+    #   - Indented code blocks (4-space indent preceded by a blank line)
+    def _leading_columns(s):
+        # CommonMark §2.2 tab-stop expansion — tabs go to next multiple
+        # of 4. Used by the indented-code-block detector so {1,2,3}-space
+        # + tab prefixes (which render as col-4 code blocks in GitLab)
+        # don't bypass redaction.
+        col = 0
+        for ch in s:
+            if ch == " ":
+                col += 1
+            elif ch == "\t":
+                col += 4 - (col % 4)
+            else:
+                break
+        return col
+    def _redact(text):
+        out = []
+        in_fence = False
+        in_code = False
+        in_title = False
+        closer = ""
+        prev_blank = True
+        lines = text.splitlines()
+        n = len(lines)
+        i = 0
+        while i < n:
+            line = lines[i]
+            if in_title:
+                out.append("")
+                if closer in line:
+                    in_title = False
+                prev_blank = False
+                i += 1
+                continue
+            if re.match(r"^[ \t]*```", line):
+                out.append("")
+                in_fence = not in_fence
+                prev_blank = False
+                i += 1
+                continue
+            if in_fence:
+                out.append("")
+                prev_blank = False
+                i += 1
+                continue
+            if in_code:
+                if not line.strip():
+                    out.append("")
+                    prev_blank = True
+                    i += 1
+                    continue
+                if _leading_columns(line) >= 4:
+                    out.append("")
+                    prev_blank = False
+                    i += 1
+                    continue
+                in_code = False
+            if (
+                prev_blank
+                and line.strip()
+                and _leading_columns(line) >= 4
+            ):
+                in_code = True
+                out.append("")
+                prev_blank = False
+                i += 1
+                continue
+            m = re.match(r"^[ \t]{0,3}\[[^\]\n]+\]:[ \t]*(\S.*)?$", line)
+            if m:
+                tail = (m.group(1) or "").rstrip()
+                if tail:
+                    k = 0
+                    while k < len(tail) and not tail[k].isspace():
+                        k += 1
+                    after = tail[k:].lstrip()
+                    if after and after[0] in "\"'(":
+                        op = after[0]
+                        cl = ")" if op == "(" else op
+                        if cl not in after[1:]:
+                            out.append("")
+                            in_title = True
+                            closer = cl
+                            prev_blank = False
+                            i += 1
+                            continue
+                    elif not after and i + 1 < n:
+                        nxt = lines[i + 1].lstrip()
+                        if nxt and nxt[0] in "\"'(":
+                            op = nxt[0]
+                            cl = ")" if op == "(" else op
+                            out.append("")
+                            out.append("")
+                            if cl not in nxt[1:]:
+                                in_title = True
+                                closer = cl
+                            prev_blank = False
+                            i += 2
+                            continue
+                out.append("")
+                prev_blank = False
+                i += 1
+                continue
+            out.append(line)
+            prev_blank = not line.strip()
+            i += 1
+        text = "\n".join(out) + ("\n" if text.endswith("\n") else "")
+        return re.sub(r"<!--.*?-->",
+                      lambda m: re.sub(r"[^\n]", "", m.group(0)),
+                      text, flags=re.DOTALL)
+    desc = _redact(desc)
+    m = re.search(r"## Test plan\s*\n(.*?)(?=\n##|\Z)", desc, re.DOTALL)
+    if not m:
+        print("REFUSE: no '## Test plan' section in MR description")
+        sys.exit(1)
+    # Group each bullet with its continuation lines (anything between this
+    # bullet and the next checkbox-bullet) so multi-line items — e.g. with
+    # B17-A `verify:` / `manual-only:` markers indented under the bullet —
+    # parse as one logical block.
+    bullet_re = re.compile(r"^\s*- \[[ xX]\] ")
+    blocks, current = [], None
+    for raw in m.group(1).splitlines():
+        if bullet_re.match(raw):
+            if current is not None:
+                blocks.append(current)
+            current = [raw]
+        elif current is not None:
+            current.append(raw)
+    if current is not None:
+        blocks.append(current)
+    if not blocks:
+        print("REFUSE: test plan section has no checklist items")
+        sys.exit(1)
+    # B17-A markers must lead an indented line followed by whitespace +
+    # content. Strict enough to reject a stray "verify:" inside a URL or
+    # prose; permissive on indent depth.
+    verify_re = re.compile(r"^[ \t]+verify:[ \t]+\S", re.MULTILINE)
+    manual_re = re.compile(r"^[ \t]+manual-only:[ \t]+\S", re.MULTILINE)
+    flaky_re = re.compile(r"^[ \t]+flaky:[ \t]+(\d+)\s*$", re.MULTILINE)
+    problems, premerge = [], 0
+    for block in blocks:
+        head = block[0].strip()
+        body = "\n".join(block)
+        is_deploy = "[deploy-time]" in head
+        is_ticked = head.startswith(("- [x]", "- [X]"))
+        if not is_deploy:
+            premerge += 1
+        if is_deploy:
+            has_verify = verify_re.search(body) is not None
+            has_manual = manual_re.search(body) is not None
+            flaky_matches = flaky_re.findall(body)
+            if not (has_verify or has_manual):
+                problems.append(
+                    "deploy-time item lacks both 'verify:' and "
+                    f"'manual-only:' marker (B17-A): {head[:140]}"
+                )
+            elif has_verify and has_manual:
+                problems.append(
+                    "deploy-time item declares both 'verify:' and "
+                    f"'manual-only:' (pick exactly one): {head[:140]}"
+                )
+            # B17-C — flaky: <N> retry marker, optional, verify-only, [1,5].
+            if len(flaky_matches) > 1:
+                problems.append(
+                    "deploy-time item declares multiple 'flaky:' markers "
+                    f"(pick exactly one): {head[:140]}"
+                )
+            elif flaky_matches:
+                try:
+                    n = int(flaky_matches[0])
+                except ValueError:
+                    n = -1
+                if not (1 <= n <= 5):
+                    problems.append(
+                        f"deploy-time item has 'flaky: {flaky_matches[0]}' "
+                        f"outside [1, 5]: {head[:140]}"
+                    )
+                elif has_manual:
+                    problems.append(
+                        "deploy-time item declares 'flaky:' alongside "
+                        f"'manual-only:' (manual items don't run): {head[:140]}"
+                    )
+                elif not has_verify:
+                    problems.append(
+                        "deploy-time item declares 'flaky:' without "
+                        f"'verify:' (nothing to retry): {head[:140]}"
+                    )
+            if not is_ticked and "verification deferred to" not in body:
+                problems.append(
+                    "deploy-time gate missing 'verification deferred to' "
+                    f"annotation: {head[:140]}"
+                )
+        else:
+            if is_ticked:
+                continue
+            if not re.search(r"(?i)reviewer note:|could not run", body):
+                problems.append(
+                    "pre-merge gate unticked without inline 'Reviewer note:' "
+                    f"or 'could not run' annotation: {head[:140]}"
+                )
+    if premerge == 0:
+        problems.append("test plan has zero pre-merge gates")
+    if problems:
+        print("REFUSE TO MERGE — test-plan-gate violations:")
+        for p in problems:
+            print(f"  - {p}")
+        sys.exit(1)
+    print("OK: all pre-merge gates ticked or annotated; all deploy-time "
+          "gates declare verify:/manual-only: (+ optional valid flaky:) "
+          "and are annotated.")
+    PY
+    ```
+
+    If the parser exits non-zero: do NOT merge. Either tick the gates you
+    actually ran green via `glab api ... -X PUT -f description=...`, or
+    append `Reviewer note:` annotations to gates you skipped (and post the
+    matching `[Warning]` discussions). Then re-run the parser. Only when
+    the parser prints `OK:` may you proceed to Step 18.
 18. Before merging, check for a "Security Audit Summary" note on the MR
     (glab api "projects/{project_id}/merge_requests/{iid}/notes").
     The audit is a **hard merge gate** — never merge without it. The
