@@ -45,8 +45,6 @@
       "Bash(mv ~ *)",
       "Bash(format *)",
       "Bash(> /dev/sd *)",
-      "Read(./.env)",
-      "Read(./.env.*)",
       "Read(./secrets/**)",
       "Read(./config/credentials.json)",
       "Read(./build)"
