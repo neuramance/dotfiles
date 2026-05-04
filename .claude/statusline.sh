@@ -80,6 +80,8 @@ if [ -n "$used_pct" ]; then
   out+=" ${ctx_color}${pct_int}%\033[0m"
 fi
 
-out+=" \033[2m${model}\033[0m"
+short_model=$(echo "$model" | sed -E 's/^([A-Z][a-z])[a-z]* ([0-9.]+).*/\1\2/')
+[[ "$model" == *"1M"* ]] && short_model="${short_model}-1M"
+out+=" \033[2m${short_model}\033[0m"
 
 printf '%b' "$out"
