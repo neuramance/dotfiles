@@ -5,6 +5,31 @@ input=$(cat)
 cwd=$(echo "$input" | grep -o '"current_dir":"[^"]*"' | head -1 | sed 's/"current_dir":"//;s/"$//')
 model=$(echo "$input" | grep -o '"display_name":"[^"]*"' | head -1 | sed 's/"display_name":"//;s/"$//')
 used_pct=$(echo "$input" | grep -o '"used_percentage":[0-9.]*' | head -1 | sed 's/"used_percentage"://')
+transcript=$(echo "$input" | grep -o '"transcript_path":"[^"]*"' | head -1 | sed 's/"transcript_path":"//;s/"$//')
+
+# Total context tokens from latest assistant usage block in transcript
+total_tokens=""
+if [ -n "$transcript" ] && [ -f "$transcript" ]; then
+  last_usage=$(grep -o '"usage":{[^}]*}' "$transcript" | tail -1)
+  if [ -n "$last_usage" ]; then
+    in_t=$(echo "$last_usage" | grep -o '"input_tokens":[0-9]*' | sed 's/.*://')
+    cc_t=$(echo "$last_usage" | grep -o '"cache_creation_input_tokens":[0-9]*' | sed 's/.*://')
+    cr_t=$(echo "$last_usage" | grep -o '"cache_read_input_tokens":[0-9]*' | sed 's/.*://')
+    total_tokens=$(( ${in_t:-0} + ${cc_t:-0} + ${cr_t:-0} ))
+  fi
+fi
+
+# Format token count as human-readable (e.g. 125k, 1.2M)
+fmt_tokens=""
+if [ -n "$total_tokens" ] && [ "$total_tokens" -gt 0 ]; then
+  if [ "$total_tokens" -ge 1000000 ]; then
+    fmt_tokens=$(awk -v n="$total_tokens" 'BEGIN{printf "%.1fM", n/1000000}')
+  elif [ "$total_tokens" -ge 1000 ]; then
+    fmt_tokens=$(awk -v n="$total_tokens" 'BEGIN{printf "%dk", n/1000}')
+  else
+    fmt_tokens="$total_tokens"
+  fi
+fi
 
 # Shorten cwd
 home=$(echo ~)
@@ -48,6 +73,10 @@ out+=" \033[34m+${added}\033[0m/\033[33m-${removed}\033[0m"
 out+=" \033[32m${commits}c\033[0m"
 
 out+=" \033[2m${model}\033[0m"
+
+if [ -n "$fmt_tokens" ]; then
+  out+=" \033[38;5;141m${fmt_tokens}\033[0m"
+fi
 
 if [ -n "$used_pct" ]; then
   out+=" ${ctx_color}${pct_int}%\033[0m"
