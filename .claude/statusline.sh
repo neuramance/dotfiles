@@ -72,8 +72,6 @@ fi
 out+=" \033[34m+${added}\033[0m/\033[33m-${removed}\033[0m"
 out+=" \033[32m${commits}c\033[0m"
 
-out+=" \033[2m${model}\033[0m"
-
 if [ -n "$fmt_tokens" ]; then
   out+=" \033[38;5;141m${fmt_tokens}\033[0m"
 fi
@@ -81,5 +79,7 @@ fi
 if [ -n "$used_pct" ]; then
   out+=" ${ctx_color}${pct_int}%\033[0m"
 fi
+
+out+=" \033[2m${model}\033[0m"
 
 printf '%b' "$out"
