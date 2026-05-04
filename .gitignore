@@ -1,1 +1,15 @@
 *
+!.claude/
+!.claude/*.sh
+!.claude/Dockerfile
+!.claude/settings.json
+!.claude/hooks/
+!.claude/hooks/**
+!.claude/skills/
+!.claude/skills/**
+
+# Re-exclude OS/editor crud and build artifacts inside un-ignored trees
+.DS_Store
+__pycache__/
+*.pyc
+*.swp
