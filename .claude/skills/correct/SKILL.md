@@ -1,6 +1,6 @@
 ---
 name: correct
-description: Deep correctness audit of recent changes. Verifies every change is logically sound, consistent, and introduces no regressions. Fixes all issues found.
+description: Deep correctness audit of work in scope — either a proposed change about to be written (audit before writing) or recently written changes (audit and fix). Verifies every change is logically sound, consistent, and introduces no regressions.
 ---
 
 Think hard. The bar for this audit is extreme certainty — not "looks correct," not "probably fine," but verified. Correctness, diligence, and comprehensiveness are non-negotiable here. Every change must be proven, not assumed. Do not make mistakes. If you make one, catch it and correct it before moving on.
@@ -30,28 +30,47 @@ Common failure modes to guard against:
 - **Wrong abstraction level** — solving the right problem at the wrong layer,
   or coupling things that should be independent
 
-## Step 1 — Identify what changed
+## Step 1 — Define the audit scope
 
-Determine the scope of recent work. Run these in parallel:
+There are two modes. Determine which applies before doing anything else.
+
+### Prospective — work proposed but not yet written
+If the conversation contains a change you planned but have not yet written to
+disk (a diff you sketched, an edit you described in prose, a patch you were
+about to apply, a response you were about to give that contains code or
+config), audit the proposal **before writing it**. The cost of catching an
+error here is lower than catching it after the edit lands.
+
+In this mode the unit under audit is the proposal itself. "Fix it" in Step 5
+means revising the proposal, not editing files. The final report ends with
+either a green light to apply, or a revised proposal — never a silent edit.
+
+### Retrospective — work already written
+If there is no pending proposal, audit recent on-disk work. Run in parallel:
 
 ```bash
 git diff HEAD~1...HEAD          # Last commit diff
 git diff --cached               # Staged changes
 git diff                        # Unstaged changes
 git log --oneline -5            # Recent commits for context
-```
-
-If there are uncommitted changes, review those. If the working tree is clean,
-review the most recent commit(s) from this session. Use judgment — the goal is
-to audit everything that was just produced, not the entire repo history.
-
-Also identify which files were touched:
-
-```bash
 git diff HEAD~1...HEAD --name-only
 git diff --name-only
 git diff --cached --name-only
 ```
+
+Review uncommitted changes if the tree is dirty, otherwise the most recent
+commit(s) from this session. Use judgment — the goal is to audit what was
+just produced, not the entire history.
+
+### Both, or neither
+If a proposal **and** uncommitted changes both exist, audit both and keep the
+boundary explicit in the report. If the tree is clean and no proposal is in
+flight, say so and stop — there is nothing to audit.
+
+### Default when ambiguous
+If the user invokes /correct immediately after you described a plan but
+before you wrote it, default to **prospective**. That is almost always the
+intent — they want to verify the plan, not re-audit unrelated history.
 
 ## Step 2 — Read every changed file in full
 
@@ -61,6 +80,10 @@ need full context to verify:
 - Imports, type signatures, and dependencies are correct
 - No existing code was broken by the change
 - The file still makes sense as a coherent whole
+
+In prospective mode: read the **current** version of every file the proposal
+would touch, plus closely related files, so the proposal can be evaluated
+against real context rather than imagined context.
 
 ## Step 3 — Verify correctness, line by line
 
@@ -132,11 +155,15 @@ is broken.
 
 ## Step 5 — Fix every issue found
 
+In prospective mode, "fix" means revising the proposal — do not write files.
+In retrospective mode, edit the code.
+
 For each issue identified in Steps 3-4:
 
 1. **Describe the issue clearly** — what is wrong, why it is wrong, and what
    the correct behavior should be.
-2. **Fix it** — edit the code. Do not leave TODOs or "fix later" notes.
+2. **Fix it** — edit the code (retrospective) or revise the proposal
+   (prospective). Do not leave TODOs or "fix later" notes.
 3. **Verify the fix** — re-read the surrounding code to confirm the fix is
    correct and does not introduce a new issue.
 4. **Check for the same bug elsewhere** — if this was a pattern error, search
@@ -169,3 +196,8 @@ State clearly:
 
 If you found zero issues, say so — but only after genuinely completing every
 step above. A clean audit is a valid outcome, but a rushed "looks good" is not.
+
+For prospective audits, conclude with one of:
+- **Proceed as proposed** — the proposal is correct and ready to apply
+- **Proceed with the following revisions** — apply this revised version
+- **Do not proceed** — the proposal is wrong; here is why and what to do instead
