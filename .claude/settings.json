@@ -51,29 +51,6 @@
     ]
   },
   "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Edit|Write|NotebookEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/worktree_guard.py"
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "mcp__linear-server__(get_issue|list_issues)",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/tpane_after_linear.sh",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
     "Notification": [
       {
         "matcher": "",
@@ -116,7 +93,8 @@
   "enabledPlugins": {
     "frontend-design@claude-plugins-official": false,
     "superpowers@claude-plugins-official": true,
-    "code-simplifier@claude-plugins-official": true
+    "code-simplifier@claude-plugins-official": true,
+    "feature-dev@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "claude-plugins-official": {
