@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 # PreToolUse hook for the Bash tool.
-# Blocks two classes of dangerous commands:
+# Blocks four classes of dangerous commands:
 #   1. Supply-chain "curl ... | sh" patterns (and equivalents).
 #   2. Secret-path exfiltration via read/copy commands.
+#   3. Writes (redirect, cp/mv/tee) to tamper-sensitive paths.
+#   4. rm/mv targeting / or top-level home directories.
 # Exit 0 = allow. Exit 2 = deny (stderr is shown to the model).
 
 set -u
@@ -105,6 +107,68 @@ if printf '%s' "$cmd_stripped" | grep -qE "$READ_CMD_RE"; then
   if printf '%s' "$cmd_stripped" | grep -qE "$SECRETS_RE"; then
     block "command appears to read or copy a sensitive credential path" \
           "Refusing to surface SSH keys, cloud creds, .env files, .pem/.key, etc. into agent output."
+  fi
+fi
+
+# ---------------------------------------------------------------------------
+# Class 3: writes / tampering of sensitive paths
+# ---------------------------------------------------------------------------
+# Tool-level Edit/Write denies don't catch shell-out writes (cp, tee, > redir).
+# Block when a tamper-sensitive target is the destination of any write.
+
+TAMPER_RE="${HOME_PFX}/\\.ssh(/|[[:space:]\"']|$)"
+TAMPER_RE="${TAMPER_RE}|${HOME_PFX}/\\.aws(/|[[:space:]\"']|$)"
+TAMPER_RE="${TAMPER_RE}|${HOME_PFX}/\\.gnupg(/|[[:space:]\"']|$)"
+TAMPER_RE="${TAMPER_RE}|${HOME_PFX}/\\.kube/config([[:space:]\"';|&]|$)"
+TAMPER_RE="${TAMPER_RE}|${HOME_PFX}/\\.(zshrc|zshenv|zprofile|zlogin|bashrc|bash_profile|profile|tmux\\.conf|gitconfig)([[:space:]\"';|&]|$)"
+TAMPER_RE="${TAMPER_RE}|${HOME_PFX}/\\.config/git/config([[:space:]\"';|&]|$)"
+TAMPER_RE="${TAMPER_RE}|${HOME_PFX}/\\.config/fish/config\\.fish"
+
+# Output redirect (> or >>) into a tamper path.
+if printf '%s' "$cmd_stripped" | grep -qE '>>?[[:space:]]*('"$TAMPER_RE"')'; then
+  block "output redirected into a tamper-sensitive path" \
+        "Refusing to overwrite shell init files, SSH/AWS/kube creds, or git config."
+fi
+
+# Write tools (cp, mv, tee, install, dd, rsync, scp) targeting a tamper path.
+WRITE_CMD_RE='(^|[;&|`(]|[[:space:]])(cp|mv|tee|install|dd|rsync|scp|ln)([[:space:]]|$)'
+if printf '%s' "$cmd_stripped" | grep -qE "$WRITE_CMD_RE"; then
+  if printf '%s' "$cmd_stripped" | grep -qE "$TAMPER_RE"; then
+    block "command writes/copies into a tamper-sensitive path" \
+          "Refusing to modify shell init files, SSH/AWS/kube creds, or git config via shell."
+  fi
+fi
+
+# ---------------------------------------------------------------------------
+# Class 4: rm/mv of catastrophic paths
+# ---------------------------------------------------------------------------
+# Replaces the bypassable `Bash(rm -rf *)` deny with a real check that
+# inspects the actual targets. Allows deep paths like `rm -rf node_modules`
+# or `rm -rf ~/.cache/foo/bar` while blocking targets that wipe a user's
+# entire workspace or system.
+
+# Top-level home directories that should never be the target of rm/mv.
+HOME_TOP='(Documents|Desktop|Downloads|Movies|Music|Pictures|Public|Library|Applications|Projects|projects|Code|code|work|src|repos|github|\.claude|\.config|\.ssh|\.aws|\.gnupg|\.kube|\.docker|\.cache|\.local)'
+
+TOK_START='(^|[[:space:]"'\''=`(])'
+TOK_END='([[:space:]"'\''$;|&)`]|$)'
+
+DANGER_RE="${TOK_START}/${TOK_END}"
+DANGER_RE="${DANGER_RE}|${TOK_START}~/?${TOK_END}"
+DANGER_RE="${DANGER_RE}|${TOK_START}\\\$HOME/?${TOK_END}"
+DANGER_RE="${DANGER_RE}|${TOK_START}~/?\\*${TOK_END}"
+DANGER_RE="${DANGER_RE}|${TOK_START}\\\$HOME/?\\*${TOK_END}"
+DANGER_RE="${DANGER_RE}|${TOK_START}~/${HOME_TOP}/?${TOK_END}"
+DANGER_RE="${DANGER_RE}|${TOK_START}\\\$HOME/${HOME_TOP}/?${TOK_END}"
+DANGER_RE="${DANGER_RE}|${TOK_START}/Users/[^/[:space:]\"']+/?${TOK_END}"
+DANGER_RE="${DANGER_RE}|${TOK_START}/Users/[^/[:space:]\"']+/${HOME_TOP}/?${TOK_END}"
+
+RM_MV_RE='(^|[;&|`(]|[[:space:]])(rm|mv)([[:space:]]|$)'
+
+if printf '%s' "$cmd_stripped" | grep -qE "$RM_MV_RE"; then
+  if printf '%s' "$cmd_stripped" | grep -qE "$DANGER_RE"; then
+    block "rm/mv targets a system or top-level home directory" \
+          "Refusing to delete or move /, \$HOME, or top-level home dirs (Documents, Library, .ssh, .config, .claude, etc.). Deeper targets like ~/.cache/foo are allowed."
   fi
 fi
 
