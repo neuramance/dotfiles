@@ -14,6 +14,21 @@ tool=$(printf '%s' "$input" | jq -r '.tool_name // ""')
 cmd=$(printf '%s' "$input" | jq -r '.tool_input.command // ""')
 [[ -z "$cmd" ]] && exit 0
 
+# Heredoc bodies are usually data (commit messages, file contents,
+# templates) being passed as a string to commands like git commit, cat,
+# tee. Strip them before scanning so messages and templates that mention
+# credential filenames or attack-pattern text don't false-positive.
+# Tradeoff: this misses the exotic `bash <<EOF ... EOF` form where the
+# heredoc IS code; that form is rarely used by humans or by Claude, and
+# any attacker motivated enough to wrap an attack in a heredoc could just
+# encode it ten other ways.
+cmd_stripped=$(printf '%s' "$cmd" | perl -0777 -e '
+  my $c = do { local $/; <STDIN> };
+  $c =~ s/<<-?\s*(["\x27]?)(\w+)\1.*?\n\2\s*(\n|$)/<<HEREDOC_STRIPPED\n/gs;
+  print $c;
+' 2>/dev/null)
+[[ -z "$cmd_stripped" ]] && cmd_stripped="$cmd"
+
 block() {
   printf 'Blocked by bash-guard: %s\n' "$1" >&2
   printf '%s\n' "$2" >&2
@@ -25,25 +40,25 @@ block() {
 # ---------------------------------------------------------------------------
 
 # 1a. curl/wget piped directly into a shell interpreter.
-if printf '%s' "$cmd" | grep -qE '(^|[^A-Za-z0-9_/])(curl|wget)([^|]|\|\|)*\|[[:space:]]*(sudo[[:space:]]+(-[A-Za-z]+[[:space:]]+)*)?(sh|bash|zsh|fish|ksh|dash|csh|tcsh|ash)([[:space:]]|$|;|&|\|)'; then
+if printf '%s' "$cmd_stripped" | grep -qE '(^|[^A-Za-z0-9_/])(curl|wget)([^|]|\|\|)*\|[[:space:]]*(sudo[[:space:]]+(-[A-Za-z]+[[:space:]]+)*)?(sh|bash|zsh|fish|ksh|dash|csh|tcsh|ash)([[:space:]]|$|;|&|\|)'; then
   block "curl/wget output piped into a shell interpreter (supply-chain risk)" \
         "Mitigation: download to a file (curl -fsSL URL -o script.sh), inspect, then run explicitly."
 fi
 
 # 1b. Process substitution feeding curl/wget output to a shell.
-if printf '%s' "$cmd" | grep -qE '(^|[^A-Za-z0-9_/])(sh|bash|zsh|fish|ksh|dash|csh|tcsh|ash)[[:space:]]+(-[A-Za-z]+[[:space:]]+)*<\([[:space:]]*(curl|wget)'; then
+if printf '%s' "$cmd_stripped" | grep -qE '(^|[^A-Za-z0-9_/])(sh|bash|zsh|fish|ksh|dash|csh|tcsh|ash)[[:space:]]+(-[A-Za-z]+[[:space:]]+)*<\([[:space:]]*(curl|wget)'; then
   block "shell reading curl/wget output via process substitution" \
         "Mitigation: download to a file, inspect, then run."
 fi
 
 # 1c. eval / shell -c with command substitution from curl/wget.
-if printf '%s' "$cmd" | grep -qE '(^|[^A-Za-z0-9_/])(eval|(sh|bash|zsh|fish|ksh|dash)[[:space:]]+-c)[[:space:]]+["'\''[:space:]]*\$\([[:space:]]*(curl|wget)'; then
+if printf '%s' "$cmd_stripped" | grep -qE '(^|[^A-Za-z0-9_/])(eval|(sh|bash|zsh|fish|ksh|dash)[[:space:]]+-c)[[:space:]]+["'\''[:space:]]*\$\([[:space:]]*(curl|wget)'; then
   block "command substitution of curl/wget output passed to eval or shell -c" \
         "Mitigation: download to a file, inspect, then run."
 fi
 
 # 1d. curl/wget piped into a non-shell interpreter (python, ruby, node, perl, php).
-if printf '%s' "$cmd" | grep -qE '(^|[^A-Za-z0-9_/])(curl|wget)([^|]|\|\|)*\|[[:space:]]*(python3?|ruby|node|perl|php)([[:space:]]|$|;|&|\|)'; then
+if printf '%s' "$cmd_stripped" | grep -qE '(^|[^A-Za-z0-9_/])(curl|wget)([^|]|\|\|)*\|[[:space:]]*(python3?|ruby|node|perl|php)([[:space:]]|$|;|&|\|)'; then
   block "curl/wget output piped into an interpreter (supply-chain risk)" \
         "Mitigation: download to a file, inspect, then run."
 fi
@@ -81,13 +96,13 @@ READ_CMD_RE='(^|[;&|`(]|[[:space:]])(cat|bat|nl|tac|head|tail|less|more|view|vi|
 # Bare input redirection from a sensitive path: `... < ~/.aws/credentials`
 REDIR_RE='<[[:space:]]*'"${HOME_PFX}/\\.(ssh|aws|gnupg|kube|netrc|npmrc|pypirc)"
 
-if printf '%s' "$cmd" | grep -qE "$REDIR_RE"; then
+if printf '%s' "$cmd_stripped" | grep -qE "$REDIR_RE"; then
   block "input redirection from a sensitive credential path" \
         "Refusing to read SSH keys, cloud creds, dotfile tokens, etc."
 fi
 
-if printf '%s' "$cmd" | grep -qE "$READ_CMD_RE"; then
-  if printf '%s' "$cmd" | grep -qE "$SECRETS_RE"; then
+if printf '%s' "$cmd_stripped" | grep -qE "$READ_CMD_RE"; then
+  if printf '%s' "$cmd_stripped" | grep -qE "$SECRETS_RE"; then
     block "command appears to read or copy a sensitive credential path" \
           "Refusing to surface SSH keys, cloud creds, .env files, .pem/.key, etc. into agent output."
   fi
