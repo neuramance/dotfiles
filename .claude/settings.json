@@ -18,15 +18,11 @@
       "WebSearch(*)"
     ],
     "deny": [
-      "Bash(rm -rf *)",
-      "Bash(rm -r *)",
       "Bash(sudo *)",
-      "Bash(wget *)",
       "Bash(dd *)",
       "Bash(mkfs *)",
       "Bash(fdisk *)",
       "Bash(parted *)",
-      "Bash(chmod -R 777 *)",
       "Bash(chown -R *)",
       "Bash(shutdown *)",
       "Bash(reboot *)",
@@ -34,23 +30,56 @@
       "Bash(init 0 *)",
       "Bash(init 6 *)",
       "Bash(kill -9 -1 *)",
-      "Bash(killall *)",
-      "Bash(pkill -9 *)",
-      "Bash(git push --force *)",
-      "Bash(git push -f *)",
-      "Bash(git reset --hard *)",
-      "Bash(git clean -f *)",
-      "Bash(git clean -fd *)",
       "Bash(mv /* *)",
       "Bash(mv ~ *)",
       "Bash(format *)",
       "Bash(> /dev/sd *)",
+      "Bash(diskutil eraseDisk *)",
+      "Bash(diskutil eraseVolume *)",
+      "Bash(diskutil partitionDisk *)",
+      "Bash(diskutil secureErase *)",
+      "Bash(tmutil delete *)",
+      "Bash(tmutil disable *)",
+      "Bash(tmutil deletelocalsnapshots *)",
+      "Bash(nvram *)",
+      "Bash(csrutil *)",
+      "Bash(spctl *)",
       "Read(./secrets/**)",
       "Read(./config/credentials.json)",
-      "Read(./build)"
+      "Read(./build)",
+      "Read(~/.ssh/**)",
+      "Read(~/.aws/**)",
+      "Read(~/.gnupg/**)",
+      "Read(~/.config/gh/hosts.yml)",
+      "Read(~/.netrc)",
+      "Read(~/.npmrc)",
+      "Read(~/.pypirc)",
+      "Read(~/.docker/config.json)",
+      "Read(~/.kube/config)",
+      "Read(//**/.env)",
+      "Read(//**/.env.*)",
+      "Read(//**/.envrc)",
+      "Read(//**/*.pem)",
+      "Read(//**/*.key)",
+      "Read(//**/id_rsa)",
+      "Read(//**/id_ed25519)",
+      "Read(//**/credentials.json)",
+      "Read(//**/service-account*.json)"
     ]
   },
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/bash-guard.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
     "Notification": [
       {
         "matcher": "",
