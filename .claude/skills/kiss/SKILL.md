@@ -1,177 +1,81 @@
 ---
 name: kiss
-description: Use when starting system design, implementation, refactoring, or dependency selection. Also use when the user asks for minimal, boring, or "least clever" solutions, when complexity is creeping into a design, when speculative requirements or over-engineering are stalling work, or when reviewing recent changes for unnecessary abstraction, dead options, or premature flexibility.
+description: Use when designing systems, choosing dependencies, refactoring, reviewing recent changes, or when complexity is creeping in. Also when the user asks for minimal, boring, or "least clever" solutions, when speculative requirements or over-engineering are stalling work, or when about to add a layer / parameter / abstraction / config option / interface. Not needed for routine implementation already covered by the default system prompt.
 ---
 
-# Keep It Simple Paradigm (KISS)
+# Keep It Simple (KISS)
 
-Stop. Before designing or writing anything, shift your default posture. You are about to make decisions whose costs accumulate every time someone reads, modifies, debugs, or extends this code. Most of those readers will not be you, and most of them will arrive without your context.
+**Default state is non-existence.** Every concept, layer, parameter, dependency, line — every *thing* — must justify *existing* against the alternative of not existing. The cheapest, fastest, most reliable system is the one that doesn't exist; the next-best is the one with the fewest things in it.
 
-In this mode, **simplicity is the default and complexity must justify itself.** Every concept, every layer, every option, every dependency, and every line is a liability. They earn their place by solving a real problem that exists *right now*, not one you imagine might exist later.
+**Code is liability, not asset.** Lines get read, modified, debugged, secured, ported, and eventually deleted — forever. Value comes from *behavior*, not from code. Maximize behavior per line; minimize lines. Users pay you for behavior; you pay for code.
 
-## What "simple" means here
+This goes beyond the default "don't add features beyond what the task requires." It applies at the moments the default doesn't reach: choosing tools, picking abstractions, deciding when to extract, and when to delete.
 
-"Simple" is not "easy" and not "short." It is:
+## The gate
 
-- **Few concepts.** Fewer types, fewer layers, fewer moving parts, fewer things a reader must hold in their head at once.
-- **Untangled.** One unit does one thing. Concerns do not bleed into each other. (Hickey's "simple," not "easy.")
-- **Direct.** The shortest reasonable path from input to outcome. No detour through indirection that doesn't pay rent.
-- **Boring.** The thing a competent engineer would expect, written the way the language and codebase already do it.
-- **Reversible.** Easy to delete, replace, or change later — because complexity arrives eventually, and reversibility is what lets you defer it cheaply.
+Before letting any new concept exist — a layer, parameter, dependency, config option, helper, interface, abstraction — answer all four:
 
-Short, clever, "elegant" code is *not* automatically simple. A four-line metaprogramming trick that nobody else can debug is more complex than twenty lines of obvious procedure.
+1. **Who is the human asking, and what is their concrete problem *today*?** "The spec," "the team," "best practice," "we might need it" do not count. Name the person.
+2. **Is there a third real, divergent caller?** Two cases is a coincidence. Inline until three. *Bends for:* a true external boundary (HTTP, plugin, public API, persistence schema) — the boundary itself is the abstraction.
+3. **Would the standard library, the framework's intended path, or something already in this codebase do?** The cheapest line is the one you didn't write.
+4. **Is this reversible cheaply, or am I buying flexibility now to avoid a cost I may never pay?** Prefer reversibility over flexibility.
+
+If you can't pass all four, choose the simpler default.
+
+## What "simple" means
+
+Not "easy" and not "short." Few concepts; one unit, one concern (Hickey's "simple," not "easy"); the shortest reasonable path from input to outcome; what a competent reader would expect in this codebase's idiom; easy to delete, replace, or change.
+
+A four-line metaprogramming trick nobody can debug is more complex than twenty obvious lines.
 
 ## Core principles
 
-These are sharp on purpose. Apply them by default. The "when this bends" notes appear only on principles whose exceptions are non-obvious.
+- **YAGNI, with a name attached.** Every requirement needs a human whose concrete problem it solves. No name → cut it. Smart-sounding requirements are routinely wrong by a wide margin.
+- **Rule of Three.** Don't extract until three real, divergent uses. Three lines inline beats a premature helper.
+- **Order: question → delete → simplify → accelerate → automate.** Challenge whether the work should exist. Then delete what survives. Then simplify. Then tighten the loop. *Last,* automate. Optimizing or automating something that should be deleted is the most expensive form of waste in software.
+- **Reversibility before flexibility.** A reversible decision needs no flexibility built in. Flexibility is complexity you pay for now to avoid a cost you may never incur.
+- **Minimum viable surface area.** Public functions, exports, flags, env vars are contracts you'll have to keep. Expose the smallest set real callers need.
+- **Boring substrate, leading edge surface.** Novelty is a tax paid every day. Pay it where product capability genuinely demands it — the latest model, a new technique, a cutting-edge library at the value-creating surface. Use boring, well-worn tools everywhere else: databases, deploys, frameworks, package managers, auth, queues. The bet is leading edge *where the differentiation lives*, conservative everywhere it doesn't.
+- **Make it work, then right, then fast.** In that order. Optimization without measurement is fiction.
+- **Cut aggressively enough that you have to add ~10% back later.** If nothing ever needs adding back, you under-cut.
+- **Violating the letter is usually violating the spirit.** Don't talk yourself into a special case.
 
-- **YAGNI — You Aren't Gonna Need It.** Build only what is demanded by a real requirement today — and **every requirement needs a human name attached to it.** "The spec," "the team," "best practices," "industry standard" are not sources; people are. If you can't name the person who needs it and the concrete problem they're solving, the requirement is a guess. Cut speculative features, options, and abstractions first; question even the surviving ones, because smart-sounding requirements are routinely wrong by a wide margin.
-- **Rule of Three.** Don't extract an abstraction until you have at least three real, divergent uses. Two cases is a coincidence; three is a pattern. *When this bends:* a true external boundary (HTTP, plugin, public API, persistence schema) — extract once, because the boundary itself is the abstraction.
-- **The best code is no code.** The cheapest line is the one you didn't write. Before writing, look for: deletion, the standard library, code already present in the codebase.
-- **Boring technology wins.** Prefer the language's standard tools, the framework's intended path, and the dependency everyone already uses. Novelty has a tax paid every day.
-- **Inline before extract.** Write the three lines inline. If the same shape appears a third time, unchanged, *then* extract.
-- **Make it work, then make it right, then (maybe) make it fast.** In that order. Optimization without measurement is fiction.
-- **The order is: question → delete → simplify → accelerate → automate.** *In that order.* First challenge whether the requirement, the code, or the process should exist at all. Then delete what survives — aggressively enough that you have to add ~10% of it back later; if nothing ever needs adding back, you under-cut. Only *then* simplify what remains. Only *then* tighten its feedback loop (faster tests, faster deploy, shorter iteration). Only *last* automate. Optimizing or automating something that should have been deleted is the most expensive form of waste in software: you build scaffolding around the mistake and make it harder to remove.
-- **The simplest thing that could possibly work.** Solve the actual problem in front of you. Not the generalized version. Not the configurable version. The actual one.
-- **Reversibility before flexibility.** A reversible decision needs no flexibility built in — you can change it later cheaply. Flexibility ("we might want to swap X someday") is complexity you pay for now to avoid a cost you may never incur.
-- **Minimum viable surface area.** Public functions, exported types, config options, CLI flags, environment variables — every one of these is a contract you'll have to keep. Expose the smallest set that satisfies real callers.
-- **Premature abstraction is a sin equal to premature optimization.** Both freeze a guess about the future into the structure of the code.
-- **Cognitive load is the budget.** What a reader can hold in their head simultaneously is the limit. If they can't, the design is wrong, no matter how clean each piece looks in isolation.
-- **Violating the letter of these rules is usually violating the spirit.** Don't talk yourself into a special case.
+## What KISS does not cut
 
-## Anti-patterns to refuse to write
+KISS targets *internal* complexity — speculative flexibility, premature abstraction, layers that don't pay rent. It does **not** mean cutting production essentials at system boundaries. These have a real human with a real problem *today* (the user whose money, data, or trust is at stake) and pass the gate cleanly. Don't apply YAGNI to the system's contract with the outside world.
 
-When you notice yourself about to do any of these, **stop and choose the simpler default.**
+- **Auth and authorization** at every trust boundary.
+- **Observability on production paths.** Structured logs, traces, metrics on critical flows. You can't fix what you can't see, and a system you can't see is not production-grade.
+- **Idempotency keys** on state-mutating endpoints — especially anything touching money.
+- **Retries with backoff** at external boundaries where real failures happen (network, third-party APIs, payment processors). *Not* internal calls that can't fail.
+- **Rate limiting and abuse protection** on public endpoints.
+- **Audit trails** for money flows, compliance, and anything you'd be asked to reconstruct after the fact.
+- **Input validation** at the edge where untrusted data enters.
+- **Backups, migrations, and rollback paths** for stateful systems. The day you need them, "we'll add it later" is too late.
 
-**Speculative parameters and config knobs.** A function with options nobody passes. A config file with values nobody overrides. A flag that exists "in case." → Delete it. Add it the day a real caller needs it.
-
-**Framework-of-one.** A plugin system, registry, factory, or strategy pattern with one implementation. → Replace with the one implementation, inlined.
-
-**Premature DRY.** Two pieces of code that look alike but represent different concepts, merged into a single helper that now grows flags to satisfy both callers. Coincidental duplication is not duplication. → Keep them separate until they truly diverge or truly converge.
-
-**Defensive code for impossible states.** Validating that an internal function received the type its signature already guarantees. Try/catches around code that cannot throw. Null checks for values that cannot be null. → Trust internal code. Validate once at system boundaries.
-
-**Deep inheritance and ceremonial OO.** Class hierarchies with one or two real subclasses. `AbstractBaseFooFactoryProvider`. → Use a function. Use composition. Use a plain record/struct.
-
-**Microservices for a monolith problem.** Splitting a service that fits in one process into many because of pattern aspiration, not real load or boundary needs. → Start as a monolith. Split when there is a measured reason.
-
-**Abstraction layers that don't pay rent.** A "service layer" that just forwards to a "repository layer" that just forwards to the ORM. → Collapse. Add the layer back if and when it earns its keep.
-
-**Custom solutions for solved problems.** Hand-rolled date math, hand-rolled CSV parsing, hand-rolled retry loops, hand-rolled DI containers. → Use the library or the standard. Reach for "custom" only when the off-the-shelf option genuinely doesn't fit.
-
-**Configuration explosion.** Env vars and flags for every constant. Configuration that is never set in any deployment. → Inline the constant. Promote it to config the day a real environment needs a different value.
-
-**"Just in case" code and dead branches.** `if (false)`, commented-out blocks, feature flags whose decision was made months ago, unused exports kept "for symmetry." → Delete. Git remembers.
-
-**Premature interfaces.** Defining `IThing` before you have one `Thing`. → Write the concrete first. Extract an interface only when there are real callers needing to vary the implementation.
-
-**Speculative generality.** Type parameters with one instantiation. Hooks that no one calls. Extension points nobody extends. → Concrete first. Generalize on demand.
-
-**Custom DSLs and config languages.** A YAML schema that grows expressions, conditionals, includes. → Either it's data (keep it flat) or it's code (write code).
-
-**Comment-driven complexity.** Long block comments explaining why a tangled piece of code is necessary. → The complexity is the bug. Simplify until the comment isn't needed.
-
-**Future-proofing for hypothetical scale.** Sharding, caching layers, queues, and read replicas added before measured load demands them. → Solve the load you have. Architectural fixes for imagined load are guesses with debt attached.
-
-**Optimizing or automating code that should be deleted.** Speeding up a slow query in a feature nobody uses. Writing a code generator for boilerplate that an inlined helper would erase. Adding a lint rule, a CI step, or a script to babysit complexity that wouldn't exist if the underlying thing were cut. Caching responses from an endpoint that shouldn't be called in the first place. → Move up the stack first. Ask whether the work, the feature, or the process should exist at all. Only optimize or automate what has already survived deletion.
-
-## Decision heuristics
-
-Sharp rules to apply at the moment of decision. "When this bends" notes only where the exception is non-obvious.
-
-**One file until proven otherwise.** If it fits comfortably in one file, it lives in one file. New directories and packages need a real reason. *When this bends:* a true module boundary (separately deployable, separately testable, separately ownable).
-
-**Don't extract until three real instances exist.** Two is a coincidence; three is a pattern.
-
-**No config option without two real callers needing different values.** Constants are config-of-one. Promote to config only on real demand.
-
-**Prefer the standard library.** A new dependency must save more than its cost (transitive deps, supply chain, version drift, learning tax, install size).
-
-**One datastore until you can't.** Don't add Redis/Elasticsearch/queue-of-the-week until the existing store actually fails the workload.
-
-**Synchronous before asynchronous.** Don't introduce queues, background workers, or event buses until a synchronous call genuinely cannot do the job.
-
-**Validate at the edge, trust the interior.** Untrusted input is checked once, where it enters the system. Internal callers are not adversaries.
-
-**Errors only where you can do something useful.** Don't catch what you can't handle. Let it propagate to the boundary that can.
-
-**Comments only when the WHY is non-obvious.** Hidden constraint, subtle invariant, workaround for a specific bug, behavior that would surprise a reader. Don't narrate the WHAT — names do that.
-
-**Names: short and concrete beats long and ceremonial.** `users` over `UserCollectionManager`. `send` over `executeMessageDispatchOperation`. Length should match scope: tiny for local, longer for public.
-
-**Delete > rewrite > extend.** When something is wrong, ask whether you can remove it before asking whether you can replace it.
-
-**Reversible commits over big-bang refactors.** Many small, locally correct changes; not one heroic restructure.
-
-**Prefer pure functions and plain data.** They are the simplest unit of reasoning and the easiest to test, move, and delete.
-
-## How KISS applies by activity
-
-### System design
-
-- Start with the **fewest moving parts** that could plausibly satisfy the requirements.
-- **Monolith first.** Decompose only when a real boundary forces it (independent scaling, independent deploy cadence, independent ownership, regulatory isolation).
-- **One datastore. One language. One deployment unit.** Add a second only on hard evidence.
-- **Synchronous request/response** before queues, streams, or events.
-- Choose tools you and the team already know. Novelty is a tax paid every day.
-- The design at the level a new engineer could explain back to you in five minutes. If you can't get there, it's too complex — keep cutting.
-
-### Implementation
-
-- Write the **inline three lines** before reaching for a helper.
-- **Smallest API surface that satisfies the caller.** Add parameters when callers need them, not before.
-- **Make it work first.** Get the happy path running end-to-end. Then handle real edge cases. Then refine.
-- Prefer **plain data** (records, structs, dicts) over class hierarchies for things that are just data.
-- **One way to do it.** If two patterns coexist for the same job, pick one and migrate; don't add a third.
-
-### Refactoring
-
-- **Delete first, extract second.** If you can't delete it, you probably shouldn't extract it either.
-- Refactor in **small, reversible commits**. Each one passes tests on its own.
-- Don't expand scope. The bug fix is the bug fix. Cleanup happens in a separate change.
-- If a refactor adds more concepts than it removes, **stop** and reconsider.
-
-### Debugging
-
-- **Simplest hypothesis first.** It's almost always the obvious thing.
-- **Remove code rather than add code.** Bisect by deletion. Comment out, narrow, isolate.
-- **Revert before patch.** If a recent change caused this, reverting is usually the smaller fix than diagnosing forward.
-- Don't add layers of logging, retries, or fallbacks to mask a bug. Find the cause and remove it.
-
-### Dependency choices
-
-- **Boring, popular, maintained, narrow.** A dependency that does one thing, has many users, gets regular releases, and adds few friends.
-- **Read the install footprint.** Transitive deps, install size, native modules, security history.
-- **Standard library first.** A `for` loop is not worth a 200kb package.
-- A dependency must save **more time than it costs over its lifetime** — including the day you have to remove it.
+Rule of thumb: apply YAGNI *inside* the system, not at the boundaries. Internal callers are not adversaries; the network, the user, time, and adversaries are. A boring, minimal implementation of the essentials beats a clever one that omits them. "Production grade" means these are *present and working*, not that they are elaborate.
 
 ## Red-flag thoughts
 
-When any of these surface, you are rationalizing. Stop.
+When any of these surfaces, you are rationalizing. Stop and choose the simpler default.
 
-| Thought | What it really means | Default to |
-|---------|----------------------|------------|
-| "We might need this later." | We have no evidence we will. | Don't add it. Add it the day a real need appears. |
-| "This is more flexible." | This adds knobs nobody is turning. | Remove the flexibility. Hardcode the actual case. |
-| "This is cleaner." | This is more layers. | Inline it. |
+| Thought | What it really means | Default |
+|---------|----------------------|---------|
+| "We might need this later." | No evidence we will. | Add it the day a real need appears. |
+| "This is more flexible." | Knobs nobody is turning. | Hardcode the actual case. |
+| "This is cleaner." | More layers. | Inline. |
 | "This is the proper way." | I learned a pattern and want to use it. | Use the pattern when the problem demands it, not when the pattern wants a host. |
-| "What if we want to swap implementations?" | Speculative interface. | Concrete first. Extract when a second real implementation appears. |
+| "What if we want to swap implementations?" | Speculative interface. | Concrete first. Extract on a real second implementation. |
 | "Just in case." | No real case. | Don't write it. |
-| "It's only a few extra lines." | Each line is read many times more than it is written. | Cut them. |
-| "We'll clean it up later." | We won't. | Do less now, so there is less to clean. |
-| "Let me add a config option for that." | One caller wanted it once. | Hardcode. Promote to config when a second caller needs a different value. |
+| "It's only a few extra lines." | Each line is read many times more than written. | Cut them. |
+| "We'll clean it up later." | We won't. | Do less now. |
+| "Let me add a config option." | One caller wanted it once. | Hardcode. Promote on a second caller with a different value. |
 | "Let me handle this just in case." | Defensive code for an impossible state. | Trust internal code. Validate at edges. |
 | "Let me extract this helper." | Two similar lines. | Inline until three. |
-| "This is elegant." | This is clever. | Choose obvious over clever. |
-| "It's the same pattern we used before." | The shape matches; the meaning may not. | Compare meanings, not shapes, before unifying. |
-| "I'll generalize while I'm in here." | Scope creep dressed as efficiency. | Make the change you came to make. Open a separate change for anything else. |
-| "Let me speed this up / automate this annoying step." | I may be optimizing or automating what I should be deleting. | First try to remove or simplify the underlying work. Only accelerate or automate what survives that cut. |
-| "The spec / the team / best practice says we need this." | I'm citing an authority instead of a person. | Find the human whose actual problem this solves, or treat the requirement as a guess and cut. |
+| "This is elegant." | Clever. | Choose obvious over clever. |
+| "Same pattern as before." | Shapes match; meaning may not. | Compare meanings, not shapes, before unifying. |
+| "I'll generalize while I'm in here." | Scope creep dressed as efficiency. | Make the change you came to make. |
+| "Let me speed this up / automate this." | May be optimizing what should be deleted. | Try to remove the underlying work first. |
+| "Spec / team / best practice says so." | Citing an authority instead of a person. | Find the human whose problem this solves, or treat as a guess and cut. |
 
-## Closing posture
-
-**When in doubt, choose less.** Less code, fewer concepts, fewer dependencies, fewer layers, fewer options.
-
-The cost of removing complexity later is much higher than the cost of adding it later. Code that exists must be read, maintained, ported, debugged, secured, and eventually deleted. Code that doesn't exist costs nothing.
-
-Your goal is not the cleverest design. Your goal is the design a competent reader can fully understand on first read, change without fear, and delete without regret.
+**When in doubt, choose less. When in real doubt, choose nothing** — and promote a thing into existence only when it proves it must exist *today*. Your goal is the design a competent reader can fully understand on first read, change without fear, and delete without regret.
