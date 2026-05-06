@@ -59,7 +59,6 @@
       "Bash(git push -f *)",
       "Read(./secrets/**)",
       "Read(./config/credentials.json)",
-      "Read(./build)",
       "Read(~/.ssh/**)",
       "Read(~/.aws/**)",
       "Read(~/.gnupg/**)",
@@ -78,6 +77,10 @@
       "Read(//**/id_ed25519)",
       "Read(//**/credentials.json)",
       "Read(//**/service-account*.json)",
+      "Read(//**/*.map)",
+      "Read(//**/*.min.js)",
+      "Read(//**/*.min.css)",
+      "Read(//**/*.wasm)",
       "Edit(~/.ssh/**)",
       "Write(~/.ssh/**)",
       "Edit(~/.aws/**)",
@@ -133,18 +136,6 @@
     ]
   },
   "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/bash-guard.sh",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
     "Notification": [
       {
         "matcher": "",
