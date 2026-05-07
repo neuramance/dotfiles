@@ -7,6 +7,8 @@
 !.claude/hooks/**
 !.claude/skills/
 !.claude/skills/**
+!.claude/commands/
+!.claude/commands/**
 
 # Re-exclude OS/editor crud and build artifacts inside un-ignored trees
 .DS_Store
