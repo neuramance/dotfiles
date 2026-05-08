@@ -14,16 +14,11 @@ If `$ARGUMENTS` is non-empty, use it verbatim as the label and skip straight to 
    - `git log --oneline -3` — recent commits
    - `git diff --stat HEAD~1..HEAD 2>/dev/null` — last commit's shape
    - `git status --short` — uncommitted work
-   - **GitLab work item lookup** — extract a numeric ID from the branch name (e.g. `123-foo`, `foo/123-bar`, `feature/AW-456`; take the first standalone integer ≥2 digits) and, if found and `glab` is installed, run `glab issue view <id> -F json 2>/dev/null` to fetch the work item title. Skip silently if no ID, no `glab`, or the call fails — this is best-effort.
 
-2. **Synthesize a label.** Priority order:
-   1. **GitLab work item title (if found in step 1)** — boil it down to a glanceable ≤15-char form. This is the strongest signal of *what the human is tracking*, so prefer it over branch/commit framings when relevant. If the conversation has clearly moved on from the work item, fall through.
-   2. Otherwise, use the branch name, recent commits, uncommitted work, and conversation so far.
-
-   The label must be:
+2. **Synthesize a label** from the branch name, recent commits, uncommitted work, and conversation so far. The label must be:
    - **Ultra-short: 15 characters or fewer.** Hard cap, not a target. This appears in the tmux status bar — every character counts. Count the characters before renaming. If it's over 15, cut words, drop articles, abbreviate, or pick a tighter framing — don't ship it long.
    - **Glanceable:** a human scanning 5+ windows should instantly know what this one is doing. Lead with the domain/area, not generic verbs.
-   - **No decoration:** no emoji, no brackets, no prefix like "WIP:" or "Claude:", no work-item ID prefix like `#123`. Just the substance.
+   - **No decoration:** no emoji, no brackets, no prefix like "WIP:" or "Claude:". Just the substance.
    - Examples (all ≤15 chars): `CDK infra rules`, `patient API`, `calendar fix`, `phpstan cleanup`, `twig tests`, `kiss skill edit`
 
 3. **Rename the window:**

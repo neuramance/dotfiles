@@ -39,9 +39,6 @@ statusline ctx
 <prompt>investigate why the deploy is failing on staging</prompt>
 deploy debug
 
-<prompt>look at the Linear queue and grab a task</prompt>
-linear triage
-
 <prompt>refactor the patient API to use the new schema</prompt>
 patient API
 
