@@ -100,7 +100,8 @@
   "enabledPlugins": {
     "frontend-design@claude-plugins-official": false,
     "superpowers@claude-plugins-official": false,
-    "code-simplifier@claude-plugins-official": true
+    "code-simplifier@claude-plugins-official": true,
+    "skill-creator@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "claude-plugins-official": {
@@ -112,10 +113,15 @@
   },
   "syntaxHighlightingDisabled": false,
   "alwaysThinkingEnabled": true,
-  "effortLevel": "xhigh",
+  "effortLevel": "high",
   "autoMemoryEnabled": false,
   "skipDangerousModePermissionPrompt": true,
   "theme": "light",
   "skipAutoPermissionPrompt": true,
-  "awaySummaryEnabled": false
+  "awaySummaryEnabled": false,
+  "voiceEnabled": true,
+  "voice": {
+    "enabled": true,
+    "mode": "hold"
+  }
 }
