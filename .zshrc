@@ -34,3 +34,8 @@ export NVM_DIR="$HOME/.nvm"
 
 # secrets (untracked)
 [ -f "$HOME/.zsh_secrets" ] && source "$HOME/.zsh_secrets"
+
+# fastfetch on ssh login (skip inside tmux/subshells)
+if [[ -o login && -o interactive && -n "$SSH_CONNECTION" && -z "$TMUX" ]] && command -v fastfetch >/dev/null; then
+  fastfetch
+fi

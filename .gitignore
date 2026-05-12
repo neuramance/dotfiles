@@ -9,6 +9,10 @@
 !.claude/skills/**
 !.claude/commands/
 !.claude/commands/**
+!.config/
+!.config/fastfetch/
+!.config/fastfetch/**
+!.hushlogin
 
 # Re-exclude OS/editor crud and build artifacts inside un-ignored trees
 .DS_Store

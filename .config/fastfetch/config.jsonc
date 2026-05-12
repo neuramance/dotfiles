@@ -1,0 +1,65 @@
+// fastfetch config — pink/violet glitch theme to match logo.png
+{
+  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+
+  // Pre-rendered with: chafa -f symbols --symbols block -s 40x20 logo.png > logo.txt
+  // Re-run that command after replacing logo.png.
+  "logo": {
+    "source": "/root/.config/fastfetch/logo.txt",
+    "type": "file-raw",
+    "padding": { "top": 1, "right": 3 }
+  },
+
+  "display": {
+    "separator": "  ",
+    "color": {
+      "keys":      "1;38;2;0;0;0",
+      "title":     "1;38;2;0;0;0",
+      "output":    "38;2;90;90;90",
+      "separator": "38;2;90;90;90"
+    },
+    "key": {
+      "paddingLeft": 0
+    },
+    "percent": {
+      "color": {
+        "green":  "1;38;2;0;0;0",
+        "yellow": "1;38;2;0;0;0",
+        "red":    "1;38;2;0;0;0"
+      }
+    }
+  },
+
+  "modules": [
+    "break",
+    {
+      "type": "title",
+      "format": "{#1;38;2;220;40;60}{user-name}{#1;38;2;0;0;0}@{#1;38;2;220;40;60}{host-name}"
+    },
+    {
+      "type": "custom",
+      "format": "{#38;2;90;90;90}────────────────────────────"
+    },
+    {
+      "type": "os",
+      "key": "OS    ",
+      "format": "{#1;38;2;0;0;0}{name} {version-id}{#0;3;38;2;130;130;130}  ·  {codename}  ·  {arch}"
+    },
+    { "type": "cpu",      "key": "CPU   ", "outputColor": "1;38;2;220;40;60" },
+    { "type": "gpu",      "key": "GPU   ", "outputColor": "1;38;2;220;40;60", "hideType": "integrated" },
+    { "type": "memory",   "key": "MEM   ", "outputColor": "1;38;2;220;40;60" },
+    { "type": "disk",     "key": "DISK  ", "outputColor": "1;38;2;220;40;60" },
+    { "type": "host",     "key": "HOST  " },
+    { "type": "kernel",   "key": "KERNEL" },
+    { "type": "uptime",   "key": "UP    " },
+    { "type": "packages", "key": "PKGS  " },
+    { "type": "shell",    "key": "SHELL " },
+    { "type": "localip",  "key": "IP    ", "showIpv4": true, "showIpv6": false },
+    "break",
+    {
+      "type": "custom",
+      "format": "{#48;2;228;80;150}   {#48;2;208;60;130}   {#48;2;180;50;160}   {#48;2;160;70;190}   {#48;2;140;60;200}   {#48;2;120;50;210}   {#48;2;100;40;220}   {#48;2;90;30;200}   {#0}"
+    },
+    "break"
+  ]
+}
