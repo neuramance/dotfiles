@@ -61,8 +61,12 @@ fi
 
 # Build output
 out=""
-out+="\033[34m$(whoami)\033[0m"
-out+="@\033[35m$(hostname -s)\033[0m"
+user=$(whoami)
+host=$(hostname -s)
+user_color="\033[34m"; [ "$user" = "root" ] && user_color="\033[31m"
+host_color="\033[35m"; [ "$host" = "i9" ] && host_color="\033[31m"
+out+="${user_color}${user}\033[0m"
+out+="@${host_color}${host}\033[0m"
 out+=":\033[32m${short_cwd}\033[0m"
 
 if [ -n "$branch" ]; then

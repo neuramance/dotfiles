@@ -1,5 +1,6 @@
-# zsh prompt: user@host:~$
-PROMPT="%F{blue}%n%f@%F{magenta}%m%f:%F{green}%~%f$ "
+# zsh prompt: user@host:~$  (root → red user, i9 → red host)
+setopt PROMPT_SUBST
+PROMPT='%(!.%F{red}.%F{blue})%n%f@%F{${${${${HOST%%.*}:#i9}:+magenta}:-red}}%m%f:%F{green}%~%f$ '
 
 # environment vars
 export EDITOR=vim
@@ -30,3 +31,6 @@ export NVM_DIR="$HOME/.nvm"
 
 # aliases (sourced last so PATH is fully set for echopath)
 [ -f "$HOME/.zsh_aliases" ] && source "$HOME/.zsh_aliases"
+
+# secrets (untracked)
+[ -f "$HOME/.zsh_secrets" ] && source "$HOME/.zsh_secrets"
