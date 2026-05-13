@@ -45,10 +45,28 @@
       "key": "OS    ",
       "format": "{#1;38;2;0;0;0}{name} {version-id}{#0;3;38;2;130;130;130}  ·  {codename}  ·  {arch}"
     },
-    { "type": "cpu",      "key": "CPU   ", "outputColor": "1;38;2;220;40;60" },
-    { "type": "gpu",      "key": "GPU   ", "outputColor": "1;38;2;220;40;60", "hideType": "integrated" },
-    { "type": "memory",   "key": "MEM   ", "outputColor": "1;38;2;220;40;60" },
-    { "type": "disk",     "key": "DISK  ", "outputColor": "1;38;2;220;40;60" },
+    {
+      "type": "cpu",
+      "key": "CPU   ",
+      "format": "{#1;38;2;220;40;60}{name}{#0;3;38;2;130;130;130}  ·  {cores-physical}c/{cores-logical}t @ {freq-max}"
+    },
+    {
+      "type": "gpu",
+      "key": "GPU   ",
+      "hideType": "integrated",
+      "driverSpecific": true,
+      "format": "{#1;38;2;220;40;60}{name}{#0;3;38;2;130;130;130}  ·  {dedicated-total} VRAM @ {frequency}"
+    },
+    {
+      "type": "command",
+      "key": "MEM   ",
+      "text": "~/.config/fastfetch/mem-line.sh"
+    },
+    {
+      "type": "command",
+      "key": "DISK  ",
+      "text": "~/.config/fastfetch/disk-line.sh"
+    },
     { "type": "host",     "key": "HOST  " },
     { "type": "kernel",   "key": "KERNEL" },
     { "type": "uptime",   "key": "UP    " },
