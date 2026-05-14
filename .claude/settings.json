@@ -29,7 +29,6 @@
       "Bash(git fetch *)"
     ],
     "deny": [
-      "Bash(sudo *)",
       "Bash(dd *)",
       "Bash(mkfs *)",
       "Bash(fdisk *)",
