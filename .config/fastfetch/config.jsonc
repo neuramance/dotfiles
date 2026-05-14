@@ -5,7 +5,7 @@
   // Pre-rendered with: chafa -f symbols --symbols block -s 40x20 logo.png > logo.txt
   // Re-run that command after replacing logo.png.
   "logo": {
-    "source": "/root/.config/fastfetch/logo.txt",
+    "source": "~/.config/fastfetch/logo.txt",
     "type": "file-raw",
     "padding": { "top": 1, "right": 3 }
   },
