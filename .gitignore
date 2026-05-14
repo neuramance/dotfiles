@@ -12,6 +12,8 @@
 !.config/
 !.config/fastfetch/
 !.config/fastfetch/**
+# logo.png is a per-host symlink (created by .zshrc) — track logo.<host>.png instead
+.config/fastfetch/logo.png
 !.hushlogin
 
 # Re-exclude OS/editor crud and build artifacts inside un-ignored trees

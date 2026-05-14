@@ -36,6 +36,13 @@ export NVM_DIR="$HOME/.nvm"
 [ -f "$HOME/.zsh_secrets" ] && source "$HOME/.zsh_secrets"
 
 # fastfetch on every new interactive shell
+# Clear first so the iTerm inline-image logo lines up with the text modules.
 if [[ -o interactive ]] && command -v fastfetch >/dev/null; then
+  # Point logo.png at the per-host image (logo.<short-hostname>.png) if present.
+  _ff_dir="$HOME/.config/fastfetch"
+  _ff_host_logo="$_ff_dir/logo.$(hostname -s).png"
+  [[ -f "$_ff_host_logo" ]] && ln -sfn "${_ff_host_logo##*/}" "$_ff_dir/logo.png"
+  unset _ff_dir _ff_host_logo
+  clear
   fastfetch
 fi
