@@ -98,7 +98,7 @@
     "command": "$HOME/.claude/statusline.sh"
   },
   "enabledPlugins": {
-    "frontend-design@claude-plugins-official": false,
+    "frontend-design@claude-plugins-official": true,
     "superpowers@claude-plugins-official": false,
     "code-simplifier@claude-plugins-official": true,
     "skill-creator@claude-plugins-official": true
@@ -114,14 +114,14 @@
   "syntaxHighlightingDisabled": false,
   "alwaysThinkingEnabled": true,
   "effortLevel": "high",
+  "awaySummaryEnabled": false,
+  "voice": {
+    "enabled": true,
+    "mode": "hold"
+  },
   "autoMemoryEnabled": false,
   "skipDangerousModePermissionPrompt": true,
   "theme": "light",
   "skipAutoPermissionPrompt": true,
-  "awaySummaryEnabled": false,
-  "voiceEnabled": true,
-  "voice": {
-    "enabled": true,
-    "mode": "hold"
-  }
+  "voiceEnabled": true
 }
