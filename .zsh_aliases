@@ -8,11 +8,7 @@ alias zconf="code ~/.zshrc"
 alias ls="eza -bhlF --no-user --no-permissions --no-time --group-directories-first"
 alias sl="eza -bhlF --no-user --no-permissions --no-time --group-directories-first"
 alias lsa="eza -abhlF --no-user --no-permissions --no-time --group-directories-first"
-if command -v batcat &>/dev/null; then
-  alias bat="batcat"
-elif command -v bat &>/dev/null; then
-  : # bat is already bat
-fi
+command -v batcat &>/dev/null && alias bat="batcat"
 alias atop="_sudo asitop --color 7"
 
 # git

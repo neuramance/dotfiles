@@ -36,15 +36,14 @@ home=$(echo ~)
 short_cwd=$(echo "$cwd" | sed "s|^$home|~|")
 
 # Git stats (today's commits)
-cd "$cwd" 2>/dev/null
 today_start="$(date +%Y-%m-%d) 00:00:00"
 today_end="$(date +%Y-%m-%d) 23:59:59"
-added=$(git log --since="$today_start" --until="$today_end" --pretty=format: --numstat 2>/dev/null | awk '{added+=$1} END {printf "%d", added+0}')
-removed=$(git log --since="$today_start" --until="$today_end" --pretty=format: --numstat 2>/dev/null | awk '{removed+=$2} END {printf "%d", removed+0}')
-commits=$(git log --since="$today_start" --until="$today_end" --oneline 2>/dev/null | wc -l | tr -d ' ')
+added=$(git -C "$cwd" log --since="$today_start" --until="$today_end" --pretty=format: --numstat 2>/dev/null | awk '{added+=$1} END {printf "%d", added+0}')
+removed=$(git -C "$cwd" log --since="$today_start" --until="$today_end" --pretty=format: --numstat 2>/dev/null | awk '{removed+=$2} END {printf "%d", removed+0}')
+commits=$(git -C "$cwd" log --since="$today_start" --until="$today_end" --oneline 2>/dev/null | wc -l | tr -d ' ')
 
 # Git branch
-branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+branch=$(git -C "$cwd" rev-parse --abbrev-ref HEAD 2>/dev/null)
 
 # Context window % color: green <70, yellow 70-89, red 90+
 ctx_color=""

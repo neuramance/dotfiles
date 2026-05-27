@@ -7,8 +7,6 @@ export EDITOR=vim
 export LS_COLORS="di=36:fi=0:ln=93:ex=32"
 export PAGER="less"
 export LESS="-FRX"
-export TMUX_GTA=20000
-export BROWSER=wslview
 export BAT_THEME="ansi"
 
 # python
@@ -17,11 +15,6 @@ export PATH="`python3 -m site --user-base`/bin:$PATH"
 # bun
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
-
-# nvm
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
 
 # uv Python package manager
 [ -f "$HOME/.local/bin/env" ] && . "$HOME/.local/bin/env"
