@@ -122,5 +122,6 @@
   "skipDangerousModePermissionPrompt": true,
   "theme": "light",
   "skipAutoPermissionPrompt": true,
-  "voiceEnabled": true
+  "voiceEnabled": true,
+  "agentPushNotifEnabled": true
 }
