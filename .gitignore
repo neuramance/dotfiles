@@ -3,6 +3,7 @@
 !.claude/*.sh
 !.claude/Dockerfile
 !.claude/settings.json
+!.claude/CLAUDE.md
 !.claude/hooks/
 !.claude/hooks/**
 !.claude/skills/
