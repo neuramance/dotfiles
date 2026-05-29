@@ -40,8 +40,6 @@
       "Bash(init 0 *)",
       "Bash(init 6 *)",
       "Bash(kill -9 -1 *)",
-      "Bash(mv /* *)",
-      "Bash(mv ~ *)",
       "Bash(format *)",
       "Bash(> /dev/sd *)",
       "Bash(diskutil eraseDisk *)",
@@ -80,11 +78,15 @@
       }
     ],
     "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
           {
             "type": "command",
-            "command": "node ~/.claude/hooks/mv-absolute-path-block.js",
-            "if": "Bash(mv *)"
+            "command": "node ~/.claude/hooks/mv-absolute-path-block.js"
           }
+        ]
+      }
     ],
     "UserPromptSubmit": [
       {
