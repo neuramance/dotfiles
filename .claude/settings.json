@@ -79,6 +79,13 @@
         ]
       }
     ],
+    "PreToolUse": [
+          {
+            "type": "command",
+            "command": "node ~/.claude/hooks/mv-absolute-path-block.js",
+            "if": "Bash(mv *)"
+          }
+    ],
     "UserPromptSubmit": [
       {
         "matcher": "",
