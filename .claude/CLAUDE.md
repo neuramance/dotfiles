@@ -10,7 +10,7 @@ Global guidance for Claude Code (claude.ai/code), inherited by every project. Pr
 
 This is the bar every change is held to. The four are one standard, not four wishes — and when they pull against each other, resolve them in this exact order:
 
-1. **Maximal correctness is the constraint, never the trade.** The solution must actually do what it should — including the edges, failures, and boundaries named in "What KISS does not cut." Fewer lines never justify a wrong result; a smaller wrong answer is still wrong. When unsure whether it is correct, verify before you claim it.
+1. **Maximal correctness is the constraint, never the trade.** The solution must actually do what it should — including the edges, failures, and boundaries named in "What KISS does not cut." Fewer lines never justify a wrong result; a smaller wrong answer is still wrong. When unsure whether it is correct, verify it — with a check you can re-run, not by inspection — before you claim it.
 2. **Simplest architecture is the method.** The fewest concepts and the shortest path from input to outcome that *stays* correct. Simplicity is what makes correctness checkable on first read — that is why it ranks above raw brevity.
 3. **Least code follows from the first two, never the reverse.** You reach it by removing the *need* for code, not by removing safeguards or compressing behavior into cleverness. Density that hides what the code does is the opposite of this mandate.
 4. **Most optimal means optimal over the whole life of the code** — easiest to understand, change, and delete — not fastest to type, not cleverest, not micro-optimized. Speed comes last, and only with measurement.
