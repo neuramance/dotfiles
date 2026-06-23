@@ -119,7 +119,7 @@
   },
   "syntaxHighlightingDisabled": false,
   "alwaysThinkingEnabled": true,
-  "effortLevel": "high",
+  "effortLevel": "medium",
   "awaySummaryEnabled": false,
   "voice": {
     "enabled": true,
