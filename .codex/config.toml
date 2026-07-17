@@ -1,0 +1,148 @@
+model = "gpt-5.6-sol"
+model_reasoning_effort = "high"
+service_tier = "fast"
+approval_policy = "never"
+approvals_reviewer = "user"
+sandbox_mode = "danger-full-access"
+
+[features]
+apps = false
+external_migration = true
+goals = true
+prevent_idle_sleep = true
+terminal_resize_reflow = true
+js_repl = false
+
+[marketplaces.openai-bundled]
+last_updated = "2026-07-14T20:43:54Z"
+source_type = "local"
+source = "/Users/w/.codex/.tmp/bundled-marketplaces/openai-bundled"
+
+[marketplaces.openai-primary-runtime]
+last_updated = "2026-07-14T20:49:31Z"
+source_type = "local"
+source = "/Users/w/.cache/codex-runtimes/codex-primary-runtime/plugins/openai-primary-runtime"
+
+[marketplaces.claude-plugins-official]
+last_updated = "2026-07-17T17:31:22Z"
+last_revision = "8dc53b9457356de52fa223084e0412acf5bfbb93"
+source_type = "git"
+source = "https://github.com/anthropics/claude-plugins-official.git"
+
+[marketplaces.ponytail]
+last_updated = "2026-07-17T01:00:22Z"
+last_revision = "16f29800fd2681bdf24f3eb4ccffe38be3baec6b"
+source_type = "git"
+source = "https://github.com/DietrichGebert/ponytail.git"
+
+[notice]
+hide_full_access_warning = true
+
+[notice.external_config_migration_prompts]
+home_last_prompted_at = 1779915771
+
+[notice.external_config_migration_prompts.project_last_prompted_at]
+"/Users/w/code/adversarial_security" = 1778837807
+"/Users/w/code/helios_1" = 1779915771
+
+[notice.model_migrations]
+"gpt-5.3-codex" = "gpt-5.4"
+
+[plugins."documents@openai-primary-runtime"]
+enabled = true
+
+[plugins."figma@openai-curated"]
+enabled = true
+
+[plugins."figma@openai-curated".mcp_servers.figma]
+enabled = false
+
+[plugins."presentations@openai-primary-runtime"]
+enabled = true
+
+[plugins."spreadsheets@openai-primary-runtime"]
+enabled = true
+
+[plugins."code-simplifier@claude-plugins-official"]
+enabled = true
+
+[plugins."visualize@openai-bundled"]
+enabled = true
+
+[plugins."browser@openai-bundled"]
+enabled = true
+
+[plugins."sites@openai-bundled"]
+enabled = true
+
+[plugins."sites@openai-bundled".mcp_servers."sites-design-picker"]
+enabled = false
+
+[plugins."pdf@openai-primary-runtime"]
+enabled = true
+
+[plugins."template-creator@openai-primary-runtime"]
+enabled = true
+
+[projects."/Users/w"]
+trust_level = "trusted"
+
+[projects."/Users/w/Documents/New project"]
+trust_level = "trusted"
+
+[projects."/Users/w/code/adversarial_security"]
+trust_level = "trusted"
+
+[projects."/Users/w/code/sign_language_1"]
+trust_level = "trusted"
+
+[projects."/Users/w/code/helios_1"]
+trust_level = "trusted"
+
+[projects."/Users/w/code/sb/ls_test"]
+trust_level = "trusted"
+
+[shell_environment_policy]
+inherit = "core"
+
+[shell_environment_policy.set]
+CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1"
+
+[tui]
+status_line = [
+    "current-dir",
+    "git-branch",
+    "used-tokens",
+    "context-used",
+    "model-with-reasoning",
+]
+status_line_use_colors = true
+
+[tui.model_availability_nux]
+"gpt-5.5" = 4
+"gpt-5.6-sol" = 4
+
+[hooks.state]
+
+[hooks.state."/Users/w/.codex/hooks.json:stop:0:0"]
+trusted_hash = "sha256:43a196c0ac3b0ce4fb6a8723c8e8c61b40aa801dac270555f10d43d49a7015f2"
+
+[hooks.state."/Users/w/.codex/hooks.json:user_prompt_submit:0:0"]
+trusted_hash = "sha256:befdd4d6462cea33694249c55316c13bd85896990ac56172fc5529743016400a"
+
+[desktop]
+followUpQueueMode = "queue"
+dock-icon-preference = "app-default"
+conversationDetailMode = "STEPS_COMMANDS"
+
+[desktop.open-in-target-preferences]
+global = "iterm2"
+
+[desktop.open-in-target-preferences.perPath]
+"/Users/w/Documents/New project" = "iterm2"
+
+[mcp_servers.computer-use]
+command = "./Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient"
+args = ["mcp"]
+cwd = "."
+enabled = false
