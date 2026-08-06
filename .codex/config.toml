@@ -1,9 +1,11 @@
 model = "gpt-5.6-sol"
 model_reasoning_effort = "high"
-service_tier = "fast"
+service_tier = "default"
 approval_policy = "never"
 approvals_reviewer = "user"
 sandbox_mode = "danger-full-access"
+
+notify = ["/Users/w/.codex/computer-use/Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient", "turn-ended"]
 
 [features]
 apps = false
@@ -14,18 +16,18 @@ terminal_resize_reflow = true
 js_repl = false
 
 [marketplaces.openai-bundled]
-last_updated = "2026-07-14T20:43:54Z"
+last_updated = "2026-08-06T17:01:20Z"
 source_type = "local"
 source = "/Users/w/.codex/.tmp/bundled-marketplaces/openai-bundled"
 
 [marketplaces.openai-primary-runtime]
-last_updated = "2026-07-14T20:49:31Z"
+last_updated = "2026-08-06T17:02:46Z"
 source_type = "local"
 source = "/Users/w/.cache/codex-runtimes/codex-primary-runtime/plugins/openai-primary-runtime"
 
 [marketplaces.claude-plugins-official]
-last_updated = "2026-07-17T17:31:22Z"
-last_revision = "8dc53b9457356de52fa223084e0412acf5bfbb93"
+last_updated = "2026-08-06T16:56:13Z"
+last_revision = "da7dc3b5ac4835a68584d6a9d53787fd5956ce8f"
 source_type = "git"
 source = "https://github.com/anthropics/claude-plugins-official.git"
 
@@ -84,6 +86,12 @@ enabled = true
 [plugins."template-creator@openai-primary-runtime"]
 enabled = true
 
+[plugins."google-calendar@openai-curated"]
+enabled = true
+
+[plugins."slack@claude-plugins-official"]
+enabled = true
+
 [projects."/Users/w"]
 trust_level = "trusted"
 
@@ -107,6 +115,9 @@ inherit = "core"
 
 [shell_environment_policy.set]
 CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1"
+BROWSER_USE_AVAILABLE_BACKENDS = "chrome,iab"
+NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "091a81603ff202a16ed56557709bf42d97caf8f0dd2e07ae9e26d7c014d71035"
+NODE_REPL_TRUSTED_CODE_PATHS = "/Users/w/.codex:/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules"
 
 [tui]
 status_line = [
@@ -134,6 +145,7 @@ trusted_hash = "sha256:befdd4d6462cea33694249c55316c13bd85896990ac56172fc5529743
 followUpQueueMode = "queue"
 dock-icon-preference = "app-default"
 conversationDetailMode = "STEPS_COMMANDS"
+ambient-suggestions-enabled = false
 
 [desktop.open-in-target-preferences]
 global = "iterm2"
@@ -146,3 +158,23 @@ command = "./Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.
 args = ["mcp"]
 cwd = "."
 enabled = false
+
+[mcp_servers.node_repl]
+args = []
+command = "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node_repl"
+startup_timeout_sec = 120
+
+[mcp_servers.node_repl.env]
+NODE_REPL_NATIVE_PIPE_CONNECT_TIMEOUT_MS = "1000"
+NODE_REPL_NODE_MODULE_DIRS = "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules"
+NODE_REPL_NODE_PATH = "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node"
+NODE_REPL_TRUSTED_CODE_PATHS = "/Users/w/.codex:/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules"
+CODEX_HOME = "/Users/w/.codex"
+NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "091a81603ff202a16ed56557709bf42d97caf8f0dd2e07ae9e26d7c014d71035"
+BROWSER_USE_AVAILABLE_BACKENDS = "chrome,iab"
+NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER = "Control the in-app browser in conjunction with the Browser Plugin."
+NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME = "Control the Chrome browser in conjunction with the Chrome Plugin. Prefer this method of controlling Chrome over alternatives (such as Computer Use) unless the user explicitly mentions an alternative."
+NODE_REPL_INSTRUCTIONS_USE_CASE_COMPUTER_USE = "Control desktop apps on macOS through Computer Use."
+BROWSER_USE_CODEX_APP_BUILD_FLAVOR = "prod"
+BROWSER_USE_CODEX_APP_VERSION = "26.730.61639"
+CODEX_CLI_PATH = "/Applications/ChatGPT.app/Contents/Resources/codex"
