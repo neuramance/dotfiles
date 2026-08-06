@@ -72,19 +72,6 @@
       }
     }
   },
-  "sandbox": {
-    "enabled": true,
-    "autoAllowBashIfSandboxed": true,
-    "allowUnsandboxedCommands": true,
-    "filesystem": {
-      "allowWrite": [
-        "~/.npm",
-        "~/.bun",
-        "~/.cache",
-        "~/Library/Caches"
-      ]
-    }
-  },
   "effortLevel": "xhigh",
   "awaySummaryEnabled": false,
   "voice": {
