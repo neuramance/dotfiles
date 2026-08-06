@@ -61,6 +61,12 @@ alias echopath="echo '$PATH' | tr ':' '\n'"
 alias ccd="claude --dangerously-skip-permissions"
 alias cdw="claude --dangerously-skip-permissions -w"
 
+# ccd routed through OpenRouter (vars scoped to this call, so plain `claude` is unaffected)
+ccdo() { ANTHROPIC_BASE_URL="https://openrouter.ai/api" ANTHROPIC_API_KEY="sk-or-v1-YOUR_OPENROUTER_KEY" claude --dangerously-skip-permissions "$@"; }
+
+# Prime Agent
+alias pa="prime-agent"
+
 alias senv="source .venv/bin/activate"
 
 # meridian dev servers
