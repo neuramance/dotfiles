@@ -102,6 +102,7 @@
       }
     ]
   },
+  "disableClaudeAiConnectors": true,
   "statusLine": {
     "type": "command",
     "command": "$HOME/.claude/statusline.sh"
