@@ -35,3 +35,12 @@ autoload -Uz compinit && compinit -C
 # <<< grok installer <<<
 
 sb() { [ -d ~/code/sb/"$1" ] || gh repo clone "superbuilders/$1" ~/code/sb/"$1" -- --filter=blob:none; cd ~/code/sb/"$1"; }
+
+# kimi-code
+export PATH="/Users/w/.kimi-code/bin:$PATH"
+
+# claude code via cliproxyapi (brew services start cliproxyapi; login: cliproxyapi -claude-login / -codex-login / -kimi-login ...)
+ccp() { ANTHROPIC_BASE_URL=http://127.0.0.1:8317 ANTHROPIC_AUTH_TOKEN=$CLIPROXY_TOKEN claude "$@"; }
+
+# opencode
+export PATH=/Users/w/.opencode/bin:$PATH
