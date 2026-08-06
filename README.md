@@ -9,7 +9,7 @@ Personal dotfiles for quick setup on a fresh environment.
 ```
 cd ~
 git init
-git remote add origin https://github.com/wiresv/dotfiles.git
+git remote add origin https://github.com/neuramance/dotfiles.git
 git fetch origin
 git checkout -B main origin/main
 source ~/.zshrc
