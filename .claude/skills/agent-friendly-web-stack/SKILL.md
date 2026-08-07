@@ -305,7 +305,6 @@ When it is used:
 - Exit status is necessary but insufficient: confirm a plausible non-zero file count and that representative source, config, and test paths are present. Repomix reports "Packing completed successfully" over an empty pack, with `Total Files: 0` as the only tell. A project nested inside another repository resolves `.gitignore` from that repository's root, so an allowlist-style parent — one beginning `*` — excludes every file. The fix is usually `git init` in the project so the boundary is its own; otherwise correct the ignore rules or use a narrow include. Never disable gitignore processing wholesale.
 - Keep packs untracked: ignore `repomix-*` in both `.gitignore` and `.repomixignore`. Match the glob rather than the default output names — a pack written to any other filename is otherwise swept up by `git add -A`. Never send a pack outside the authorized environment without reviewing its contents against the applicable data-handling policy.
 - Preserve comments and full implementation in a pack used to review behavior, security, or correctness. Compressed output is for architecture overview only.
-- Token counts are trend and navigation signals. Never hide source or tests to satisfy a cosmetic budget.
 
 Working configuration, adapt ignore patterns only:
 
@@ -370,7 +369,7 @@ test-results/
 
 Add scripts only if the project actually audits this way: `context:pack` (`repomix`), `context:review` (`repomix --include-diffs --output repomix-review.xml`), `context:watch` (`repomix --watch`). One definition each, so the workflow and `package.json` cannot drift.
 
-An audit asks: is each new file, directory, dependency, layer, and public abstraction required by behavior that exists now? Can a direct function, route module, platform API, or existing dependency replace new glue or a renaming wrapper? Are schemas, domain models, constants, or policies duplicated? Did the change leave dead code, compatibility paths, barrel exports, flags, TODO scaffolding, or obsolete dependencies? Are the largest and fastest-growing modules still cohesive? What can be deleted without losing correctness, clarity, tests, security, accessibility, or required flexibility?
+Use it to answer the review questions in the workflow across the whole repository at once, which no single diff can show: which modules are largest and fastest-growing, whether they are still cohesive, and whether a schema or policy has been duplicated in two places that were never edited together.
 
 ## Workflow
 
@@ -381,9 +380,11 @@ An audit asks: is each new file, directory, dependency, layer, and public abstra
 5. Make the smallest coherent implementation that satisfies them.
 6. Run focused type, lint, and test checks while iterating.
 7. For UI changes, open the running application in a real browser: keyboard operation, console errors, responsive layouts, relevant visual states. Screenshot when there is a visual target.
-8. Delete dead, duplicated, speculative, or needlessly layered code before declaring done. Report any material increase in production dependencies, public APIs, directories, or architectural layers, with the user-facing requirement that caused it.
+8. Before declaring done, ask what the change should give back. Is each new file, directory, dependency, layer, and public abstraction required by behavior that exists now? Can a direct function, route module, platform API, or existing dependency replace new glue or a wrapper that only renames something? Are schemas, domain models, constants, or policies now duplicated? Did the change leave dead code, compatibility paths, barrel exports, flags, TODO scaffolding, or obsolete dependencies? What can be deleted without losing correctness, clarity, tests, security, accessibility, or required flexibility? Delete what the answers expose, and report any material increase in production dependencies, public APIs, directories, or architectural layers with the requirement that caused it.
 9. Run `bun run check`, then `bun run check:full` where its prerequisites exist. Fix root causes; do not suppress failures. If infrastructure makes a check impossible, name the exact missing prerequisite — never imply it passed.
 10. Review the complete diff for accidental files, debug output, secrets, unrelated formatting, unsafe casts, and unnecessary dependencies.
+
+Growth is controlled per change; reduction has to be occasional and deliberate, because nothing in a diff reveals what stopped earning its place three changes ago. Periodically re-justify what already exists: vendored template content, configuration that only restates a default, dependencies nothing imports, wrappers with a single caller, generated artifacts that were committed once. Packed token count and the largest-files list are how you find candidates, never a number to hit — measurement points, judgment decides, and a pass that deletes tests or accessibility wiring to move the number has made the codebase worse.
 
 Then report: what changed, which checks actually ran and their results, and any residual risk or unverified condition. Where runtime compatibility matters, say whether each command ran under Bun, Node, or a browser — `bun run` alone does not prove a Node-shebang CLI executed under Bun.
 
@@ -400,6 +401,7 @@ Every applicable statement is true:
 - Database changes ship safe, reviewable migrations and constraints.
 - Security and authorization boundaries remain server-enforced.
 - `.env.example` reflects new configuration.
+- Every file, directory, dependency, layer, and public API the change introduced is required by behavior that exists now, and whatever it obsoleted is gone.
 - No secrets, debug artifacts, unrelated changes, or unexplained suppressions.
 - The report distinguishes verified facts from assumptions and omitted checks.
 
