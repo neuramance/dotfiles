@@ -1,0 +1,11 @@
+[theme]
+name = "catppuccin-latte"
+
+[theme.custom]
+panel_bg = "#ffffff"
+accent = "#000000"
+surface0 = "#d4d4d4"
+overlay1 = "#ffffff"
+
+[keys]
+prefix = "backtick"

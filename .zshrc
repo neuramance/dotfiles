@@ -44,3 +44,11 @@ ccp() { ANTHROPIC_BASE_URL=http://127.0.0.1:8317 ANTHROPIC_AUTH_TOKEN=$CLIPROXY_
 
 # opencode
 export PATH=/Users/w/.opencode/bin:$PATH
+
+# herdr 0.8.0 leaks kitty keyboard flags on detach, leaving keys as CSI u escapes
+herdr() {
+  command herdr "$@"
+  local s=$?
+  printf '\033[<u\033[=0;1u\033[?1000l\033[?1002l\033[?1003l\033[?1006l\033[?2004l\033[?1049l\033[?25h' >/dev/tty 2>/dev/null
+  return $s
+}

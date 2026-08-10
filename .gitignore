@@ -15,6 +15,9 @@
 !.config/fastfetch/**
 # logo.png is a per-host symlink (created by .zshrc) — track logo.<host>.png instead
 .config/fastfetch/logo.png
+# only config.toml — the rest of .config/herdr is runtime state (sockets, logs, session.json)
+!.config/herdr/
+!.config/herdr/config.toml
 !.hushlogin
 !repomix.config.json
 !.repomixignore
