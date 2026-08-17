@@ -5,7 +5,8 @@ name = "catppuccin-latte"
 panel_bg = "#ffffff"
 accent = "#000000"
 surface0 = "#d4d4d4"
-overlay1 = "#ffffff"
+overlay0 = "#000000"
+overlay1 = "#000000"
 
 [keys]
 prefix = "backtick"

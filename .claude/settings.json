@@ -1,4 +1,9 @@
 {
+  "apiKeyHelper": "/Users/w/.claude/anthropic-key.sh",
+  "env": {
+    "ANTHROPIC_BASE_URL": "https://tfy.promptlens.trilogy.com",
+    "CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS": "1"
+  },
   "attribution": {
     "commit": "",
     "pr": ""
@@ -29,6 +34,7 @@
       "Bash(git fetch *)"
     ]
   },
+  "disableClaudeAiConnectors": true,
   "hooks": {
     "Notification": [
       {
@@ -53,7 +59,6 @@
       }
     ]
   },
-  "disableClaudeAiConnectors": true,
   "enableArtifact": true,
   "enableWorkflows": true,
   "statusLine": {
@@ -61,8 +66,8 @@
     "command": "$HOME/.claude/statusline.sh"
   },
   "enabledPlugins": {
-    "typescript-lsp@claude-plugins-official": true,
-    "pyright-lsp@claude-plugins-official": true
+    "pyright-lsp@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "claude-plugins-official": {
@@ -74,6 +79,7 @@
   },
   "effortLevel": "xhigh",
   "awaySummaryEnabled": false,
+  "tui": "fullscreen",
   "voice": {
     "enabled": false,
     "mode": "hold"
@@ -84,5 +90,5 @@
   "theme": "light",
   "agentPushNotifEnabled": true,
   "skipAutoPermissionPrompt": true,
-  "tui": "fullscreen"
+  "model": "claude-fable-5[1m]"
 }

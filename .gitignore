@@ -1,4 +1,6 @@
 *
+!.codex/
+!.codex/AGENTS.md
 !.claude/
 !.claude/*.sh
 !.claude/Dockerfile

@@ -1,11 +1,19 @@
+model_provider = "tfy"
 model = "gpt-5.6-sol"
-model_reasoning_effort = "high"
-service_tier = "default"
+model_context_window = 272000
+model_reasoning_effort = "xhigh"
 approval_policy = "never"
 approvals_reviewer = "user"
 sandbox_mode = "danger-full-access"
 
 notify = ["/Users/w/.codex/computer-use/Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient", "turn-ended"]
+service_tier = "fast"
+
+[model_providers.tfy]
+name = "TrueFoundry"
+base_url = "https://tfy.promptlens.trilogy.com"
+env_key = "TFY_API_KEY"
+wire_api = "responses"
 
 [features]
 apps = false
@@ -26,14 +34,14 @@ source_type = "local"
 source = "/Users/w/.cache/codex-runtimes/codex-primary-runtime/plugins/openai-primary-runtime"
 
 [marketplaces.claude-plugins-official]
-last_updated = "2026-08-06T16:56:13Z"
-last_revision = "da7dc3b5ac4835a68584d6a9d53787fd5956ce8f"
+last_updated = "2026-08-14T17:35:10Z"
+last_revision = "67f1c1df422333345f1c60d83c79f96e37db5a22"
 source_type = "git"
 source = "https://github.com/anthropics/claude-plugins-official.git"
 
 [marketplaces.ponytail]
-last_updated = "2026-07-17T01:00:22Z"
-last_revision = "16f29800fd2681bdf24f3eb4ccffe38be3baec6b"
+last_updated = "2026-08-10T14:35:25Z"
+last_revision = "2ed6c52c9d7e5e56942508591085fd45dea277d3"
 source_type = "git"
 source = "https://github.com/DietrichGebert/ponytail.git"
 
@@ -50,17 +58,11 @@ home_last_prompted_at = 1779915771
 [notice.model_migrations]
 "gpt-5.3-codex" = "gpt-5.4"
 
-[plugins."documents@openai-primary-runtime"]
-enabled = true
-
 [plugins."figma@openai-curated"]
 enabled = true
 
 [plugins."figma@openai-curated".mcp_servers.figma]
 enabled = false
-
-[plugins."presentations@openai-primary-runtime"]
-enabled = true
 
 [plugins."spreadsheets@openai-primary-runtime"]
 enabled = true
@@ -83,13 +85,7 @@ enabled = false
 [plugins."pdf@openai-primary-runtime"]
 enabled = true
 
-[plugins."template-creator@openai-primary-runtime"]
-enabled = true
-
 [plugins."google-calendar@openai-curated"]
-enabled = true
-
-[plugins."slack@claude-plugins-official"]
 enabled = true
 
 [projects."/Users/w"]
@@ -108,6 +104,12 @@ trust_level = "trusted"
 trust_level = "trusted"
 
 [projects."/Users/w/code/sb/ls_test"]
+trust_level = "trusted"
+
+[projects."/Users/w/code/umath"]
+trust_level = "trusted"
+
+[projects."/Users/w/code/umath_1"]
 trust_level = "trusted"
 
 [shell_environment_policy]

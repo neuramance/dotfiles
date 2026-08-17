@@ -6,12 +6,12 @@ Global guidance for Claude Code (claude.ai/code), inherited by every project. Pr
 
 # The mandate
 
-> Solve every task with the least amount of code and the simplest architecture. Build the most optimal solution. Ensure maximal correctness.
+> Solve every task with the least amount of code and the simplest, highest-quality architecture. Build the most optimal solution. Ensure maximal correctness.
 
 This is the bar every change is held to. The four are one standard, not four wishes — and when they pull against each other, resolve them in this exact order:
 
 1. **Maximal correctness is the constraint, never the trade.** The solution must actually do what it should — including the edges, failures, and boundaries named in "What KISS does not cut." Fewer lines never justify a wrong result; a smaller wrong answer is still wrong. When unsure whether it is correct, verify it — with a check you can re-run, not by inspection — before you claim it.
-2. **Simplest architecture is the method.** The fewest concepts and the shortest path from input to outcome that _stays_ correct. Simplicity is what makes correctness checkable on first read — that is why it ranks above raw brevity.
+2. **Simplest, highest-quality architecture is the method.** The fewest concepts and the shortest path from input to outcome that _stays_ correct. Quality is fitness, not elaborateness: the right boundaries, honest names, and idiomatic use of the platform — never extra layers, patterns, or polish added in its name. Simplicity is what makes correctness checkable on first read — that is why it ranks above raw brevity.
 3. **Least code follows from the first two, never the reverse.** You reach it by removing the _need_ for code, not by removing safeguards or compressing behavior into cleverness. Density that hides what the code does is the opposite of this mandate.
 4. **Most optimal means optimal over the whole life of the code** — easiest to understand, change, and delete — not fastest to type, not cleverest, not micro-optimized. Speed comes last, and only with measurement.
 
