@@ -6,16 +6,25 @@ Global guidance for Claude Code (claude.ai/code), inherited by every project. Pr
 
 # The mandate
 
-> Solve every task with the least amount of code and the simplest, highest-quality architecture. Build the most optimal solution. Ensure maximal correctness.
+> **SOLVE EVERY TASK WITH THE LEAST AMOUNT OF CODE AND THE SIMPLEST, HIGHEST-QUALITY ARCHITECTURE. BUILD THE MOST OPTIMAL SOLUTION. ENSURE MAXIMAL CORRECTNESS.**
 
-This is the bar every change is held to. The four are one standard, not four wishes — and when they pull against each other, resolve them in this exact order:
+This is the bar every change is held to — binding, not aspirational. It governs every change of every size: features, fixes, tests, scripts, one-liners. No exemption for urgency, prototypes, or "temporary" code, and no rationalization in "Red-flag thoughts" overrides it. If another rule in this file ever seems to conflict, the mandate wins. The four are one standard, not four wishes — and when they pull against each other, resolve them in this exact order:
 
-1. **Maximal correctness is the constraint, never the trade.** The solution must actually do what it should — including the edges, failures, and boundaries named in "What KISS does not cut." Fewer lines never justify a wrong result; a smaller wrong answer is still wrong. When unsure whether it is correct, verify it — with a check you can re-run, not by inspection — before you claim it.
+1. **Maximal correctness is the constraint, never the trade.** The solution must actually do what it should — including the edges, failures, and boundaries named in "What KISS does not cut." Fewer lines never justify a wrong result; a smaller wrong answer is still wrong. Verify it — with a check you can re-run, not by inspection — before you claim it.
 2. **Simplest, highest-quality architecture is the method.** The fewest concepts and the shortest path from input to outcome that _stays_ correct. Quality is fitness, not elaborateness: the right boundaries, honest names, and idiomatic use of the platform — never extra layers, patterns, or polish added in its name. Simplicity is what makes correctness checkable on first read — that is why it ranks above raw brevity.
 3. **Least code follows from the first two, never the reverse.** You reach it by removing the _need_ for code, not by removing safeguards or compressing behavior into cleverness. Density that hides what the code does is the opposite of this mandate.
 4. **Most optimal means optimal over the whole life of the code** — easiest to understand, change, and delete — not fastest to type, not cleverest, not micro-optimized. Speed comes last, and only with measurement.
 
-Everything below is _how_ to meet this bar. KISS is how you reach the least code and the simplest architecture; "What KISS does not cut" is how you hold maximal correctness while doing it. Read the rest of this file as the operational detail of the one sentence above.
+## Enforcement
+
+No change is complete until its final state passes all four checks — one per mandate clause, same order. A failed check blocks delivery: fix it and re-run; never present, commit, or claim completion first, and never ship a known violation behind a "clean up later" note.
+
+1. **Verified correct.** A re-runnable check — test, command, reproduction — has passed against the final state. If no such check is possible, say so and mark the work unverified; claiming this bar was met when it wasn't is the gravest violation of this file.
+2. **No simpler design survives scrutiny.** Name the simpler design you rejected and the concrete requirement it fails. If you cannot name that requirement, the simpler design is the solution — build it instead.
+3. **The diff is irreducible.** Re-read the final diff line by line and delete every line whose removal leaves behavior intact. Whatever remains is load-bearing by construction.
+4. **Optimal over the code's life.** The change is understandable on first read without your narration, changeable without fear, deletable without regret. If following the diff requires the explanation around it, simplify until it doesn't.
+
+Everything below is _how_ to meet this bar, and the enforcement above is how you prove you met it. KISS is how you reach the least code and the simplest architecture; "What KISS does not cut" is how you hold maximal correctness while doing it. Read the rest of this file as the operational detail of the one sentence above.
 
 # Keep It Simple (KISS)
 
