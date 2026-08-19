@@ -52,3 +52,6 @@ herdr() {
   printf '\033[<u\033[=0;1u\033[?1000l\033[?1002l\033[?1003l\033[?1006l\033[?2004l\033[?1049l\033[?25h' >/dev/tty 2>/dev/null
   return $s
 }
+
+# Added by Antigravity IDE
+export PATH="/Users/w/.antigravity-ide/antigravity-ide/bin:$PATH"
