@@ -10,3 +10,6 @@ overlay1 = "#000000"
 
 [keys]
 prefix = "backtick"
+
+[ui]
+agent_panel_sort = "priority"
