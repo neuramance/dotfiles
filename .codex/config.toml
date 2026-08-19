@@ -24,18 +24,18 @@ terminal_resize_reflow = true
 js_repl = false
 
 [marketplaces.openai-bundled]
-last_updated = "2026-08-06T17:01:20Z"
+last_updated = "2026-08-18T16:43:04Z"
 source_type = "local"
 source = "/Users/w/.codex/.tmp/bundled-marketplaces/openai-bundled"
 
 [marketplaces.openai-primary-runtime]
-last_updated = "2026-08-06T17:02:46Z"
+last_updated = "2026-08-18T16:44:30Z"
 source_type = "local"
 source = "/Users/w/.cache/codex-runtimes/codex-primary-runtime/plugins/openai-primary-runtime"
 
 [marketplaces.claude-plugins-official]
-last_updated = "2026-08-14T17:35:10Z"
-last_revision = "67f1c1df422333345f1c60d83c79f96e37db5a22"
+last_updated = "2026-08-18T22:17:55Z"
+last_revision = "ae0af4ea5ae86940bae96f4c73775cc4e4bea532"
 source_type = "git"
 source = "https://github.com/anthropics/claude-plugins-official.git"
 
@@ -76,16 +76,19 @@ enabled = true
 [plugins."browser@openai-bundled"]
 enabled = true
 
-[plugins."sites@openai-bundled"]
-enabled = true
-
-[plugins."sites@openai-bundled".mcp_servers."sites-design-picker"]
-enabled = false
-
 [plugins."pdf@openai-primary-runtime"]
 enabled = true
 
 [plugins."google-calendar@openai-curated"]
+enabled = true
+
+[plugins."documents@openai-primary-runtime"]
+enabled = true
+
+[plugins."presentations@openai-primary-runtime"]
+enabled = true
+
+[plugins."template-creator@openai-primary-runtime"]
 enabled = true
 
 [projects."/Users/w"]
@@ -110,6 +113,9 @@ trust_level = "trusted"
 trust_level = "trusted"
 
 [projects."/Users/w/code/umath_1"]
+trust_level = "trusted"
+
+[projects."/Users/w/code/airs"]
 trust_level = "trusted"
 
 [shell_environment_policy]
