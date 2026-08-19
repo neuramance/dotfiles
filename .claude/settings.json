@@ -89,6 +89,5 @@
   "skipWorkflowUsageWarning": true,
   "theme": "light",
   "agentPushNotifEnabled": true,
-  "skipAutoPermissionPrompt": true,
-  "model": "claude-fable-5[1m]"
+  "skipAutoPermissionPrompt": true
 }
