@@ -88,6 +88,7 @@
   "skipDangerousModePermissionPrompt": true,
   "skipWorkflowUsageWarning": true,
   "theme": "light",
+  "autoCompactEnabled": true,
   "agentPushNotifEnabled": true,
   "skipAutoPermissionPrompt": true
 }

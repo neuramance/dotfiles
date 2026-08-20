@@ -1,6 +1,6 @@
 ---
 name: agent-friendly-web-stack
-description: "Strict, agent-optimized stack and repository contract for greenfield database-backed product web apps: TypeScript, Next.js App Router, React Server and Client Components, Turbopack, vanilla CSS Modules, Bun package management, Active LTS Node.js, Supabase Postgres/Auth/RLS/migrations/types, Zod, pgTAP, Vitest, Testing Library, Playwright, ESLint, and Prettier, with small verified batches, deterministic nested feedback loops, and a mandatory completion gate. Use when selecting, scaffolding, or building a new SaaS app, internal tool, or CRUD-heavy web product that needs relational data, authentication, and conventional request-response workloads. Do not apply to an existing app, a static/content-only site, or a specialized backend workload unless the user explicitly requests this stack or a migration."
+description: "Build or select a strict, agent-optimized stack for greenfield authenticated relational web products: TypeScript, Next.js App Router, Bun, Node.js, and Supabase, with explicit boundaries and deterministic local verification. Use for new SaaS apps, internal tools, and CRUD-heavy request-response products. Do not apply to existing apps, static sites, mobile, ML/data, streaming-first, embedded, or backend-specialized systems unless the user explicitly requests this stack or a migration."
 ---
 
 # Agent-Friendly Web Stack
@@ -9,15 +9,17 @@ Optimize for the speed of verified, user-relevant progress: minimize the time fr
 
 Build with one conventional path per concern and explicit system boundaries. Do not replace, omit, or add a competing choice for any layer unless the user explicitly requests it. Preserve an existing application's stack unless the user explicitly requests migration.
 
+Apply this stack only when the product is greenfield, browser-delivered, relational, authenticated, and dominated by conventional request-response interactions. If any condition fails, preserve the existing stack or choose a workload-specific stack instead. Do not present this stack as universally optimal; its advantage is one constrained, executable path for this workload.
+
 ## Required stack
 
 - **Language:** TypeScript with strict type checking and Next.js route-aware types
 - **UI:** The React release supported by Next.js, with Server Components by default and Client Components only at interactive or browser-only boundaries
-- **Application framework:** Latest stable Next.js in App Router mode; do not add the Pages Router or a custom server
+- **Application framework:** A current supported Next.js release selected at scaffold time and then held fixed in the lockfile, in App Router mode; do not add the Pages Router or a custom server
 - **Build system:** Next.js's supported Turbopack defaults; do not add Vite as the application bundler, switch to Webpack, or customize the bundler without a demonstrated blocker
 - **Styling:** Vanilla CSS; use CSS Modules for route and component styles and `app/globals.css` only for tokens, reset, and base rules; do not add utility CSS, CSS-in-JS, or a preprocessor
-- **Package manager and task runner:** Bun
-- **Application runtime:** Current Active LTS Node.js in a deployment mode with full Next.js feature support; use the Node server for production smoke tests and do not use Bun-only or Edge Runtime APIs without an explicit requirement and compatibility proof
+- **Package manager and task runner:** Bun for dependency installation, the lockfile, and invoking package scripts; application and test code must not depend on Bun runtime APIs
+- **Application runtime:** Current Active LTS Node.js as the compatibility baseline for Next.js, tests, and production; use the Node server for production smoke tests and do not use Edge Runtime APIs without an explicit requirement and compatibility proof
 - **Backend platform:** Supabase Cloud
 - **Database:** Supabase Postgres
 - **Data access:** `@supabase/supabase-js` in server-only data modules; do not add an ORM
@@ -32,7 +34,7 @@ Build with one conventional path per concern and explicit system boundaries. Do 
 - **Linting:** ESLint CLI with the current `eslint-config-next` Core Web Vitals and TypeScript rules
 - **Formatting:** Prettier
 
-Use mutually compatible current supported releases and let Next.js select its compatible React versions. Preserve explicitly selected majors and never upgrade an existing application implicitly. Before using version-sensitive APIs, consult the installed Next.js documentation under `node_modules/next/dist/docs/` or the matching official documentation; do not mix patterns from different release eras. Do not hardcode package versions in this skill; commit the resolved `bun.lock` in each project.
+Select mutually compatible supported releases when scaffolding and let Next.js select its compatible React versions. Make dependency or framework upgrades separate changes; consult the installed Next.js documentation under `node_modules/next/dist/docs/` or matching official migration guidance, then run the full completion gate. Never upgrade during unrelated work or mix patterns from different release eras. Do not hardcode package versions in this skill.
 
 ## Next.js architecture
 
@@ -64,13 +66,15 @@ Use mutually compatible current supported releases and let Next.js select its co
 - Refresh Supabase cookies in `proxy.ts`, but never treat Proxy, a layout, hidden UI, or a page redirect as authorization. Verify identity with the current trusted Supabase verification method near each data access; never authorize from the unverified user object returned by `getSession()`.
 - Make every schema change in a forward migration. Do not make dashboard-only schema changes. Regenerate and commit database types after each migration; never hand-edit generated types.
 - Enable RLS before exposing a table. Give every operation an explicit least-privilege policy and test allowed and denied cases with pgTAP.
+- Put atomic multi-row mutations and transaction-dependent invariants in version-controlled PostgreSQL functions called through Supabase RPC; test their success, rollback, and authorization behavior with pgTAP. Never emulate a transaction with sequential client calls.
 - Use user-scoped Supabase clients by default. Keep the service-role key server-only and use it only for an operation that intentionally bypasses RLS, with application authorization and audit coverage.
 - Return only minimal safe data to Client Components and external responses. Add idempotency, rate limits, audit records, bounded retries, and structured logs where the actual boundary requires them; do not add speculative infrastructure.
+- Before production, use platform-native structured logs, metrics, and traces on production paths, verify configured backups with an authorized non-production restore, and verify migration rollback or forward-fix procedures. Add an observability dependency only when the selected deployment's native facilities cannot meet a concrete requirement.
 
 ## Reproducible repository contract
 
 - Treat `package.json` scripts, types, migrations, configuration, and tests as executable documentation. Do not scaffold a README, architecture document, CI pipeline, `AGENTS.md`, `CLAUDE.md`, or duplicate prose unless the user asks.
-- Commit `bun.lock`, SQL migrations, generated database types, and lint, format, and test configuration. Pin supported runtime majors in `package.json`; ignore `.next/`, test artifacts, local Supabase state, and secrets.
+- Commit `bun.lock`, SQL migrations, generated database types, and lint, format, and test configuration. Declare the Bun release in `packageManager` and the supported Node.js major in `engines`; ignore `.next/`, test artifacts, local Supabase state, and secrets.
 - Install the Supabase CLI and every build, lint, format, and test tool as a project development dependency. Do not rely on unrecorded global packages.
 - Expose canonical scripts named `setup`, `dev`, `build`, `start`, `typecheck`, `lint`, `format`, `format:check`, `test`, `test:db`, `test:e2e`, `db:start`, `db:reset`, `db:types`, and `check`. Implement `typecheck` as `next typegen` followed by `tsc --noEmit`, `lint` with ESLint CLI, and `test` with non-watch `vitest run`.
 - Make `setup` idempotently install Playwright's required browser and prepare the local Supabase database. Make verification scripts noninteractive, return reliable exit codes and concise failures, and accept path or name filters where supported.
@@ -88,6 +92,7 @@ Use mutually compatible current supported releases and let Next.js select its co
 - Reduce latency by deleting redundant checks, proving behavior at the lowest sufficient layer, filtering affected tests, caching unchanged work, and parallelizing independent checks. Never remove required coverage or boundary verification to make a metric faster.
 - Keep the full local gate within ten minutes when practical. Treat a slower gate as a signal to measure stage duration and fix the largest avoidable wait, not as permission to weaken verification.
 - Measure feedback-loop health only when it guides a decision: stage latency, flake rate, change-to-accepted time, escaped defects, and recovery time. Optimize the system constraint, not the easiest local metric.
+- When selecting or changing a framework, runtime, package manager, data layer, or test tool, compare the current path with at most one credible alternative on representative work. Measure first-pass gate success, accepted-change time, correction loops, human review effort, escaped defects, gate latency, and cost. Change the stack only for a concrete unmet requirement or a material measured improvement; never optimize token use, generated lines, or benchmark scores alone.
 - Close outer loops at real boundaries with migration checks, safe rollout and rollback, structured telemetry, SLOs, and direct user evidence when the product risk requires them.
 
 ## Test contract
