@@ -6,7 +6,6 @@ approval_policy = "never"
 approvals_reviewer = "user"
 sandbox_mode = "danger-full-access"
 
-notify = ["/Users/w/.codex/computer-use/Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient", "turn-ended"]
 service_tier = "fast"
 
 [model_providers.tfy]
@@ -34,8 +33,8 @@ source_type = "local"
 source = "/Users/w/.cache/codex-runtimes/codex-primary-runtime/plugins/openai-primary-runtime"
 
 [marketplaces.claude-plugins-official]
-last_updated = "2026-08-19T19:54:39Z"
-last_revision = "0fc2bb13a805969c14b0fe9398bad41db346d84e"
+last_updated = "2026-08-20T21:19:09Z"
+last_revision = "67a666efc8524ff7abaa266f84e514aa77aee48f"
 source_type = "git"
 source = "https://github.com/anthropics/claude-plugins-official.git"
 
@@ -139,6 +138,12 @@ status_line_use_colors = true
 
 [hooks.state."/Users/w/.codex/hooks.json:stop:0:0"]
 trusted_hash = "sha256:43a196c0ac3b0ce4fb6a8723c8e8c61b40aa801dac270555f10d43d49a7015f2"
+
+[hooks.state."/Users/w/.codex/hooks.json:pre_tool_use:0:0"]
+trusted_hash = "sha256:c5a03baf7498ccebcdb7ffc55f76e2ea5e4df72be565b0bbc693c8b4999189fe"
+
+[hooks.state."/Users/w/.codex/hooks.json:permission_request:0:0"]
+trusted_hash = "sha256:286313cc6d4ecbca4660a20a7a49d76caa2b604cbde51f911685b25ff75d7a90"
 
 [desktop]
 followUpQueueMode = "queue"
