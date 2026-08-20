@@ -1,4 +1,7 @@
 {
+  "skillOverrides": {
+    "repo-metrics": "user-invocable-only"
+  },
   "apiKeyHelper": "/Users/w/.claude/anthropic-key.sh",
   "env": {
     "ANTHROPIC_BASE_URL": "https://tfy.promptlens.trilogy.com",
