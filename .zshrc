@@ -39,13 +39,13 @@ autoload -Uz compinit && compinit -C -d "$HOME/.cache/zcompdump"
 sb() { [ -d ~/code/sb/"$1" ] || gh repo clone "superbuilders/$1" ~/code/sb/"$1" -- --filter=blob:none; cd ~/code/sb/"$1"; }
 
 # kimi-code
-export PATH="/Users/w/.kimi-code/bin:$PATH"
+export PATH="$HOME/.kimi-code/bin:$PATH"
 
 # claude code via cliproxyapi (brew services start cliproxyapi; login: cliproxyapi -claude-login / -codex-login / -kimi-login ...)
 ccp() { ANTHROPIC_BASE_URL=http://127.0.0.1:8317 ANTHROPIC_AUTH_TOKEN=$CLIPROXY_TOKEN claude "$@"; }
 
 # opencode
-export PATH=/Users/w/.opencode/bin:$PATH
+export PATH=$HOME/.opencode/bin:$PATH
 
 # herdr 0.8.0 leaks kitty keyboard flags on detach, leaving keys as CSI u escapes
 herdr() {
@@ -56,4 +56,4 @@ herdr() {
 }
 
 # Added by Antigravity IDE
-export PATH="/Users/w/.antigravity-ide/antigravity-ide/bin:$PATH"
+export PATH="$HOME/.antigravity-ide/antigravity-ide/bin:$PATH"

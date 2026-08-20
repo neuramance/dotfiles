@@ -23,6 +23,9 @@
 !.hushlogin
 !repomix.config.json
 !.repomixignore
+!.zshenv
+!.zprofile
+# .ssh/config stays untracked — this repo is public, host details are not
 
 # Re-exclude OS/editor crud and build artifacts inside un-ignored trees
 .DS_Store
