@@ -7,6 +7,8 @@ export EDITOR=vim
 export LS_COLORS="di=36:fi=0:ln=93:ex=32"
 export PAGER="less"
 export LESS="-FRX"
+export LESSHISTFILE="$HOME/.cache/less-history"
+export IPYTHONDIR="$HOME/.config/ipython"
 export BAT_THEME="ansi"
 
 # python
@@ -19,9 +21,6 @@ export PATH="$BUN_INSTALL/bin:$PATH"
 # uv Python package manager
 [ -f "$HOME/.local/bin/env" ] && . "$HOME/.local/bin/env"
 
-# bun completions
-[ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
-
 # aliases (sourced last so PATH is fully set for echopath)
 [ -f "$HOME/.zsh_aliases" ] && source "$HOME/.zsh_aliases"
 
@@ -31,8 +30,11 @@ export PATH="$BUN_INSTALL/bin:$PATH"
 # >>> grok installer >>>
 export PATH="$HOME/.grok/bin:$PATH"
 fpath=(~/.grok/completions/zsh $fpath)
-autoload -Uz compinit && compinit -C
+autoload -Uz compinit && compinit -C -d "$HOME/.cache/zcompdump"
 # <<< grok installer <<<
+
+# bun completions
+[ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
 
 sb() { [ -d ~/code/sb/"$1" ] || gh repo clone "superbuilders/$1" ~/code/sb/"$1" -- --filter=blob:none; cd ~/code/sb/"$1"; }
 

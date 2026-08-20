@@ -24,3 +24,4 @@ set ttimeout
 set ttimeoutlen=1
 set listchars=tab:>-,trail:~,extends:>,precedes:<,space:.
 set ttyfast
+set viminfo+=n~/.cache/viminfo
