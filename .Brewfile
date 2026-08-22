@@ -6,8 +6,6 @@ brew "asitop"
 brew "awscli"
 # Clone of cat(1) with syntax highlighting and Git integration
 brew "bat"
-# Wrap Gemini CLI, Codex, Claude Code, Qwen Code as an API service
-brew "cliproxyapi"
 # Fix common misspellings in source code and text files
 brew "codespell"
 # Modern, maintained replacement for ls
@@ -42,8 +40,6 @@ brew "just"
 brew "mas"
 # Open-source, cross-platform JavaScript runtime environment
 brew "node"
-# Create, run, and share large language models (LLMs)
-brew "ollama"
 # Drop-in replacement for Terraform. Infrastructure as Code Tool
 brew "opentofu"
 # Multithreaded PNG optimizer written in Rust
@@ -91,3 +87,22 @@ mas "Microsoft PowerPoint", id: 462062816
 mas "Microsoft Word", id: 462054704
 mas "Numbers", id: 409203825
 mas "Pages", id: 409201541
+cargo "avm", source: "https://github.com/coral-xyz/anchor"
+uv "pynessie", with: ["marshmallow<4"]
+uv "ruff"
+npm "@earendil-works/pi-coding-agent"
+npm "@google/gemini-cli"
+npm "@shopify/app"
+npm "@shopify/cli"
+npm "aws-cdk"
+npm "braintrust"
+npm "corepack"
+npm "fast-cli"
+npm "langfuse-cli"
+npm "mint"
+npm "ntn"
+npm "pyright"
+npm "tweakcc"
+npm "typescript-language-server"
+npm "typescript"
+npm "wrangler"

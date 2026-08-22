@@ -1,6 +1,7 @@
 *
 !.macos/
 !.macos/README.md
+!.macos/audit.sh
 !.codex/
 !.codex/AGENTS.md
 !.claude/

@@ -27,25 +27,11 @@ export PATH="$BUN_INSTALL/bin:$PATH"
 # secrets (untracked)
 [ -f "$HOME/.zsh_secrets" ] && source "$HOME/.zsh_secrets"
 
-# >>> grok installer >>>
-export PATH="$HOME/.grok/bin:$PATH"
-fpath=(~/.grok/completions/zsh $fpath)
+# completions (compinit must precede any completion source)
 autoload -Uz compinit && compinit -C -d "$HOME/.cache/zcompdump"
-# <<< grok installer <<<
-
-# bun completions
 [ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
 
 sb() { [ -d ~/code/sb/"$1" ] || gh repo clone "superbuilders/$1" ~/code/sb/"$1" -- --filter=blob:none; cd ~/code/sb/"$1"; }
-
-# kimi-code
-export PATH="$HOME/.kimi-code/bin:$PATH"
-
-# claude code via cliproxyapi (brew services start cliproxyapi; login: cliproxyapi -claude-login / -codex-login / -kimi-login ...)
-ccp() { ANTHROPIC_BASE_URL=http://127.0.0.1:8317 ANTHROPIC_AUTH_TOKEN=$CLIPROXY_TOKEN claude "$@"; }
-
-# opencode
-export PATH=$HOME/.opencode/bin:$PATH
 
 # herdr 0.8.0 leaks kitty keyboard flags on detach, leaving keys as CSI u escapes
 herdr() {
@@ -54,9 +40,6 @@ herdr() {
   printf '\033[<u\033[=0;1u\033[?1000l\033[?1002l\033[?1003l\033[?1006l\033[?2004l\033[?1049l\033[?25h' >/dev/tty 2>/dev/null
   return $s
 }
-
-# Added by Antigravity IDE
-export PATH="$HOME/.antigravity-ide/antigravity-ide/bin:$PATH"
 
 # fzf
 command -v fzf >/dev/null && source <(fzf --zsh)
