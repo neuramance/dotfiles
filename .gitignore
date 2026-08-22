@@ -1,4 +1,6 @@
 *
+!.macos/
+!.macos/README.md
 !.codex/
 !.codex/AGENTS.md
 !.claude/
@@ -25,6 +27,8 @@
 !.repomixignore
 !.zshenv
 !.zprofile
+!.Brewfile
+!.gitconfig
 # .ssh/config stays untracked — this repo is public, host details are not
 
 # Re-exclude OS/editor crud and build artifacts inside un-ignored trees

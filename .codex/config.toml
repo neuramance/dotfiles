@@ -7,31 +7,8 @@ approvals_reviewer = "user"
 sandbox_mode = "danger-full-access"
 
 service_tier = "fast"
-model_verbosity = "low"
-hide_agent_reasoning = true
-developer_instructions = """
-The user reads responses in a 75-column terminal.
 
-Apply these rules only to user-facing commentary and final answers.
-Do not reduce reasoning, investigation, verification, correctness, or work.
-
-- Lead with the result. Use plain language and the fewest words needed.
-- Do not hard-wrap prose. Let the client wrap it.
-- Keep copy-paste-ready shell input within 75 columns.
-- Avoid preambles, repetition, tables, and decorative formatting.
-- Assume macOS zsh unless the current session establishes another shell.
-- Treat any shell input described as runnable as a literal user interface.
-- Syntax-check runnable shell input for the active shell before showing it.
-- Put each copy-paste-ready shell input in its own fenced shell block.
-- Put no prompt marker, output, comment, placeholder, or prose in that block.
-- Use ASCII punctuation and preserve exact quoting and escaping in commands.
-- Break long commands only at shell-safe boundaries with an explicit
-  line-continuation backslash as the final character, with no trailing spaces.
-- In shell blocks, never rely on visual wrapping or split
-  a token across lines.
-- If a value is unknown, label the command as a template, not copy-paste-ready.
-- Preserve an indivisible value exactly if correctness requires over 75 columns.
-"""
+notify = ["/Users/w/.codex/computer-use/Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient", "turn-ended"]
 
 [model_providers.tfy]
 name = "TrueFoundry"
@@ -44,22 +21,21 @@ apps = false
 external_migration = true
 goals = true
 prevent_idle_sleep = true
-terminal_resize_reflow = true
 js_repl = false
 
 [marketplaces.openai-bundled]
-last_updated = "2026-08-18T16:43:04Z"
+last_updated = "2026-08-21T20:16:38Z"
 source_type = "local"
 source = "/Users/w/.codex/.tmp/bundled-marketplaces/openai-bundled"
 
 [marketplaces.openai-primary-runtime]
-last_updated = "2026-08-18T16:44:30Z"
+last_updated = "2026-08-21T01:04:53Z"
 source_type = "local"
 source = "/Users/w/.cache/codex-runtimes/codex-primary-runtime/plugins/openai-primary-runtime"
 
 [marketplaces.claude-plugins-official]
-last_updated = "2026-08-20T21:19:09Z"
-last_revision = "67a666efc8524ff7abaa266f84e514aa77aee48f"
+last_updated = "2026-08-21T19:53:08Z"
+last_revision = "340e33aef211d95769d252324854497af871dafe"
 source_type = "git"
 source = "https://github.com/anthropics/claude-plugins-official.git"
 
@@ -115,6 +91,9 @@ enabled = true
 [plugins."template-creator@openai-primary-runtime"]
 enabled = true
 
+[plugins."codex-app-tools@openai-bundled"]
+enabled = true
+
 [projects."/Users/w"]
 trust_level = "trusted"
 
@@ -147,9 +126,7 @@ inherit = "core"
 
 [shell_environment_policy.set]
 CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1"
-BROWSER_USE_AVAILABLE_BACKENDS = "chrome,iab"
 NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "091a81603ff202a16ed56557709bf42d97caf8f0dd2e07ae9e26d7c014d71035"
-NODE_REPL_TRUSTED_CODE_PATHS = "/Users/w/.codex:/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules"
 
 [tui]
 status_line = ["current-dir", "git-branch", "context-used", "model-with-reasoning"]
@@ -173,7 +150,7 @@ trusted_hash = "sha256:286313cc6d4ecbca4660a20a7a49d76caa2b604cbde51f911685b25ff
 [desktop]
 followUpQueueMode = "queue"
 dock-icon-preference = "app-default"
-conversationDetailMode = "STEPS_COMMANDS"
+conversationDetailMode = "STEPS_PROSE"
 ambient-suggestions-enabled = false
 
 [desktop.open-in-target-preferences]
@@ -199,11 +176,12 @@ NODE_REPL_NODE_MODULE_DIRS = "/Applications/ChatGPT.app/Contents/Resources/cua_n
 NODE_REPL_NODE_PATH = "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node"
 NODE_REPL_TRUSTED_CODE_PATHS = "/Users/w/.codex:/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules"
 CODEX_HOME = "/Users/w/.codex"
-NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "091a81603ff202a16ed56557709bf42d97caf8f0dd2e07ae9e26d7c014d71035"
 BROWSER_USE_AVAILABLE_BACKENDS = "chrome,iab"
+BROWSER_USE_TINYSKY_ENABLED = "0"
 NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER = "Control the in-app browser in conjunction with the Browser Plugin."
 NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME = "Control the Chrome browser in conjunction with the Chrome Plugin. Prefer this method of controlling Chrome over alternatives (such as Computer Use) unless the user explicitly mentions an alternative."
 NODE_REPL_INSTRUCTIONS_USE_CASE_COMPUTER_USE = "Control desktop apps on macOS through Computer Use."
 BROWSER_USE_CODEX_APP_BUILD_FLAVOR = "prod"
-BROWSER_USE_CODEX_APP_VERSION = "26.730.61639"
+BROWSER_USE_CODEX_APP_VERSION = "26.818.22352"
+NODE_REPL_TRUSTED_SERVICES = '{"browser":"/Users/w/.codex/plugins/cache/openai-bundled/browser/26.818.22352/scripts/browser-service.mjs","sky":"@oai/sky/service"}'
 CODEX_CLI_PATH = "/Applications/ChatGPT.app/Contents/Resources/codex"

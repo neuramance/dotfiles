@@ -57,3 +57,9 @@ herdr() {
 
 # Added by Antigravity IDE
 export PATH="$HOME/.antigravity-ide/antigravity-ide/bin:$PATH"
+
+# fzf
+command -v fzf >/dev/null && source <(fzf --zsh)
+
+# zoxide
+command -v zoxide >/dev/null && eval "$(zoxide init zsh)"

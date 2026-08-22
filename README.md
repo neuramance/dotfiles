@@ -1,38 +1,63 @@
 # dotfiles
 
-Personal dotfiles for quick setup on a fresh environment.
+Personal dotfiles for macOS and Debian/Ubuntu. The repository lives directly in the home directory and uses a deny-by-default `.gitignore`, so only explicitly managed files are public.
 
-## Quick Start
+## Install
 
-### 1. Clone into home directory
+Back up any conflicting dotfiles first, then initialize the home directory as the worktree:
 
-```
+```sh
 cd ~
 git init
 git remote add origin https://github.com/neuramance/dotfiles.git
 git fetch origin
 git checkout -B main origin/main
-source ~/.zshrc
 ```
 
-### 2. Install all required packages
+Bootstrap the platform-specific command-line dependencies:
 
-**Linux (apt):**
+On macOS:
 
-```
-aptsetup
-```
-
-This runs `~/.config/scripts/apt-setup.sh` which installs everything the dotfiles depend on, including packages that need external repos (like eza).
-
-**macOS:**
-
-```
-macsetup
+```sh
+bash ~/.config/scripts/mac-setup.sh
 ```
 
-This runs `~/.config/scripts/mac-setup.sh` which bootstraps Homebrew (if missing), installs `jq` and `node`, and `npm install -g`s any required global CLIs (`fast-cli`).
+On Debian/Ubuntu:
 
-## Included tools
+```sh
+bash ~/.config/scripts/apt-setup.sh
+```
 
-- **`wifi-speed`** (`~/.local/bin/wifi-speed`, macOS only) — measure WiFi/internet speed against Apple's `networkquality`, Cloudflare, and Netflix Open Connect in one shot. Logs JSONL to `~/.local/share/wifi-speed/log.jsonl` (machine-local, not synced across dotfiles). Run `wifi-speed --help` for flags.
+Open a new shell or run `source ~/.zshrc`. The equivalent aliases are `macsetup` and `aptsetup`.
+
+The macOS script installs Homebrew when needed, then `jq`, Node.js, and the `fast-cli` npm package. The apt script installs the shell, editor, terminal, PostgreSQL client, compiler, and download utilities used by these dotfiles, including `eza` from its upstream apt repository. These scripts install managed dependencies, not a complete workstation image.
+
+## Managed configuration
+
+| Area | Files |
+| --- | --- |
+| Shell | `.zshrc`, `.zprofile`, `.zshenv`, `.zsh_aliases`, `.hushlogin` — prompt, environment, tool paths, login behavior, and common shell, Git, package-manager, development, and tmux shortcuts. |
+| Terminal and editors | `.tmux.conf`, `.vimrc`, `.psqlrc`, `.config/rustfmt.toml` — tmux navigation and display, Vim defaults, PostgreSQL client behavior, and Rust formatting. |
+| Git | `.gitconfig` — default branch, SSH commit signing, and delta as the pager. Identity, credential helper, and signing key live in untracked `~/.gitconfig.local`, which the tracked file includes last so local values win. Required on any new machine, like `.zsh_secrets`. |
+| System display | `.config/fastfetch/` and `.config/herdr/config.toml` — Fastfetch theme, host-specific logos, resource helpers, and Herdr theme/key bindings. |
+| AI agents | `.codex/` and `.claude/` — global Codex and Claude Code instructions, settings, notifications, status line, plugin configuration, and reusable skills. |
+| macOS | [`.macos/README.md`](.macos/README.md) — documented desired state, dated observations, decisions, and read-only audit commands; it does not apply settings. |
+| Homebrew | `.Brewfile` — snapshot of top-level formulae, casks, taps, and Mac App Store apps. A record for deliberate review, not an automatic restore. Refresh with `brew bundle dump --file=~/.Brewfile --force --formula --cask --tap --mas --no-vscode`; verify with `brew bundle check --file=~/.Brewfile --no-upgrade`. Dropping `--no-upgrade` also reports available updates, so it fails whenever any package or App Store app has one pending. |
+| Bootstrap | `.config/scripts/apt-setup.sh` and `.config/scripts/mac-setup.sh` — idempotent platform package setup. |
+| Repository tooling | `repomix.config.json` and `.repomixignore` — bounded Repomix export configuration. |
+
+## `wifi-speed`
+
+`~/.local/bin/wifi-speed` measures a macOS Wi-Fi connection against Apple `networkquality`, Cloudflare, and Netflix Open Connect, then appends JSONL results to the untracked `~/.local/share/wifi-speed/log.jsonl`.
+
+```sh
+wifi-speed             # one run
+wifi-speed -n 3        # median of three runs
+wifi-speed --show      # last ten logged results
+```
+
+Run `wifi-speed --help` for all options.
+
+## Local-only state
+
+This is a public repository. Secrets, identities, SSH configuration, histories, caches, logs, and application runtime state remain untracked. Put shell secrets in `~/.zsh_secrets`, local aliases in `~/.zsh_aliases.local`, and Git identity, credential helper, and signing key in `~/.gitconfig.local`. The first two are sourced automatically when present; the third is pulled in by the tracked `.gitconfig`.
