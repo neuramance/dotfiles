@@ -2,6 +2,13 @@
 !.macos/
 !.macos/README.md
 !.macos/audit.sh
+!.macos/.agents/
+!.macos/.agents/skills/
+!.macos/.agents/skills/macos-deep-audit/
+!.macos/.agents/skills/macos-deep-audit/SKILL.md
+!.macos/.claude/
+!.macos/.claude/skills/
+!.macos/.claude/skills/macos-deep-audit
 !.codex/
 !.codex/AGENTS.md
 !.claude/

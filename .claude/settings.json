@@ -1,7 +1,4 @@
 {
-  "skillOverrides": {
-    "repo-metrics": "user-invocable-only"
-  },
   "apiKeyHelper": "/Users/w/.claude/anthropic-key.sh",
   "env": {
     "ANTHROPIC_BASE_URL": "https://tfy.promptlens.trilogy.com",
@@ -38,6 +35,9 @@
     ]
   },
   "disableClaudeAiConnectors": true,
+  "skillOverrides": {
+    "repo-metrics": "user-invocable-only"
+  },
   "hooks": {
     "Notification": [
       {
@@ -93,5 +93,6 @@
   "theme": "light",
   "autoCompactEnabled": true,
   "agentPushNotifEnabled": true,
-  "skipAutoPermissionPrompt": true
+  "skipAutoPermissionPrompt": true,
+  "model": "claude-fable-5[1m]"
 }
