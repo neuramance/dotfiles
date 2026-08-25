@@ -13,7 +13,7 @@ case "$event" in
 esac
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
-    afplay "/System/Library/Sounds/${sound}.aiff"
+    afplay -v 1.8 "/System/Library/Sounds/${sound}.aiff"
 elif [[ -f /proc/sys/kernel/osrelease ]] && grep -qi "microsoft" /proc/sys/kernel/osrelease 2>/dev/null; then
     powershell.exe -Command "(New-Object Media.SoundPlayer 'C:\Windows\Media\Windows Notify.wav').PlaySync()" 2>/dev/null &
 elif [[ "$OSTYPE" == "linux-gnu"* ]] && command -v paplay &> /dev/null; then
