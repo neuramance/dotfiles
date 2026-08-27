@@ -11,9 +11,9 @@
 !.macos/.claude/skills/macos-deep-audit
 !.codex/
 !.codex/AGENTS.md
+!.codex/config.toml
 !.claude/
 !.claude/*.sh
-!.claude/Dockerfile
 !.claude/settings.json
 !.claude/CLAUDE.md
 !.claude/hooks/
@@ -25,18 +25,31 @@
 !.config/
 !.config/fastfetch/
 !.config/fastfetch/**
-# logo.png is a per-host symlink (created by .zshrc) — track logo.<host>.png instead
+# logo.png is an untracked per-host symlink — link it to a tracked logo.<host>.png by hand
 .config/fastfetch/logo.png
 # only config.toml — the rest of .config/herdr is runtime state (sockets, logs, session.json)
 !.config/herdr/
 !.config/herdr/config.toml
+!.config/rustfmt.toml
+!.config/scripts/
+!.config/scripts/**
+!.local/
+!.local/bin/
+!.local/bin/wifi-speed
 !.hushlogin
+!.psqlrc
+!.tmux.conf
+!.vimrc
 !repomix.config.json
 !.repomixignore
 !.zshenv
 !.zprofile
+!.zshrc
+!.zsh_aliases
 !.Brewfile
 !.gitconfig
+!.gitignore
+!README.md
 # .ssh/config stays untracked — this repo is public, host details are not
 
 # Re-exclude OS/editor crud and build artifacts inside un-ignored trees

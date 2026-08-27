@@ -125,13 +125,12 @@ scutil --dns | awk '/nameserver\[[0-9]+\] : 100\.100\.100\.100/{found=1} END{pri
 git config --get init.defaultBranch
 git config --get commit.gpgsign
 git config --get gpg.format
-git config --get core.pager
 git config --global --get include.path
 git config --list --show-origin | grep -c gitconfig.local
 git config --file ~/.gitconfig --get-regexp '^(user\.(name|email|signingkey)|credential\.)' | wc -l
 
 # Tooling
-command -v fzf zoxide delta mas fd
+command -v fzf zoxide mas fd
 CHECKS
 
 if [ "$missing" -gt 0 ]; then

@@ -4,8 +4,6 @@
     "style": "xml"
   },
   "include": [
-    ".claude/commands/tpane.md",
-    ".claude/hooks/tpane_first_prompt.sh",
     ".claude/play-notification.sh",
     ".claude/settings.json",
     ".claude/statusline.sh",

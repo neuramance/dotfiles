@@ -38,10 +38,10 @@ The macOS script installs Homebrew when needed, then `jq`, Node.js, and the `fas
 | --- | --- |
 | Shell | `.zshrc`, `.zprofile`, `.zshenv`, `.zsh_aliases`, `.hushlogin` — prompt, environment, tool paths, login behavior, and common shell, Git, package-manager, development, and tmux shortcuts. |
 | Terminal and editors | `.tmux.conf`, `.vimrc`, `.psqlrc`, `.config/rustfmt.toml` — tmux navigation and display, Vim defaults, PostgreSQL client behavior, and Rust formatting. |
-| Git | `.gitconfig` — default branch, SSH commit signing, and delta as the pager. Identity, credential helper, and signing key live in untracked `~/.gitconfig.local`, which the tracked file includes last so local values win. Required on any new machine, like `.zsh_secrets`. |
+| Git | `.gitconfig` — default branch and SSH commit signing. Identity, credential helper, and signing key live in untracked `~/.gitconfig.local`, which the tracked file includes last so local values win. Required on any new machine, like `.zsh_secrets`. |
 | System display | `.config/fastfetch/` and `.config/herdr/config.toml` — Fastfetch theme, host-specific logos, resource helpers, and Herdr theme/key bindings. |
 | AI agents | `.codex/` and `.claude/` — global Codex and Claude Code instructions, settings, notifications, status line, plugin configuration, and reusable skills. |
-| macOS | [`.macos/README.md`](.macos/README.md) — documented desired state, dated observations, decisions, and read-only audit commands; it does not apply settings. |
+| macOS | [`.macos/README.md`](.macos/README.md), [`.macos/audit.sh`](.macos/audit.sh), `.macos/.agents/skills/macos-deep-audit/` — documented desired state and decisions, a read-only audit that observes the machine against them, and the deep-audit skill that interprets the two; nothing here applies settings. |
 | Homebrew | `.Brewfile` — snapshot of top-level formulae, casks, taps, and Mac App Store apps. A record for deliberate review, not an automatic restore. Refresh with `brew bundle dump --file=~/.Brewfile --force --formula --cask --tap --mas --no-vscode`; verify with `brew bundle check --file=~/.Brewfile --no-upgrade`. Dropping `--no-upgrade` also reports available updates, so it fails whenever any package or App Store app has one pending. |
 | Bootstrap | `.config/scripts/apt-setup.sh` and `.config/scripts/mac-setup.sh` — idempotent platform package setup. |
 | Repository tooling | `repomix.config.json` and `.repomixignore` — bounded Repomix export configuration. |
@@ -60,4 +60,4 @@ Run `wifi-speed --help` for all options.
 
 ## Local-only state
 
-This is a public repository. Secrets, identities, SSH configuration, histories, caches, logs, and application runtime state remain untracked. Put shell secrets in `~/.zsh_secrets`, local aliases in `~/.zsh_aliases.local`, and Git identity, credential helper, and signing key in `~/.gitconfig.local`. The first two are sourced automatically when present; the third is pulled in by the tracked `.gitconfig`.
+This is a public repository. Secrets, identities, SSH configuration, histories, caches, logs, and application runtime state remain untracked. Put shell secrets in `~/.zsh_secrets`, local aliases in `~/.zsh_aliases.local`, and Git identity, credential helper, and signing key in `~/.gitconfig.local`. The first two are sourced automatically when present; the third is pulled in by the tracked `.gitconfig`, which also points `gpg.ssh.allowedSignersFile` at the untracked `~/.ssh/allowed_signers`; commits sign without that file, but verifying them needs it. Fastfetch reads `~/.config/fastfetch/logo.png`, an untracked per-host symlink: link it to the tracked logo for the machine with `ln -sf logo.m4.png ~/.config/fastfetch/logo.png`.

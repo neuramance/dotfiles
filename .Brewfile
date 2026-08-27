@@ -20,8 +20,6 @@ brew "ffmpeg"
 brew "fzf"
 # GitHub command-line tool
 brew "gh"
-# Syntax-highlighting pager for git and diff output
-brew "git-delta"
 # Quickly rewrite git repository history
 brew "git-filter-repo"
 # Open source programming language to build simple/reliable/efficient software
