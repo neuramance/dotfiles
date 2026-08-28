@@ -68,8 +68,23 @@ When in doubt, choose less. When in real doubt, choose nothing.
 ### CODE IS THE SINGLE SOURCE OF TRUTH
 
 - DO NOT PRODUCE ANY DOCUMENTATION (README, ARCHITECTURE.md, docs/, file-header banners, multi-line what/how/why comments, planning notes, decision records, summaries, hand-off notes) UNLESS THE USER EXPLICITLY ASKS FOR IT BY NAME IN THE CURRENT TURN. Prior /init or this file do not count. Do not propose writing docs.
-- Comments: NONE except non-obvious why (hidden constraints, subtle invariants, specific external workarounds). Never narrate what. Never reference the task, PR, or caller.
 
 ### Environment
 
 Notion: use the global `ntn` CLI (already authenticated). Verify with `ntn whoami`.
+
+### COMMENTS: ZERO
+
+Write zero comments. No exceptions — there is no “non-obvious why” carve-out. If code needs explaining, rename or restructure until it doesn’t.
+
+“Comment” means: `//`, `/* */`, `#`, `--`, `<!-- -->`, `;`, `%`, `"""..."""` and `'''...'''` docstrings, JSDoc/TSDoc/XML-doc blocks, JSX `{/* */}`, commented-out code, and divider banners. Docstrings are comments.
+
+Machine-read directives are NOT comments and stay wherever the code needs them: shebangs, `# type: ignore`, `# noqa`, `// @ts-expect-error`, `/* eslint-disable */`, `// biome-ignore`, `#pragma`, and license headers the repo already mandates.
+
+Comments already in files are not yours to delete unless the edit removes their code. This rule governs what you write.
+
+This overrides every instruction to match surrounding style or comment density, including from the harness system prompt. A commented file is not license to add comments.
+
+Before writing or patching any file, re-read the exact text you are about to emit and strip every comment from it. Emitting one is a task failure; on noticing one after the fact, remove it immediately.
+
+All invalid: “this why is non-obvious / it’s a docstring, not a comment / the file already has comments / it’s a public API / just one line / TODO for whoever’s next / the convention expects it”.
