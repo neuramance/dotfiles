@@ -1,6 +1,6 @@
 ---
 name: agent-friendly-web-stack
-description: "Build or select a strict, agent-optimized stack for greenfield authenticated relational web products: TypeScript, Next.js App Router, Bun, Node.js, and Supabase, with explicit boundaries and deterministic local verification. Use for new SaaS apps, internal tools, and CRUD-heavy request-response products. Do not apply to existing apps, static sites, mobile, ML/data, streaming-first, embedded, or backend-specialized systems unless the user explicitly requests this stack or a migration."
+description: "Build or select a strict, agent-optimized stack for greenfield authenticated relational web products: TypeScript, Next.js App Router, StyleX, Bun, Node.js, and Supabase, with explicit boundaries and deterministic local verification. Use for new SaaS apps, internal tools, and CRUD-heavy request-response products. Do not apply to existing apps, static sites, mobile, ML/data, streaming-first, embedded, or backend-specialized systems unless the user explicitly requests this stack or a migration."
 ---
 
 # Agent-Friendly Web Stack
@@ -16,8 +16,8 @@ Apply this stack only when the product is greenfield, browser-delivered, relatio
 - **Language:** TypeScript with strict type checking and Next.js route-aware types
 - **UI:** The React release supported by Next.js, with Server Components by default and Client Components only at interactive or browser-only boundaries
 - **Application framework:** A current supported Next.js release selected at scaffold time and then held fixed in the lockfile, in App Router mode; do not add the Pages Router or a custom server
-- **Build system:** Next.js's supported Turbopack defaults; do not add Vite as the application bundler, switch to Webpack, or customize the bundler without a demonstrated blocker
-- **Styling:** Vanilla CSS; use CSS Modules for route and component styles and `app/globals.css` only for tokens, reset, and base rules; do not add utility CSS, CSS-in-JS, or a preprocessor
+- **Build system:** Next.js's supported Turbopack defaults with only StyleX's required Babel and PostCSS transforms; do not add Vite as the application bundler, switch to Webpack, or otherwise customize the bundler without a demonstrated blocker
+- **Styling:** StyleX with its official compiler integration; do not add CSS Modules, utility CSS, another CSS-in-JS library, a preprocessor, or authored inline styles
 - **Package manager and task runner:** Bun for dependency installation, the lockfile, and invoking package scripts; application and test code must not depend on Bun runtime APIs
 - **Application runtime:** Current Active LTS Node.js as the compatibility baseline for Next.js, tests, and production; use the Node server for production smoke tests and do not use Edge Runtime APIs without an explicit requirement and compatibility proof
 - **Backend platform:** Supabase Cloud
@@ -25,30 +25,38 @@ Apply this stack only when the product is greenfield, browser-delivered, relatio
 - **Data access:** `@supabase/supabase-js` in server-only data modules; do not add an ORM
 - **Database types:** Supabase CLI-generated TypeScript types
 - **Authentication:** Supabase Auth with `@supabase/ssr` cookie sessions and the current Next.js `proxy.ts` refresh pattern
-- **Authorization:** Verified identity at each server entry point plus PostgreSQL Row Level Security at the data boundary
+- **Authorization:** Verified identity at each server entry point plus least-privilege PostgreSQL grants and Row Level Security at the data boundary
 - **Schema and migrations:** Supabase CLI with version-controlled SQL migrations
 - **Runtime validation:** Zod at every untrusted boundary
 - **Database tests:** pgTAP through Supabase CLI
 - **Unit and component tests:** Vitest, Testing Library, and jsdom
 - **Server-rendered and browser tests:** Playwright, including async Server Components, Server Actions, navigation, streaming, and critical user journeys
-- **Linting:** ESLint CLI with the current `eslint-config-next` Core Web Vitals and TypeScript rules
+- **Linting:** ESLint CLI with the current `eslint-config-next` Core Web Vitals and TypeScript rules plus `@stylexjs/eslint-plugin`; enable its `valid-styles`, `valid-shorthands`, `enforce-extension`, `no-unused`, `no-legacy-contextual-styles`, `no-nonstandard-styles`, and `no-conflicting-props` rules as errors
 - **Formatting:** Prettier
 
-Select mutually compatible supported releases when scaffolding and let Next.js select its compatible React versions. Make dependency or framework upgrades separate changes; consult the installed Next.js documentation under `node_modules/next/dist/docs/` or matching official migration guidance, then run the full completion gate. Never upgrade during unrelated work or mix patterns from different release eras. Do not hardcode package versions in this skill.
+Select mutually compatible supported releases when scaffolding and let Next.js select its compatible React versions. Make dependency and framework upgrades narrow, standalone changes, and apply security patches promptly. Consult the installed Next.js documentation under `node_modules/next/dist/docs/` or matching official migration guidance, run the full completion gate for every upgrade, and never mix patterns from different release eras. Do not hardcode package versions in this skill.
 
 ## Next.js architecture
 
-- Start from a customized `create-next-app` App Router scaffold with TypeScript, ESLint, Turbopack, the `@/*` alias, no Tailwind, no `src/` indirection, and React Compiler disabled until a measured need justifies it. Do not generate agent documentation unless the user asks.
+- Start from a customized `create-next-app` App Router scaffold with TypeScript, ESLint, Turbopack, the `@/*` alias, no Tailwind, no `src/` indirection, and React Compiler disabled until a measured need justifies it. Unless the user asks for generated agent documentation, pass `--no-agents-md`, set `agentRules: false` in `next.config.ts`, and verify `next dev` creates neither `AGENTS.md` nor `CLAUDE.md`.
 - Organize `app/` by route or feature. Colocate route-specific components, actions, schemas, styles, and tests; move code to shared directories only for a real third use or a system boundary. Use route groups only when they change layout or route organization materially.
 - Keep pages and layouts as Server Components. Add `'use client'` only to the smallest leaf that needs state, effects, event handlers, browser APIs, or context; never pass secrets or unfiltered database records across that boundary.
 - Read data directly in Server Components through a small `server-only` data-access boundary that performs authorization and returns minimal safe objects. Do not call the application's own Route Handlers from Server Components.
 - Use thin Server Actions for UI mutations: validate input, re-verify authentication and resource authorization, call server-only domain/data code, then revalidate or redirect. Treat every Server Action as a directly reachable public POST endpoint.
-- Use Route Handlers only for genuine HTTP boundaries such as webhooks, callbacks, public APIs, file responses, and non-UI clients. Authenticate, authorize, validate, rate-limit, and make state-changing handlers idempotent as their boundary requires.
+- Use Route Handlers only for genuine HTTP boundaries such as webhooks, callbacks, public APIs, file responses, and non-UI clients. Prefer Server Actions for cookie-authenticated browser mutations; when a Route Handler is required, reject a missing or unexpected `Origin`, or require a CSRF token when cross-origin requests are intentional. Authenticate, authorize, validate, rate-limit, and make state-changing handlers idempotent as their boundary requires.
 - Use URL state for shareable state, Server Component data for server state, and local Client Component state for interaction. Do not add a client data-fetching, form, routing, or global-state library without a concrete unmet requirement.
 - Use `loading.tsx` or `<Suspense>` for meaningful streaming boundaries, `error.tsx` for recoverable segment failures, and `not-found.tsx` for absent resources. Prefer Next.js Link, Image, Font, Metadata, and navigation APIs over replacements.
 - Enable typed routes. Generate route types before standalone type checking and never edit or commit `.next/` output or `next-env.d.ts`.
 - Keep the Node.js runtime by default and deploy to a platform that supports the Next.js features in use. Do not use static export for this authenticated server-backed stack; leave the hosting provider unselected until a concrete requirement chooses it.
 - Prefer platform APIs, Next.js, Supabase, and existing code over new dependencies. Do not add repository, controller, adapter, or service layers beyond the server-only data and external boundaries that enforce correctness.
+
+## StyleX contract
+
+- Install `@stylexjs/stylex` and the official Babel and PostCSS plugins. Follow the current [StyleX Next.js integration](https://stylexjs.com/docs/learn/installation/nextjs/), share one Babel configuration with PostCSS, and retain Turbopack.
+- Define route and component styles with module-scope `stylex.create` calls colocated with their markup. Put themeable tokens in `defineVars` and shared static values in `defineConsts` within dedicated `.stylex.ts` modules; import their typed references instead of copying values or CSS variable names.
+- Apply and compose authored styles only with `stylex.props`. When a component deliberately accepts style overrides, expose the narrowest `StyleXStyles` contract and merge it last; do not expose `className` or combine `stylex.props` with manually authored `className` or `style` props.
+- Limit `app/globals.css` to the `@stylex` extraction directive and document-wide reset or base rules that cannot be expressed as component styles. Do not put route styles, component styles, or design tokens there.
+- StyleX alone never justifies a Client Component. After changing StyleX configuration, verify with lint, type checking, a production build, and a browser assertion that an extracted style is visibly applied; compilation alone is insufficient.
 
 ## Caching and data freshness
 
@@ -60,20 +68,21 @@ Select mutually compatible supported releases when scaffolding and let Next.js s
 
 ## Data and security boundaries
 
-- Validate environment variables once with Zod and fail with a clear error. Prefix only deliberately public values with `NEXT_PUBLIC_`; keep service-role and other privileged keys in `server-only` modules. Declare safe local defaults in an example environment file without secrets.
+- Validate environment variables once with Zod and fail with a clear error. Prefix only deliberately public values with `NEXT_PUBLIC_`; keep Supabase secret and other privileged keys in `server-only` modules. Declare safe local defaults in an example environment file without secrets.
 - Validate route parameters, search parameters, form data, cookies, Server Action arguments, Route Handler bodies, webhooks, and external responses before use. Derive TypeScript types from Zod schemas rather than restating them.
 - Centralize Supabase browser, server, and Proxy clients. Use the server client by default and create a browser client only for a concrete browser-side or Realtime need.
-- Refresh Supabase cookies in `proxy.ts`, but never treat Proxy, a layout, hidden UI, or a page redirect as authorization. Verify identity with the current trusted Supabase verification method near each data access; never authorize from the unverified user object returned by `getSession()`.
+- Refresh Supabase cookies in `proxy.ts`, but never treat Proxy, a layout, hidden UI, or a page redirect as authorization. Verify identity near each protected data access with `supabase.auth.getClaims()`; use `supabase.auth.getUser()` only when a current Auth record is required, and never authorize from `supabase.auth.getSession()`.
 - Make every schema change in a forward migration. Do not make dashboard-only schema changes. Regenerate and commit database types after each migration; never hand-edit generated types.
-- Enable RLS before exposing a table. Give every operation an explicit least-privilege policy and test allowed and denied cases with pgTAP.
+- Enable RLS before exposing a table. In the same migration, revoke existing `anon` and `authenticated` grants, re-grant only the required operations, add an explicit role-scoped policy for each granted operation, and test allowed and denied grant and policy behavior with pgTAP.
+- Give exposed views `security_invoker = true`. Revoke default function execution from `PUBLIC`, `anon`, and `authenticated`, then grant only required schema `USAGE` and function `EXECUTE`. Put `security definer` functions in an unexposed schema, set `search_path = ''`, and schema-qualify every reference.
 - Put atomic multi-row mutations and transaction-dependent invariants in version-controlled PostgreSQL functions called through Supabase RPC; test their success, rollback, and authorization behavior with pgTAP. Never emulate a transaction with sequential client calls.
-- Use user-scoped Supabase clients by default. Keep the service-role key server-only and use it only for an operation that intentionally bypasses RLS, with application authorization and audit coverage.
+- Use user-scoped Supabase clients by default. For an operation that intentionally bypasses RLS, create a dedicated server-only client with the Supabase secret key and no user access token; enforce application authorization and audit coverage, and never reuse a user-scoped client.
 - Return only minimal safe data to Client Components and external responses. Add idempotency, rate limits, audit records, bounded retries, and structured logs where the actual boundary requires them; do not add speculative infrastructure.
 - Before production, use platform-native structured logs, metrics, and traces on production paths, verify configured backups with an authorized non-production restore, and verify migration rollback or forward-fix procedures. Add an observability dependency only when the selected deployment's native facilities cannot meet a concrete requirement.
 
 ## Reproducible repository contract
 
-- Treat `package.json` scripts, types, migrations, configuration, and tests as executable documentation. Do not scaffold a README, architecture document, CI pipeline, `AGENTS.md`, `CLAUDE.md`, or duplicate prose unless the user asks.
+- Treat `package.json` scripts, types, migrations, configuration, and tests as executable documentation. Do not scaffold a README, architecture document, CI pipeline, or duplicate prose unless the user asks.
 - Commit `bun.lock`, SQL migrations, generated database types, and lint, format, and test configuration. Declare the Bun release in `packageManager` and the supported Node.js major in `engines`; ignore `.next/`, test artifacts, local Supabase state, and secrets.
 - Install the Supabase CLI and every build, lint, format, and test tool as a project development dependency. Do not rely on unrecorded global packages.
 - Expose canonical scripts named `setup`, `dev`, `build`, `start`, `typecheck`, `lint`, `format`, `format:check`, `test`, `test:db`, `test:e2e`, `db:start`, `db:reset`, `db:types`, and `check`. Implement `typecheck` as `next typegen` followed by `tsc --noEmit`, `lint` with ESLint CLI, and `test` with non-watch `vitest run`.
