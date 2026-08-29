@@ -32,11 +32,26 @@
       "Bash(gh issue list *)",
       "Bash(gh repo view *)",
       "Bash(git fetch *)"
+    ],
+    "deny": [
+      "DesignSync",
+      "CronCreate",
+      "CronDelete",
+      "CronList",
+      "ScheduleWakeup",
+      "Monitor",
+      "SendMessage",
+      "ListAgents",
+      "EnterWorktree",
+      "ExitWorktree",
+      "NotebookEdit",
+      "EndConversation"
     ]
   },
   "disableClaudeAiConnectors": true,
   "skillOverrides": {
-    "repo-metrics": "user-invocable-only"
+    "repo-metrics": "user-invocable-only",
+    "loop": "user-invocable-only"
   },
   "hooks": {
     "Notification": [
@@ -83,7 +98,7 @@
   "effortLevel": "xhigh",
   "modelSettings": {
     "claude-fable-5": {
-      "effortLevel": "high"
+      "effortLevel": "xhigh"
     }
   },
   "awaySummaryEnabled": false,
@@ -98,5 +113,6 @@
   "theme": "light",
   "autoCompactEnabled": true,
   "agentPushNotifEnabled": true,
-  "skipAutoPermissionPrompt": true
+  "skipAutoPermissionPrompt": true,
+  "model": "claude-fable-5[1m]"
 }
