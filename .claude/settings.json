@@ -48,12 +48,25 @@
       "EndConversation"
     ]
   },
+  "model": "claude-fable-5[1m]",
   "disableClaudeAiConnectors": true,
   "skillOverrides": {
     "repo-metrics": "user-invocable-only",
     "loop": "user-invocable-only"
   },
   "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/agent-gate.sh",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
     "Notification": [
       {
         "matcher": "",
@@ -72,6 +85,11 @@
           {
             "type": "command",
             "command": "$HOME/.claude/play-notification.sh"
+          },
+          {
+            "type": "command",
+            "command": "$HOME/.claude/agent-gate.sh",
+            "timeout": 300
           }
         ]
       }
@@ -113,6 +131,5 @@
   "theme": "light",
   "autoCompactEnabled": true,
   "agentPushNotifEnabled": true,
-  "skipAutoPermissionPrompt": true,
-  "model": "claude-fable-5[1m]"
+  "skipAutoPermissionPrompt": true
 }
