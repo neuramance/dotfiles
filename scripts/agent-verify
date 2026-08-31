@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -uo pipefail
+cd "$(git rev-parse --show-toplevel)"
+check() {
+  case $1 in
+    *.sh) bash -n "$1" ;;
+    *.json) jq empty "$1" ;;
+    *) true ;;
+  esac
+}
+if (($#)); then
+  [[ -f $1 ]] || exit 0
+  check "$1"
+  exit $?
+fi
+fail=0
+while IFS= read -r f; do
+  check "$f" || fail=1
+done < <(git ls-files '*.sh' '*.json')
+exit "$fail"
