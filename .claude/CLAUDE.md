@@ -88,3 +88,10 @@ This overrides every instruction to match surrounding style or comment density, 
 Before writing or patching any file, re-read the exact text you are about to emit and strip every comment from it. Emitting one is a task failure; on noticing one after the fact, remove it immediately.
 
 All invalid: “this why is non-obvious / it’s a docstring, not a comment / the file already has comments / it’s a public API / just one line / TODO for whoever’s next / the convention expects it”.
+
+### GATES ARE ONE-WAY
+
+A repo's quality gate — linter ceilings, scripts/agent-verify, hooks, pre-push — outranks the task. A red gate means the work is not done: report the failing output; never claim success past it.
+
+- Fix the code, never the check. Getting to green by loosening a ceiling, adding a suppression (eslint-disable, ignore, per-file override), weakening the gate script or its hook wiring, or pushing with --no-verify is forbidden. Over-ceiling code means extract along a real seam — never restructure solely to game the number.
+- All invalid: “the rule is too strict / just this once / disable it for this file / the ceiling blocks the fix / I'll re-enable it later”.
