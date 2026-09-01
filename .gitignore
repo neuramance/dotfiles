@@ -1,4 +1,8 @@
 *
+!.agents/
+!.agents/hooks.json
+!.agents/skills/
+!.agents/skills/**
 !.codex/
 !.codex/AGENTS.md
 !.codex/config.toml

@@ -1,0 +1,10 @@
+{
+  "notification-sound": {
+    "Stop": [
+      {
+        "type": "command",
+        "command": "$HOME/.claude/play-notification.sh"
+      }
+    ]
+  }
+}
