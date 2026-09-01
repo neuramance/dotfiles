@@ -5,25 +5,29 @@ description: Provision a repository's self-contained quality gate — scripts/ag
 
 # Build scripts/agent-verify
 
-This skill provisions a repo-self-contained quality gate that works for every contributor: `scripts/agent-verify` (the checks), `scripts/agent-gate.sh` (hook adapter parsing hook JSON via the repo's own runtime — bun/node/python, never assume jq), and `.claude/settings.json` wiring PostToolUse (Edit|Write, timeout 30) and Stop (timeout 300) to the adapter via `"$CLAUDE_PROJECT_DIR"/scripts/agent-gate.sh`. The user's global ~/.claude/agent-gate.sh defers automatically to any repo that has its own scripts/agent-gate.sh, so there is no double execution. Copy the adapter shape from an existing repo (e.g. unstoppable-math): PostToolUse checks the edited file and exits 2 with an error tail on failure; Stop honors stop_hook_active, allows clean trees, runs the full verify, exits 2 with the tail on failure; unparseable input fails open (exit 0).
+Provision the gate the way unstoppable-math does it: `scripts/agent-verify` (the checks), `scripts/agent-gate.sh` (hook adapter), and `.claude/settings.json` wiring PostToolUse (matcher `Edit|Write`, timeout 30) and Stop (matcher `""`, timeout 300) to `"$CLAUDE_PROJECT_DIR"/scripts/agent-gate.sh`. The user's global ~/.claude/agent-gate.sh defers to any repo with its own scripts/agent-gate.sh, so there is no double execution.
 
 ## Contract
 
-- Exit 0 = pass, non-zero = fail. Failure output is fed back to the model, so prefer tools that print `file:line: message`.
-- `$1` = single file path → fast per-edit check, budget ~1-2s. No argument → full check at turn end, budget under 300s (the Stop hook timeout).
-- File types the fast path cannot check: exit 0. A false block is worse than no block.
-- Deterministic only: no network, no prompts, no flaky tests. Cheapest checks first, fail fast.
+- Exit 0 = pass, non-zero = fail. Failure output feeds back to the model: print `--- <check> failed:` plus the log tail, preferring tools that emit `file:line: message`.
+- `$1` = one file → fast per-edit check. No argument → full check at turn end.
+- Budgets: fast ≤ 1s, full ≤ 10s wall warm. A check that cannot fit moves to the repo's everything command (`bun run check`, `make check`) or the pre-push hook, never into the gate. 300s is the hook timeout, not the budget.
+- File types the fast path cannot check exit 0. A false block is worse than no block.
+- Deterministic only: no network, no prompts, no flaky tests.
 
 ## Procedure
 
-1. Discover what the repo already has: `package.json` scripts, Makefile, justfile, CI workflows, lint/typecheck/test configs. Wrap existing commands; invent nothing. If a `make check` or equivalent exists, the full path is that one command.
-2. Fast path: syntax, lint, or typecheck of only the edited file. Full path: lint + typecheck + the fastest deterministic test command. Slow or flaky suites belong in CI, not the gate.
-3. Complexity ceilings go in the repo linter config, not the script: cognitive complexity (preferred over cyclomatic), max function length, max file size — each ratcheted just below the current worst offender so the gate blocks regression immediately and can be tightened later. The script merely runs the linter, so agent, humans, and CI share one gate.
-4. Write `scripts/agent-verify`: bash, `set -uo pipefail`, `cd "$(git rev-parse --show-toplevel)"`, then the two paths. `chmod +x` it.
-5. Test before declaring done: full run exits 0 on the current tree; fast run on a valid file exits 0; fast run on a deliberately broken temp file exits non-zero with actionable stderr; remove the temp file. If the full run fails on pre-existing issues, either fix them or narrow the check — never ship a gate that blocks every turn.
-6. Report: checks wrapped, ceilings set and their ratchet values, measured runtimes of both paths.
+1. Discover what the repo already has: package.json scripts, Makefile, justfile, CI workflows, lint/typecheck/test configs. Wrap existing commands; invent nothing.
+2. Fast path: formatter check + lint of only the edited file, both cached (`prettier --check --cache --no-error-on-unmatched-pattern "$1"`, `eslint --cache --cache-location node_modules/.cache/eslint "$1"`); formatter alone for json/css/md; anything else exits 0. No typecheck on the fast path — it cannot fit the budget.
+3. Full path: format, lint, unit tests, and build in parallel via the `run` helper (per-job mktemp log; on failure print the job name and `tail -n 30` of its log), then typecheck serially. Never run two jobs that write the same artifacts concurrently — in Next.js repos typecheck (`next typegen`) and build both write `.next/` and the race makes the gate flaky.
+4. Complexity ceilings go in the linter config as a dedicated rules block, never in the script: `complexity` (ESLint core, cyclomatic), `max-depth`, `max-lines`, `max-lines-per-function` (unstoppable-math: 18 / 4 / 500 / 150). Set each global at the current typical code; pin grandfathered offenders with per-file overrides. Pins are a one-way ratchet: never raise a pin, never add a file to the overrides; when a refactor drops a file below its pin, lower or delete the pin in the same change; when no file needs a looser global, tighten the global. The script merely runs the linter, so agent, humans, and CI share one gate.
+5. Slow suites (db tests, e2e) go in `.githooks/pre-push` — wired by `git config core.hooksPath .githooks` in the repo's setup script — and in the everything command.
+6. Write both scripts from the reference shapes below and `chmod +x` both. The adapter parses hook JSON with the repo's own runtime (bun/node/python — never assume jq) and fails open (exit 0) on unparseable input.
+7. Record the contract in the repo's AGENTS.md the way unstoppable-math does: when to run each path, "exit 0 or the task is not done", the ceilings and ratchet rules, and that any edit to the loop requires evidence in the same change — `time scripts/agent-verify` before and after, plus a planted failure proving non-zero exit with a legible tail.
+8. Test before declaring done: `time` the full run (exit 0 on the current tree) and the fast run on a valid file; plant a failure in a temp file and prove the fast run exits non-zero with actionable output; remove it. If the full run fails on pre-existing issues, fix them or pin them — never ship a gate that blocks every turn.
+9. Report: checks wrapped, ceilings and pins set, measured runtimes of both paths.
 
-## Reference shape
+## scripts/agent-verify (reference — swap the run lines and typecheck for the repo's own commands)
 
 ```bash
 #!/usr/bin/env bash
@@ -31,10 +35,65 @@ set -uo pipefail
 cd "$(git rev-parse --show-toplevel)"
 if (($#)); then
   case $1 in
-    *.ts|*.tsx) bun x oxlint "$1" && bun x tsc --noEmit ;;
+    *.ts | *.tsx | *.js | *.jsx | *.mjs)
+      bunx prettier --check --cache --no-error-on-unmatched-pattern "$1" &&
+        bunx eslint --cache --cache-location node_modules/.cache/eslint "$1"
+      ;;
+    *.json | *.css | *.md) bunx prettier --check --cache --no-error-on-unmatched-pattern "$1" ;;
     *) exit 0 ;;
   esac
   exit $?
 fi
-bun x oxlint . && bun x tsc --noEmit && bun test
+pids=()
+names=()
+logs=()
+run() {
+  local log
+  log=$(mktemp)
+  logs+=("$log")
+  names+=("$1")
+  shift
+  "$@" >"$log" 2>&1 &
+  pids+=($!)
+}
+run format bunx prettier --check --cache .
+run lint bunx eslint --cache --cache-location node_modules/.cache/eslint .
+run tests bunx vitest run
+run build bun run build
+fail=0
+for i in "${!pids[@]}"; do
+  if ! wait "${pids[$i]}"; then
+    fail=1
+    printf -- '--- %s failed:\n' "${names[$i]}"
+    tail -n 30 "${logs[$i]}"
+  fi
+done
+rm -f "${logs[@]}"
+((fail)) && exit 1
+out=$(bun run typecheck 2>&1) || {
+  printf -- '--- types failed:\n%s\n' "$(printf '%s' "$out" | tail -n 30)"
+  exit 1
+}
+exit 0
+```
+
+## scripts/agent-gate.sh (reference — swap `bun -e` for the repo's runtime)
+
+```bash
+#!/usr/bin/env bash
+set -uo pipefail
+root=$(cd "$(dirname "$0")/.." && pwd)
+input=$(cat)
+IFS=$'\t' read -r event file active < <(printf '%s' "$input" | bun -e 'const j = JSON.parse(await Bun.stdin.text()); console.log([j.hook_event_name ?? "", j.tool_input?.file_path ?? "", j.stop_hook_active === true ? "1" : "0"].join("\t"))') || exit 0
+if [[ $event == PostToolUse ]]; then
+  [[ -n $file ]] || exit 0
+  out=$("$root/scripts/agent-verify" "$file" 2>&1) && exit 0
+  printf '%s\n' "$out" | tail -n 20 >&2
+  exit 2
+fi
+[[ $active == 1 ]] && exit 0
+[[ -n $(git -C "$root" status --porcelain) ]] || exit 0
+out=$("$root/scripts/agent-verify" 2>&1) && exit 0
+printf '%s\n' "$out" | tail -n 30 >&2
+exit 2
 ```
