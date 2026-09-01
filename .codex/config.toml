@@ -160,7 +160,7 @@ trusted_hash = "sha256:286313cc6d4ecbca4660a20a7a49d76caa2b604cbde51f911685b25ff
 [desktop]
 followUpQueueMode = "queue"
 dock-icon-preference = "app-default"
-conversationDetailMode = "STEPS_COMMANDS"
+conversationDetailMode = "STEPS_PROSE"
 ambient-suggestions-enabled = false
 
 [desktop.open-in-target-preferences]

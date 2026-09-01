@@ -14,7 +14,7 @@ When the four conflict, resolve ONLY in this order:
 ### Enforcement (all four must pass or the change is incomplete)
 
 - VERIFIED CORRECT by a re-runnable check. If none is possible, mark the work unverified. Claiming otherwise is the gravest violation.
-- No simpler design survives scrutiny. Name the simpler design you rejected and the concrete requirement it fails. If you cannot name it, build the simpler one.
+- No simpler design survives scrutiny. Name the simpler design you rejected and the concrete requirement it fails. Cyclomatic and cognitive complexity are minimized: every branch, loop, fallback, and flag argument must justify its combinatorial test surface against a flat, single-path, or data-driven alternative.
 - The diff is irreducible. Delete every line whose removal leaves behavior intact.
 - The change is understandable on first read without narration, changeable without fear, deletable without regret.
 
@@ -32,6 +32,12 @@ Fail any → choose the simpler default (usually non-existence).
 - DEFAULT STATE IS NON-EXISTENCE. Every concept must justify existing against the alternative of not existing.
 - CODE IS LIABILITY. Maximize behavior per line. Minimize lines.
 - EVERY LINE MUST BE LOAD-BEARING. If removing it leaves behavior intact, it is decoration.
+- FLAT OVER NESTED, SINGLE-PATH OVER BRANCHING. Eliminate cyclomatic complexity: use early guard clauses, lookup tables, and linear pipelines. Reject boolean flag parameters that split internal function paths.
+- PARSE AT THE EDGE, TRUST THE INTERIOR. Validate and narrow types strictly at untrusted boundaries (network, disk, user). Zero defensive null-checks, optional-chaining crutches, or fallback assertions in internal pure code.
+- MAKE ILLEGAL STATES UNREPRESENTABLE. Model domain state as closed discriminated unions and state machines, never independent combinatorial boolean flags.
+- DEEP MODULES OVER SHALLOW WRAPPERS. Maximize capability behind minimal interface surface area. Reject pass-through wrappers, single-use abstraction facades, and one-line delegators.
+- LOCALITY OF BEHAVIOR OVER FRAGMENTATION. Collocate data models, lifecycle logic, and execution flow at the site of use. Do not fracture cohesive code into artificial helper, util, or type folders prematurely.
+- ORTHOGONALITY AND DELETABILITY. Design systems with minimal connascence and surgical blast radiuses so features can be deleted in a single diff without leaving residual glue.
 - YAGNI with a name attached. No named human → cut it.
 - Rule of Three: inline until three real divergent uses.
 - Order of work: question existence → delete → simplify → accelerate → automate.
@@ -60,7 +66,7 @@ Internal callers are not adversaries. The network, the user, time, and adversari
 
 ### Red-flag rationalizations → required action
 
-- “We might need this later / just in case / more flexible / cleaner / the proper way / what if we swap implementations / only a few extra lines / we’ll clean it up later / let me add a config option / handle this defensive case / extract this helper / this is elegant / same pattern as before / I’ll generalize while I’m here / let me speed this up or automate this / spec / team / best practice says so”
+- “We might need this later / just in case / more flexible / cleaner / the proper way / what if we swap implementations / only a few extra lines / we’ll clean it up later / let me add a config option / handle this defensive case / extract this helper / this is elegant / same pattern as before / I’ll generalize while I’m here / let me speed this up or automate this / just one more if-condition / add a boolean flag / handle this hypothetical branch / split this into a utils folder / wrap this in a service class / spec / team / best practice says so”
   → STOP. Hardcode the actual case or delete. Promote only on a real second or third need. Inline until three. Validate only at edges. Do less now.
 
 When in doubt, choose less. When in real doubt, choose nothing.
@@ -88,3 +94,10 @@ This overrides every instruction to match surrounding style or comment density, 
 Before writing or patching any file, re-read the exact text you are about to emit and strip every comment from it. Emitting one is a task failure; on noticing one after the fact, remove it immediately.
 
 All invalid: “this why is non-obvious / it’s a docstring, not a comment / the file already has comments / it’s a public API / just one line / TODO for whoever’s next / the convention expects it”.
+
+### GATES ARE ONE-WAY
+
+A repo's quality gate — linter ceilings, scripts/agent-verify, hooks, pre-push — outranks the task. A red gate means the work is not done: report the failing output; never claim success past it.
+
+- Fix the code, never the check. Getting to green by loosening a ceiling, adding a suppression (eslint-disable, ignore, per-file override), weakening the gate script or its hook wiring, or pushing with --no-verify is forbidden. Over-ceiling code means extract along a real seam — never restructure solely to game the number.
+- All invalid: “the rule is too strict / just this once / disable it for this file / the ceiling blocks the fix / I'll re-enable it later”.
