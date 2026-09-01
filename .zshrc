@@ -46,3 +46,7 @@ command -v fzf >/dev/null && source <(fzf --zsh)
 
 # zoxide
 command -v zoxide >/dev/null && eval "$(zoxide init zsh)"
+
+
+# Added by Antigravity CLI installer
+export PATH="/Users/w/.local/bin:$PATH"
