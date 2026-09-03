@@ -1,0 +1,13 @@
+{
+  "userSettings": {
+    "globalPermissionGrants": {
+      "allow": [
+        "read_url(airsheenservices.com)",
+        "unsandboxed(bun install)",
+        "read_url(localhost)",
+        "read_url(cdn.prod.website-files.com)"
+      ]
+    },
+    "remoteControlHostname": "m4-rising-flux"
+  }
+}

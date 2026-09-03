@@ -1,0 +1,19 @@
+{
+  "colorScheme": "light",
+  "enableTelemetry": false,
+  "model": "Gemini 3.8 Flash (High)",
+  "runningLightSpeed": "fast",
+  "statusLine": {
+    "type": "command",
+    "command": "/Users/w/.claude/statusline.sh",
+    "enabled": true
+  },
+  "toolPermission": "always-proceed",
+  "trustedWorkspaces": [
+    "/Users/w",
+    "/Users/w/code/sandbox",
+    "/Users/w/code",
+    "/Users/w/code/a-lp",
+    "/Users/w/code/unstoppable-math"
+  ]
+}

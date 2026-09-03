@@ -3,7 +3,10 @@ input=$(cat)
 
 # Extract fields from JSON input via grep (no jq dependency)
 cwd=$(echo "$input" | grep -o '"current_dir":"[^"]*"' | head -1 | sed 's/"current_dir":"//;s/"$//')
+[ -z "$cwd" ] && cwd=$(echo "$input" | grep -o '"workspace":"[^"]*"' | head -1 | sed 's/"workspace":"//;s/"$//')
+cwd="${cwd:-$PWD}"
 model=$(echo "$input" | grep -o '"display_name":"[^"]*"' | head -1 | sed 's/"display_name":"//;s/"$//')
+[ -z "$model" ] && model=$(echo "$input" | grep -o '"model":"[^"]*"' | head -1 | sed 's/"model":"//;s/"$//')
 used_pct=$(echo "$input" | grep -o '"used_percentage":[0-9.]*' | head -1 | sed 's/"used_percentage"://')
 transcript=$(echo "$input" | grep -o '"transcript_path":"[^"]*"' | head -1 | sed 's/"transcript_path":"//;s/"$//')
 
@@ -83,7 +86,7 @@ if [ -n "$used_pct" ]; then
   out+=" ${ctx_color}${pct_int}%\033[0m"
 fi
 
-short_model=$(echo "$model" | sed -E 's/^([A-Z][a-z])[a-z]* ([0-9.]+).*/\1\2/')
+short_model=$(echo "$model" | sed -E 's/^Claude (Sonnet|Opus|Haiku) ([0-9.]+).*/\1\2/; s/^Sonnet/So/; s/^Opus/Op/; s/^Haiku/Ha/; s/^([A-Z][a-z])[a-z]* ([0-9.]+).*/\1\2/')
 [[ "$model" == *"1M"* ]] && short_model="${short_model}-1M"
 out+=" \033[2m${short_model}\033[0m"
 

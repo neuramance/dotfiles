@@ -16,6 +16,17 @@
 !.claude/skills/**
 !.claude/commands/
 !.claude/commands/**
+!.gemini/
+!.gemini/settings.json
+!.gemini/antigravity-cli/
+!.gemini/antigravity-cli/settings.json
+!.gemini/config/
+!.gemini/config/AGENTS.md
+!.gemini/config/GEMINI.md
+!.gemini/config/config.json
+!.gemini/config/hooks.json
+!.gemini/config/mcp_config.json
+!.gemini/config/skills
 !.config/
 !.config/fastfetch/
 !.config/fastfetch/**
