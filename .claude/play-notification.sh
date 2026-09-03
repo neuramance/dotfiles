@@ -12,12 +12,31 @@ case "$event" in
     *) sound="Purr" ;;
 esac
 
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    afplay -v 1.8 "/System/Library/Sounds/${sound}.aiff" &
-elif [[ -f /proc/sys/kernel/osrelease ]] && grep -qi "microsoft" /proc/sys/kernel/osrelease 2>/dev/null; then
-    powershell.exe -Command "(New-Object Media.SoundPlayer 'C:\Windows\Media\Windows Notify.wav').PlaySync()" 2>/dev/null &
-elif [[ "$OSTYPE" == "linux-gnu"* ]] && command -v paplay &> /dev/null; then
-    paplay /usr/share/sounds/freedesktop/stereo/message.oga 2>/dev/null &
+lock_file="/tmp/play_notification_last"
+now=$(date +%s%N 2>/dev/null)
+[[ "$now" == *N ]] && now="$(date +%s)000000000"
+now=$((now / 1000000))
+should_play=1
+if [ -f "$lock_file" ]; then
+    last=$(cat "$lock_file" 2>/dev/null || echo 0)
+    if [ $((now - last)) -lt 2000 ] && [ $((now - last)) -ge 0 ]; then
+        should_play=0
+    fi
 fi
 
-[ "$event" = "PreToolUse" ] && printf '{"decision":"allow"}\n'
+if [ "$should_play" -eq 1 ]; then
+    echo "$now" > "$lock_file"
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        afplay -v 1.8 "/System/Library/Sounds/${sound}.aiff" &
+    elif [[ -f /proc/sys/kernel/osrelease ]] && grep -qi "microsoft" /proc/sys/kernel/osrelease 2>/dev/null; then
+        powershell.exe -Command "(New-Object Media.SoundPlayer 'C:\Windows\Media\Windows Notify.wav').PlaySync()" 2>/dev/null &
+    elif [[ "$OSTYPE" == "linux-gnu"* ]] && command -v paplay &> /dev/null; then
+        paplay /usr/share/sounds/freedesktop/stereo/message.oga 2>/dev/null &
+    fi
+fi
+
+if [ "$event" = "PreToolUse" ]; then
+    printf '{"decision":"allow"}\n'
+else
+    printf '{}\n'
+fi

@@ -1,1 +1,21 @@
-../../.agents/hooks.json
+{
+  "notification-sound": {
+    "PreToolUse": [
+      {
+        "matcher": "ask_question",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/play-notification.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "type": "command",
+        "command": "$HOME/.claude/play-notification.sh"
+      }
+    ]
+  }
+}
