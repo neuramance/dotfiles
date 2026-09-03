@@ -22,7 +22,7 @@ Apply this stack only when the product is greenfield, browser-delivered, relatio
 - **Application runtime:** Current Active LTS Node.js as the compatibility baseline for Next.js, tests, and production; use the Node server for production smoke tests and do not use Edge Runtime APIs without an explicit requirement and compatibility proof
 - **Backend platform:** Supabase Cloud
 - **Database:** Supabase Postgres
-- **Data access:** `@supabase/supabase-js` in server-only data modules; do not add an ORM
+- **Data access:** User-scoped `@supabase/supabase-js` client via `@supabase/ssr` in server-only data modules; do not add an ORM
 - **Database types:** Supabase CLI-generated TypeScript types
 - **Authentication:** Supabase Auth with `@supabase/ssr` cookie sessions and the current Next.js `proxy.ts` refresh pattern
 - **Authorization:** Verified identity at each server entry point plus least-privilege PostgreSQL grants and Row Level Security at the data boundary
@@ -38,7 +38,7 @@ Select mutually compatible supported releases when scaffolding and let Next.js s
 
 ## Next.js architecture
 
-- Start from a customized `create-next-app` App Router scaffold with TypeScript, ESLint, Turbopack, the `@/*` alias, no Tailwind, no `src/` indirection, and React Compiler disabled until a measured need justifies it. Unless the user asks for generated agent documentation, pass `--no-agents-md`, set `agentRules: false` in `next.config.ts`, and verify `next dev` creates neither `AGENTS.md` nor `CLAUDE.md`.
+- Start from a customized `create-next-app` App Router scaffold with TypeScript, ESLint, Turbopack, the `@/*` alias, no Tailwind, no `src/` indirection, and React Compiler disabled until a measured need justifies it. Scaffold non-interactively with `bunx create-next-app@latest <project-dir> --ts --eslint --app --no-src-dir --no-tailwind --import-alias "@/*" --no-agents-md --use-bun --yes` and delete the scaffolded `README.md` immediately following initialization. Unless the user asks for generated agent documentation, pass `--no-agents-md`, set `agentRules: false` in `next.config.ts`, and verify `next dev` creates neither `AGENTS.md` nor `CLAUDE.md`.
 - Organize `app/` by route or feature. Colocate route-specific components, actions, schemas, styles, and tests; move code to shared directories only for a real third use or a system boundary. Use route groups only when they change layout or route organization materially.
 - Keep pages and layouts as Server Components. Add `'use client'` only to the smallest leaf that needs state, effects, event handlers, browser APIs, or context; never pass secrets or unfiltered database records across that boundary.
 - Read data directly in Server Components through a small `server-only` data-access boundary that performs authorization and returns minimal safe objects. Do not call the application's own Route Handlers from Server Components.
@@ -52,7 +52,7 @@ Select mutually compatible supported releases when scaffolding and let Next.js s
 
 ## StyleX contract
 
-- Install `@stylexjs/stylex` and the official Babel and PostCSS plugins. Follow the current [StyleX Next.js integration](https://stylexjs.com/docs/learn/installation/nextjs/), share one Babel configuration with PostCSS, and retain Turbopack.
+- Install `@stylexjs/stylex` and the official Babel and PostCSS plugins. Follow the current [StyleX Next.js integration](https://stylexjs.com/docs/learn/installation/nextjs/), share one Babel configuration with PostCSS, and retain Turbopack. `@stylexjs/postcss-plugin` auto-discovers all project source files by default when `include` is omitted.
 - Define route and component styles with module-scope `stylex.create` calls colocated with their markup. Put themeable tokens in `defineVars` and shared static values in `defineConsts` within dedicated `.stylex.ts` modules; import their typed references instead of copying values or CSS variable names.
 - Apply and compose authored styles only with `stylex.props`. When a component deliberately accepts style overrides, expose the narrowest `StyleXStyles` contract and merge it last; do not expose `className` or combine `stylex.props` with manually authored `className` or `style` props.
 - Limit `app/globals.css` to the `@stylex` extraction directive and document-wide reset or base rules that cannot be expressed as component styles. Do not put route styles, component styles, or design tokens there.
@@ -85,7 +85,7 @@ Select mutually compatible supported releases when scaffolding and let Next.js s
 - Treat `package.json` scripts, types, migrations, configuration, and tests as executable documentation. Do not scaffold a README, architecture document, CI pipeline, or duplicate prose unless the user asks.
 - Commit `bun.lock`, SQL migrations, generated database types, and lint, format, and test configuration. Declare the Bun release in `packageManager` and the supported Node.js major in `engines`; ignore `.next/`, test artifacts, local Supabase state, and secrets.
 - Install the Supabase CLI and every build, lint, format, and test tool as a project development dependency. Do not rely on unrecorded global packages.
-- Expose canonical scripts named `setup`, `dev`, `build`, `start`, `typecheck`, `lint`, `format`, `format:check`, `test`, `test:db`, `test:e2e`, `db:start`, `db:reset`, `db:types`, and `check`. Implement `typecheck` as `next typegen` followed by `tsc --noEmit`, `lint` with ESLint CLI, and `test` with non-watch `vitest run`.
+- Expose canonical scripts named `setup`, `dev`, `build`, `start`, `typecheck`, `lint`, `format`, `format:check`, `test`, `test:db`, `test:smoke`, `test:e2e`, `db:start`, `db:reset`, `db:types`, and `check`. Implement `typecheck` as `next typegen` followed by `tsc --noEmit`, `lint` with ESLint CLI, and `test` with non-watch `vitest run`.
 - Make `setup` idempotently install Playwright's required browser and prepare the local Supabase database. Make verification scripts noninteractive, return reliable exit codes and concise failures, and accept path or name filters where supported.
 - Make `check` the single non-source-mutating completion gate. Run formatting verification, linting, route-aware type checking, unit/component tests, database tests, a production build and Node LTS server smoke check, and Playwright tests in fastest-failure order.
 - Make a fresh clone require only the declared Bun and Node versions plus Docker, followed by `bun install --frozen-lockfile` and `bun run setup`. Make tests provision or clearly fail on missing local dependencies instead of relying on hidden machine state.
