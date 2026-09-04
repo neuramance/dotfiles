@@ -3,6 +3,7 @@
 import { spawnSync } from "node:child_process";
 import {
   existsSync,
+  mkdirSync,
   mkdtempSync,
   readFileSync,
   realpathSync,
@@ -10,7 +11,7 @@ import {
   statSync,
   writeFileSync,
 } from "node:fs";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve, sep } from "node:path";
 import { tmpdir } from "node:os";
 
 let temporaryDirectory;
@@ -55,26 +56,39 @@ try {
   if (result.status !== 0) throw new Error(lastLine(log) || "Repomix failed.");
 
   const packed = JSON.parse(readFileSync(outputPath, "utf8"));
-  if (!packed.files || Array.isArray(packed.files)) {
+  if (
+    !packed.files ||
+    typeof packed.files !== "object" ||
+    Array.isArray(packed.files)
+  ) {
     throw new Error("Repomix returned an unexpected JSON format.");
   }
 
   const totalTokens = summaryNumber(log, /Total Tokens:\s*([\d,]+)\s+tokens/i);
-  const cloc = countLines(target, Object.keys(packed.files));
+  const cloc = await countLines(temporaryDirectory, packed.files);
   const lines = [
-    `- **Total tokens:** ${formatNumber(totalTokens)}`,
+    `- **Packed tokens (o200k_base):** ${formatNumber(totalTokens)}`,
     `- **Code lines:** ${formatNumber(cloc.code)}`,
     `- **Comment lines:** ${formatNumber(cloc.comment)}`,
-    ...(cloc.languages.length ? ["", "\u200b", ""] : []),
-    ...cloc.languages.map(
-      ([language, count]) =>
-        `- **${language} code lines:** ${formatNumber(count)} (${percentage(count, cloc.code)}%)`,
-    ),
+    `- **Files:** ${formatNumber(cloc.files)} counted / ${formatNumber(Object.keys(packed.files).length)} packed`,
+    "",
+    ...cloc.languages.flatMap(([language, count]) => [
+      `- **${language} code lines:** ${formatNumber(count)} (${percentage(count, cloc.code)}%)`,
+      ...(cloc.stylex.has(language)
+        ? [
+            `  - **StyleX definition lines:** ${formatNumber(cloc.stylex.get(language))} (included in ${language})`,
+          ]
+        : []),
+    ]),
+    "",
+    "Scope: Repomix-selected files; tokens include JSON packaging. cloc classifies whole files, including data and prose; embedded syntax remains in its host language.",
   ];
 
   console.log(lines.join("\n"));
 } catch (error) {
-  console.log(`- **Error:** ${oneLine(error instanceof Error ? error.message : error)}`);
+  console.log(
+    `- **Error:** ${oneLine(error instanceof Error ? error.message : error)}`,
+  );
   process.exitCode = 1;
 } finally {
   if (temporaryDirectory) {
@@ -112,20 +126,43 @@ function summaryNumber(log, pattern) {
   return Number(match[1].replaceAll(",", ""));
 }
 
-function countLines(target, files) {
-  if (!files.length) return { code: 0, comment: 0, languages: [] };
-  if (files.some((file) => /[\r\n]/.test(file))) {
-    throw new Error("Cannot count a filename containing a line break.");
+async function countLines(temporaryDirectory, files) {
+  const { countStylex } = await import("./stylex.mjs");
+  const target = join(temporaryDirectory, "source");
+  const snapshot = new Map();
+  for (const [file, content] of Object.entries(files)) {
+    const path = resolve(target, file);
+    if (
+      typeof content !== "string" ||
+      /[\r\n]/.test(file) ||
+      !path.startsWith(target + sep)
+    ) {
+      throw new Error("Repomix returned an invalid file entry.");
+    }
+    mkdirSync(dirname(path), { recursive: true });
+    writeFileSync(path, content);
+    snapshot.set(path, content);
   }
-
+  const config = join(temporaryDirectory, "cloc.config");
+  writeFileSync(config, "");
+  mkdirSync(target, { recursive: true });
   const result = spawnSync(
     "bunx",
-    ["--bun", "cloc@2.6.0-cloc", "--json", "--list-file=-"],
+    [
+      "--bun",
+      "cloc@2.6.0-cloc",
+      "--json",
+      "--by-file",
+      "--skip-uniqueness",
+      "--timeout=0",
+      `--config=${config}`,
+      "--list-file=-",
+    ],
     {
       cwd: target,
       encoding: "utf8",
       env: { ...process.env, NO_COLOR: "1" },
-      input: files.join("\n"),
+      input: [...snapshot.keys()].join("\n"),
       maxBuffer: 10 * 1024 * 1024,
     },
   );
@@ -135,18 +172,47 @@ function countLines(target, files) {
   }
 
   const report = JSON.parse(result.stdout);
-  if (!report.SUM) throw new Error("cloc returned an incomplete report.");
-  const languages = Object.entries(report)
-    .filter(([name, counts]) => name !== "header" && name !== "SUM" && counts.code)
-    .map(([name, counts]) => [name, counts.code])
-    .sort(
-      ([nameA, linesA], [nameB, linesB]) =>
-        linesB - linesA || nameA.localeCompare(nameB),
+  const languages = new Map();
+  const stylex = new Map();
+  let code = 0;
+  let comment = 0;
+  let counted = 0;
+  for (const [file, counts] of Object.entries(report)) {
+    if (file === "header" || file === "SUM") continue;
+    if (
+      !snapshot.has(file) ||
+      typeof counts.language !== "string" ||
+      ![counts.code, counts.comment].every(
+        (n) => Number.isSafeInteger(n) && n >= 0,
+      )
+    ) {
+      throw new Error("cloc returned an invalid file count.");
+    }
+    counted++;
+    code += counts.code;
+    comment += counts.comment;
+    languages.set(
+      counts.language,
+      (languages.get(counts.language) ?? 0) + counts.code,
     );
+    const definitions = countStylex(file, snapshot.get(file));
+    if (definitions)
+      stylex.set(
+        counts.language,
+        (stylex.get(counts.language) ?? 0) + definitions,
+      );
+  }
   return {
-    code: report.SUM.code,
-    comment: report.SUM.comment,
-    languages,
+    code,
+    comment,
+    files: counted,
+    stylex,
+    languages: [...languages]
+      .filter(([, count]) => count)
+      .sort(
+        ([nameA, linesA], [nameB, linesB]) =>
+          linesB - linesA || nameA.localeCompare(nameB),
+      ),
   };
 }
 

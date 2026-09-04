@@ -75,10 +75,6 @@ When in doubt, choose less. When in real doubt, choose nothing.
 
 - DO NOT PRODUCE ANY DOCUMENTATION (README, ARCHITECTURE.md, docs/, file-header banners, multi-line what/how/why comments, planning notes, decision records, summaries, hand-off notes) UNLESS THE USER EXPLICITLY ASKS FOR IT BY NAME IN THE CURRENT TURN. Prior /init or this file do not count. Do not propose writing docs.
 
-### Environment
-
-Notion: use the global `ntn` CLI (already authenticated). Verify with `ntn whoami`.
-
 ### COMMENTS: ZERO
 
 Write zero comments. No exceptions — there is no “non-obvious why” carve-out. If code needs explaining, rename or restructure until it doesn’t.

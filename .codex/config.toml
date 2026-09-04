@@ -101,6 +101,9 @@ enabled = true
 [plugins."chrome@openai-bundled"]
 enabled = true
 
+[plugins."unified-computer-use@openai-bundled"]
+enabled = true
+
 [projects."/Users/w"]
 trust_level = "trusted"
 
@@ -134,6 +137,9 @@ trust_level = "trusted"
 [projects."/Users/w/code/a-lp"]
 trust_level = "trusted"
 
+[projects."/Users/w/code/unstoppable-math"]
+trust_level = "trusted"
+
 [shell_environment_policy]
 inherit = "core"
 
@@ -142,7 +148,7 @@ CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1"
 NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "091a81603ff202a16ed56557709bf42d97caf8f0dd2e07ae9e26d7c014d71035"
 
 [tui]
-status_line = ["current-dir", "git-branch", "context-used", "model-with-reasoning"]
+status_line = ["current-dir", "git-branch", "context-used", "model-with-reasoning", "run-state", "context-window-size", "fast-mode", "task-\u0070rogress"]
 status_line_use_colors = true
 
 [tui.model_availability_nux]
@@ -190,16 +196,12 @@ NODE_REPL_NODE_PATH = "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin
 NODE_REPL_TRUSTED_CODE_PATHS = "/Users/w/.codex:/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules"
 CODEX_HOME = "/Users/w/.codex"
 BROWSER_USE_AVAILABLE_BACKENDS = "chrome,iab"
-BROWSER_USE_TINYSKY_ENABLED = "0"
-NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER = "Control the in-app browser in conjunction with the Browser Plugin."
-NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME = "Control the Chrome browser in conjunction with the Chrome Plugin. Prefer this method of controlling Chrome over alternatives (such as Computer Use) unless the user explicitly mentions an alternative."
-NODE_REPL_INSTRUCTIONS_USE_CASE_COMPUTER_USE = "Control desktop apps on macOS through Computer Use."
+BROWSER_USE_TINYSKY_ENABLED = "1"
+NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER = ""
+NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME = ""
+NODE_REPL_INSTRUCTIONS_USE_CASE_COMPUTER_USE = ""
 BROWSER_USE_CODEX_APP_BUILD_FLAVOR = "prod"
-BROWSER_USE_CODEX_APP_VERSION = "26.825.51511"
-NODE_REPL_TRUSTED_SERVICES = '{"browser":"/Users/w/.codex/plugins/cache/openai-bundled/browser/26.825.51511/scripts/browser-service.mjs","sky":"@oai/sky/service"}'
+BROWSER_USE_CODEX_APP_VERSION = "26.901.31953"
+NODE_REPL_TRUSTED_SERVICES = '{"browser":"/Users/w/.codex/plugins/cache/openai-bundled/browser/26.901.31953/scripts/browser-service.mjs","sky":"@oai/sky/service"}'
 SKY_CUA_SERVICE_PATH = "/Users/w/.codex/computer-use/Codex Computer Use.app"
 CODEX_CLI_PATH = "/Applications/ChatGPT.app/Contents/Resources/codex"
-
-[mcp_servers.cua_repl]
-command = "/Applications/ChatGPT.app/Contents/MacOS/ChatGPT"
-enabled = false
