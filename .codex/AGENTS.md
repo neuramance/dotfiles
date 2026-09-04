@@ -11,17 +11,19 @@ When the four conflict, resolve ONLY in this order:
 3. LEAST CODE — remove the need for code, never safeguards or clarity.
 4. OPTIMAL OVER THE LIFE OF THE CODE — easiest to understand, change, and delete. Speed last and only with measurement.
 
-### Enforcement (all four must pass or the change is incomplete)
+### Enforcement (all must pass or the change is incomplete)
 
-- VERIFIED CORRECT by a re-runnable check. If none is possible, mark the work unverified. Claiming otherwise is the gravest violation.
+- Run the relevant, re-runnable checks on the final change. Report their results and limits. If no check is possible, mark the work unverified. Repeat or broaden checks only when changes, failures, or unresolved concerns justify it.
+- Distinguish observed facts, assumptions, and recommendations. Use primary sources when available, seek evidence that could disprove important claims, and correct conclusions when the evidence changes.
 - No simpler design survives scrutiny. Name the simpler design you rejected and the concrete requirement it fails. Cyclomatic and cognitive complexity are minimized: every branch, loop, fallback, and flag argument must justify its combinatorial test surface against a flat, single-path, or data-driven alternative.
 - The diff is irreducible. Delete every line whose removal leaves behavior intact.
 - The change is understandable on first read without narration, changeable without fear, deletable without regret.
+- State the outcome, supporting evidence, and material limitations concisely.
 
 ### Decision gate (answer all four before any new concept, layer, parameter, dependency, helper, or abstraction may exist)
 
 1. Who is the specific human and what is their concrete problem TODAY? “The spec / team / best practice / we might need it” do not count.
-2. Is there a third real, divergent caller? Two is coincidence. Inline until three. (True external boundaries are exempt.)
+2. For a reusable abstraction, are there three real, divergent uses or a true external boundary? Otherwise, inline the behavior. Required one-off functionality does not need three callers.
 3. Would the standard library, the framework’s intended path, or existing code already do it?
 4. Is this reversible cheaply, or am I buying flexibility I may never need?
 
@@ -39,7 +41,7 @@ Fail any → choose the simpler default (usually non-existence).
 - LOCALITY OF BEHAVIOR OVER FRAGMENTATION. Collocate data models, lifecycle logic, and execution flow at the site of use. Do not fracture cohesive code into artificial helper, util, or type folders prematurely.
 - ORTHOGONALITY AND DELETABILITY. Design systems with minimal connascence and surgical blast radiuses so features can be deleted in a single diff without leaving residual glue.
 - YAGNI with a name attached. No named human → cut it.
-- Rule of Three: inline until three real divergent uses.
+- Rule of Three: introduce reusable abstractions only for three real, divergent uses or a true external boundary.
 - Order of work: question existence → delete → simplify → accelerate → automate.
 - Understand the real end-to-end flow before minimizing the diff.
 - Fix the shared cause, not only the reported symptom.
@@ -48,7 +50,6 @@ Fail any → choose the simpler default (usually non-existence).
 - Minimum viable surface area for every public contract.
 - Boring substrate everywhere; leading-edge only where differentiation lives.
 - Make it work, then right, then fast (measured).
-- Cut aggressively enough that you later have to add ~10% back. If nothing needs adding back, you under-cut.
 - Violating the letter is usually violating the spirit. Do not invent special cases.
 
 ### What KISS never cuts (real human with real money, data, or trust at stake today)
@@ -67,7 +68,7 @@ Internal callers are not adversaries. The network, the user, time, and adversari
 ### Red-flag rationalizations → required action
 
 - “We might need this later / just in case / more flexible / cleaner / the proper way / what if we swap implementations / only a few extra lines / we’ll clean it up later / let me add a config option / handle this defensive case / extract this helper / this is elegant / same pattern as before / I’ll generalize while I’m here / let me speed this up or automate this / just one more if-condition / add a boolean flag / handle this hypothetical branch / split this into a utils folder / wrap this in a service class / spec / team / best practice says so”
-  → STOP. Hardcode the actual case or delete. Promote only on a real second or third need. Inline until three. Validate only at edges. Do less now.
+  → STOP. Hardcode the actual case or delete. Promote reusable abstractions only for three real, divergent uses or a true external boundary. Implement required one-off functionality directly. Validate only at edges. Do less now.
 
 When in doubt, choose less. When in real doubt, choose nothing.
 

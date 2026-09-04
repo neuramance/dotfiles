@@ -1,5 +1,5 @@
 model_provider = "tfy"
-model = "gpt-5.6-sol"
+model = "gpt-6-astra"
 model_context_window = 272000
 model_reasoning_effort = "xhigh"
 approval_policy = "never"
@@ -18,10 +18,8 @@ wire_api = "responses"
 
 [features]
 apps = false
-external_migration = true
 goals = true
 prevent_idle_sleep = true
-js_repl = false
 
 [marketplaces.openai-bundled]
 source_type = "local"
@@ -102,6 +100,9 @@ enabled = true
 enabled = true
 
 [plugins."unified-computer-use@openai-bundled"]
+enabled = true
+
+[plugins."openai-ads-conversions@openai-api-curated"]
 enabled = true
 
 [projects."/Users/w"]
@@ -205,3 +206,6 @@ BROWSER_USE_CODEX_APP_VERSION = "26.901.31953"
 NODE_REPL_TRUSTED_SERVICES = '{"browser":"/Users/w/.codex/plugins/cache/openai-bundled/browser/26.901.31953/scripts/browser-service.mjs","sky":"@oai/sky/service"}'
 SKY_CUA_SERVICE_PATH = "/Users/w/.codex/computer-use/Codex Computer Use.app"
 CODEX_CLI_PATH = "/Applications/ChatGPT.app/Contents/Resources/codex"
+
+[mcp_servers.openaiDeveloperDocs]
+url = "https://developers.openai.com/mcp"
