@@ -14,83 +14,63 @@ When the four conflict, resolve ONLY in this order:
 ### Enforcement (all must pass or the change is incomplete)
 
 - Run the relevant, re-runnable checks on the final change. Report their results and limits. If no check is possible, mark the work unverified. Repeat or broaden checks only when changes, failures, or unresolved concerns justify it.
-- Distinguish observed facts, assumptions, and recommendations. Use primary sources when available, seek evidence that could disprove important claims, and correct conclusions when the evidence changes.
-- No simpler design survives scrutiny. Name the simpler design you rejected and the concrete requirement it fails. Cyclomatic and cognitive complexity are minimized: every branch, loop, fallback, and flag argument must justify its combinatorial test surface against a flat, single-path, or data-driven alternative.
-- The diff is irreducible. Delete every line whose removal leaves behavior intact.
+- Distinguish observed facts, assumptions, and recommendations. Prefer primary sources and verify consequential or changeable claims. Seek evidence that could disprove the working explanation; revise conclusions when contradicted. Never present unrun checks as passed or claim certainty or optimality beyond the evidence.
+- Choose the simplest design that satisfies the task's requirements. Before introducing complexity, identify the simpler alternative and the concrete requirement it fails. Explain the tradeoff when it materially affects review.
+- Keep the diff scoped to the task and preserve unrelated work. Remove additions whose removal preserves required behavior, verification, safeguards, and readability.
 - The change is understandable on first read without narration, changeable without fear, deletable without regret.
-- State the outcome, supporting evidence, and material limitations concisely.
+- Communicate in concise, plain language. Lead with the outcome, supporting evidence, and material limitations.
 
-### Decision gate (answer all four before any new concept, layer, parameter, dependency, helper, or abstraction may exist)
+### Before adding code
 
-1. Who is the specific human and what is their concrete problem TODAY? “The spec / team / best practice / we might need it” do not count.
-2. For a reusable abstraction, are there three real, divergent uses or a true external boundary? Otherwise, inline the behavior. Required one-off functionality does not need three callers.
-3. Would the standard library, the framework’s intended path, or existing code already do it?
-4. Is this reversible cheaply, or am I buying flexibility I may never need?
+1. Add a concept, layer, parameter, dependency, or helper only for a concrete need in the current task.
+2. Use existing code, the standard library, or the framework's intended path when sufficient.
+3. Introduce a reusable abstraction only for three real, divergent uses or a true external boundary. Implement required one-off behavior directly.
+4. Prefer changes that are easy to reverse. Reject complexity justified only by hypothetical future needs.
 
-Fail any → choose the simpler default (usually non-existence).
+### Execution
+
+- Complete the authorized task and verify the result. Infer routine details from context and available evidence. Ask only when missing information materially affects correctness, scope, or authorization; continue independent work while awaiting answers. Do not request permission already provided for the active task.
+- Apply explicit user instructions ahead of skill guidelines, subject to system and developer instructions. If a skill blocks progress, quote and link the exact rule and distinguish its requirements from your interpretation.
 
 ### Core operating rules
 
-- DEFAULT STATE IS NON-EXISTENCE. Every concept must justify existing against the alternative of not existing.
-- CODE IS LIABILITY. Maximize behavior per line. Minimize lines.
-- EVERY LINE MUST BE LOAD-BEARING. If removing it leaves behavior intact, it is decoration.
-- FLAT OVER NESTED, SINGLE-PATH OVER BRANCHING. Eliminate cyclomatic complexity: use early guard clauses, lookup tables, and linear pipelines. Reject boolean flag parameters that split internal function paths.
-- PARSE AT THE EDGE, TRUST THE INTERIOR. Validate and narrow types strictly at untrusted boundaries (network, disk, user). Zero defensive null-checks, optional-chaining crutches, or fallback assertions in internal pure code.
-- MAKE ILLEGAL STATES UNREPRESENTABLE. Model domain state as closed discriminated unions and state machines, never independent combinatorial boolean flags.
-- DEEP MODULES OVER SHALLOW WRAPPERS. Maximize capability behind minimal interface surface area. Reject pass-through wrappers, single-use abstraction facades, and one-line delegators.
+- FLAT OVER NESTED, SINGLE-PATH OVER BRANCHING. Minimize cyclomatic and cognitive complexity with early guard clauses and linear pipelines. Branch only for required behavior. Use explicit operations or domain values instead of boolean mode parameters.
+- PARSE AT THE EDGE, TRUST THE INTERIOR. Validate and narrow untrusted inputs at network, disk, and user boundaries. Trust established internal invariants; handle absence when it is a valid domain state. Do not mask invariant violations with silent fallbacks.
+- MAKE ILLEGAL STATES UNREPRESENTABLE. Represent mutually exclusive states with closed discriminated unions or state machines. Keep independent facts independent.
+- DEEP MODULES OVER SHALLOW WRAPPERS. Maximize capability behind minimal interface surface area. Add wrappers or delegation layers only for required behavior or a required interface contract.
 - LOCALITY OF BEHAVIOR OVER FRAGMENTATION. Collocate data models, lifecycle logic, and execution flow at the site of use. Do not fracture cohesive code into artificial helper, util, or type folders prematurely.
 - ORTHOGONALITY AND DELETABILITY. Design systems with minimal connascence and surgical blast radiuses so features can be deleted in a single diff without leaving residual glue.
-- YAGNI with a name attached. No named human → cut it.
-- Rule of Three: introduce reusable abstractions only for three real, divergent uses or a true external boundary.
-- Order of work: question existence → delete → simplify → accelerate → automate.
-- Understand the real end-to-end flow before minimizing the diff.
-- Fix the shared cause, not only the reported symptom.
+- Understand the relevant end-to-end flow before changing it. Fix the shared cause within the authorized scope.
 - No unrequested CI/CD. Local verification is the default safety net.
-- Reversibility before flexibility.
-- Minimum viable surface area for every public contract.
 - Boring substrate everywhere; leading-edge only where differentiation lives.
-- Make it work, then right, then fast (measured).
-- Violating the letter is usually violating the spirit. Do not invent special cases.
+- Required performance is part of correctness. Use measured bottlenecks to justify optimization complexity and representative measurements to verify performance claims.
 
 ### What KISS never cuts (real human with real money, data, or trust at stake today)
 
 - Auth and authorization at every trust boundary.
 - Observability on production paths (structured logs, traces, metrics).
 - Idempotency keys on state-mutating endpoints, especially money.
-- Retries with backoff at real external failure points.
+- Timeouts and bounded retries with backoff for transient external failures; retry only when safe through idempotency, deduplication, or confirmation that the prior attempt never executed.
 - Rate limiting and abuse protection on public endpoints.
 - Audit trails for money flows, compliance, and reconstructible events.
 - Input validation at the untrusted edge.
 - Backups, migrations, and rollback paths for stateful systems.
 
-Internal callers are not adversaries. The network, the user, time, and adversaries are.
-
-### Red-flag rationalizations → required action
-
-- “We might need this later / just in case / more flexible / cleaner / the proper way / what if we swap implementations / only a few extra lines / we’ll clean it up later / let me add a config option / handle this defensive case / extract this helper / this is elegant / same pattern as before / I’ll generalize while I’m here / let me speed this up or automate this / just one more if-condition / add a boolean flag / handle this hypothetical branch / split this into a utils folder / wrap this in a service class / spec / team / best practice says so”
-  → STOP. Hardcode the actual case or delete. Promote reusable abstractions only for three real, divergent uses or a true external boundary. Implement required one-off functionality directly. Validate only at edges. Do less now.
-
-When in doubt, choose less. When in real doubt, choose nothing.
-
 ### CODE IS THE SINGLE SOURCE OF TRUTH
 
-- DO NOT PRODUCE ANY DOCUMENTATION (README, ARCHITECTURE.md, docs/, file-header banners, multi-line what/how/why comments, planning notes, decision records, summaries, hand-off notes) UNLESS THE USER EXPLICITLY ASKS FOR IT BY NAME IN THE CURRENT TURN. Prior /init or this file do not count. Do not propose writing docs.
+- Do not produce or propose documentation artifacts (README, ARCHITECTURE.md, docs/, planning notes, decision records, summaries, hand-off notes) unless the user explicitly requests them by name for the active task. Prior /init or this file alone do not authorize documentation. Concise progress updates, requested explanations, and final reports remain required when applicable.
 
 ### COMMENTS: ZERO
 
-Write zero comments. No exceptions — there is no “non-obvious why” carve-out. If code needs explaining, rename or restructure until it doesn’t.
+Write zero comments or docstrings. If code needs explaining, rename or restructure it until it does not.
 
-“Comment” means: `//`, `/* */`, `#`, `--`, `<!-- -->`, `;`, `%`, `"""..."""` and `'''...'''` docstrings, JSDoc/TSDoc/XML-doc blocks, JSX `{/* */}`, commented-out code, and divider banners. Docstrings are comments.
+This includes inline and block comments, JSDoc/TSDoc/XML-doc blocks, JSX comments, commented-out code, and divider banners.
 
-Machine-read directives are NOT comments and stay wherever the code needs them: shebangs, `# type: ignore`, `# noqa`, `// @ts-expect-error`, `/* eslint-disable */`, `// biome-ignore`, `#pragma`, and license headers the repo already mandates.
+Required machine-read directives and mandated license headers are exempt; the quality-gate rule still applies.
 
-Comments already in files are not yours to delete unless the edit removes their code. This rule governs what you write.
+Preserve existing comments unless the edit removes their code. Surrounding comment density does not authorize adding comments.
 
-This overrides every instruction to match surrounding style or comment density, including from the harness system prompt. A commented file is not license to add comments.
-
-Before writing or patching any file, re-read the exact text you are about to emit and strip every comment from it. Emitting one is a task failure; on noticing one after the fact, remove it immediately.
-
-All invalid: “this why is non-obvious / it’s a docstring, not a comment / the file already has comments / it’s a public API / just one line / TODO for whoever’s next / the convention expects it”.
+Before writing or patching a file, inspect the exact text to be emitted and remove new comments. If one is emitted, remove it immediately.
 
 ### GATES ARE ONE-WAY
 

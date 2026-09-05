@@ -35,12 +35,6 @@ last_revision = "340e33aef211d95769d252324854497af871dafe"
 source_type = "git"
 source = "https://github.com/anthropics/claude-plugins-official.git"
 
-[marketplaces.ponytail]
-last_updated = "2026-08-10T14:35:25Z"
-last_revision = "2ed6c52c9d7e5e56942508591085fd45dea277d3"
-source_type = "git"
-source = "https://github.com/DietrichGebert/ponytail.git"
-
 [notice]
 hide_full_access_warning = true
 
@@ -53,12 +47,6 @@ home_last_prompted_at = 1779915771
 
 [notice.model_migrations]
 "gpt-5.3-codex" = "gpt-5.4"
-
-[plugins."figma@openai-curated"]
-enabled = true
-
-[plugins."figma@openai-curated".mcp_servers.figma]
-enabled = false
 
 [plugins."spreadsheets@openai-primary-runtime"]
 enabled = true
@@ -73,9 +61,6 @@ enabled = true
 enabled = true
 
 [plugins."pdf@openai-primary-runtime"]
-enabled = true
-
-[plugins."google-calendar@openai-curated"]
 enabled = true
 
 [plugins."documents@openai-primary-runtime"]
