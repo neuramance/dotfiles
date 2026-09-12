@@ -39,16 +39,10 @@
       "CronDelete",
       "CronList",
       "ScheduleWakeup",
-      "Monitor",
-      "SendMessage",
-      "ListAgents",
-      "EnterWorktree",
-      "ExitWorktree",
       "NotebookEdit",
       "EndConversation"
     ]
   },
-  "model": "claude-fable-5-1[1m]",
   "disableClaudeAiConnectors": true,
   "skillOverrides": {
     "repo-metrics": "user-invocable-only",
