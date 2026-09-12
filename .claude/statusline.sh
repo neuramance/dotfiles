@@ -41,8 +41,9 @@ short_cwd=$(echo "$cwd" | sed "s|^$home|~|")
 # Git stats (today's commits)
 today_start="$(date +%Y-%m-%d) 00:00:00"
 today_end="$(date +%Y-%m-%d) 23:59:59"
-added=$(git -C "$cwd" log --since="$today_start" --until="$today_end" --pretty=format: --numstat 2>/dev/null | awk '{added+=$1} END {printf "%d", added+0}')
-removed=$(git -C "$cwd" log --since="$today_start" --until="$today_end" --pretty=format: --numstat 2>/dev/null | awk '{removed+=$2} END {printf "%d", removed+0}')
+numstat=$(git -C "$cwd" log --since="$today_start" --until="$today_end" --pretty=format: --numstat 2>/dev/null | awk '{a+=$1; r+=$2} END {printf "%d %d", a+0, r+0}')
+added=${numstat%% *}
+removed=${numstat##* }
 commits=$(git -C "$cwd" log --since="$today_start" --until="$today_end" --oneline 2>/dev/null | wc -l | tr -d ' ')
 
 # Git branch

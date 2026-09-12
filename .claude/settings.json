@@ -108,17 +108,6 @@
     }
   },
   "effortLevel": "xhigh",
-  "modelSettings": {
-    "claude-fable-5": {
-      "effortLevel": "xhigh"
-    },
-    "claude-opus-5": {
-      "effortLevel": "xhigh"
-    },
-    "claude-fable-5-1": {
-      "effortLevel": "xhigh"
-    }
-  },
   "awaySummaryEnabled": false,
   "tui": "fullscreen",
   "voice": {
@@ -129,7 +118,6 @@
   "skipDangerousModePermissionPrompt": true,
   "skipWorkflowUsageWarning": true,
   "theme": "light",
-  "autoCompactEnabled": true,
   "agentPushNotifEnabled": true,
   "skipAutoPermissionPrompt": true
 }
