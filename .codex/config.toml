@@ -1,7 +1,7 @@
+model_catalog_json = "/Users/w/.codex/models-bundled.json"
 model_provider = "tfy"
 model = "gpt-6-astra"
-model_context_window = 272000
-model_reasoning_effort = "high"
+model_reasoning_effort = "xhigh"
 approval_policy = "never"
 approvals_reviewer = "user"
 sandbox_mode = "danger-full-access"
@@ -13,11 +13,16 @@ notify = ["/Users/w/.codex/computer-use/Codex Computer Use.app/Contents/SharedSu
 [model_providers.tfy]
 name = "TrueFoundry"
 base_url = "https://tfy.promptlens.trilogy.com"
-env_key = "TFY_API_KEY"
 wire_api = "responses"
+
+[model_providers.tfy.auth]
+command = "/usr/bin/security"
+args = ["find-generic-password", "-a", "w", "-s", "codex-tfy-api-key", "-w"]
+timeout_ms = 5000
 
 [features]
 apps = true
+fast_mode = true
 context_management = { experimental_mode = true }
 goals = true
 prevent_idle_sleep = true
@@ -30,30 +35,17 @@ source = "/Users/w/.codex/.tmp/bundled-marketplaces/openai-bundled"
 source_type = "local"
 source = "/Users/w/.cache/codex-runtimes/codex-primary-runtime/plugins/openai-primary-runtime"
 
-[marketplaces.claude-plugins-official]
-last_updated = "2026-08-21T19:53:08Z"
-last_revision = "340e33aef211d95769d252324854497af871dafe"
-source_type = "git"
-source = "https://github.com/anthropics/claude-plugins-official.git"
-
 [notice]
 hide_full_access_warning = true
 
 [notice.external_config_migration_prompts]
 home_last_prompted_at = 1779915771
 
-[notice.external_config_migration_prompts.project_last_prompted_at]
-"/Users/w/code/adversarial_security" = 1778837807
-"/Users/w/code/helios_1" = 1779915771
-
 [notice.model_migrations]
 "gpt-5.3-codex" = "gpt-5.4"
 
 [plugins."spreadsheets@openai-primary-runtime"]
-enabled = true
-
-[plugins."code-simplifier@claude-plugins-official"]
-enabled = true
+enabled = false
 
 [plugins."visualize@openai-bundled"]
 enabled = true
@@ -65,19 +57,19 @@ enabled = true
 enabled = true
 
 [plugins."documents@openai-primary-runtime"]
-enabled = true
+enabled = false
 
 [plugins."presentations@openai-primary-runtime"]
-enabled = true
+enabled = false
 
 [plugins."template-creator@openai-primary-runtime"]
-enabled = true
+enabled = false
 
 [plugins."codex-app-tools@openai-bundled"]
 enabled = true
 
 [plugins."messages@openai-bundled"]
-enabled = true
+enabled = false
 
 [plugins."computer-use@openai-bundled"]
 enabled = true
@@ -88,34 +80,13 @@ enabled = true
 [plugins."unified-computer-use@openai-bundled"]
 enabled = true
 
-[plugins."openai-ads-conversions@openai-api-curated"]
-enabled = true
-
 [projects."/Users/w"]
-trust_level = "trusted"
-
-[projects."/Users/w/Documents/New project"]
-trust_level = "trusted"
-
-[projects."/Users/w/code/adversarial_security"]
-trust_level = "trusted"
-
-[projects."/Users/w/code/sign_language_1"]
-trust_level = "trusted"
-
-[projects."/Users/w/code/helios_1"]
 trust_level = "trusted"
 
 [projects."/Users/w/code/sb/ls_test"]
 trust_level = "trusted"
 
-[projects."/Users/w/code/umath"]
-trust_level = "trusted"
-
 [projects."/Users/w/code/umath_1"]
-trust_level = "trusted"
-
-[projects."/Users/w/code/airs"]
 trust_level = "trusted"
 
 [projects."/Users/w/Documents/ChatGPT/umath"]
@@ -271,6 +242,15 @@ trust_level = "trusted"
 [projects."/Users/w/agent-instructions-eval-20260907/runs/r25/followup/repo"]
 trust_level = "trusted"
 
+[projects."/Users/w/code/umath_2"]
+trust_level = "trusted"
+
+[projects."/private/tmp"]
+trust_level = "trusted"
+
+[projects."/Users/w/code/health"]
+trust_level = "trusted"
+
 [shell_environment_policy]
 inherit = "core"
 
@@ -279,7 +259,9 @@ CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1"
 NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "091a81603ff202a16ed56557709bf42d97caf8f0dd2e07ae9e26d7c014d71035"
 
 [tui]
-status_line = ["current-dir", "git-branch", "context-used", "model-with-reasoning", "run-state", "context-window-size", "fast-mode", "task-\u0070rogress"]
+animations = true
+whimsy = false
+status_line = ["current-dir", "git-branch", "context-used", "model-with-reasoning", "context-window-size", "fast-mode", "task-progress"]
 status_line_use_colors = true
 
 [tui.model_availability_nux]
@@ -298,12 +280,6 @@ trusted_hash = "sha256:c5a03baf7498ccebcdb7ffc55f76e2ea5e4df72be565b0bbc693c8b49
 [hooks.state."/Users/w/.codex/hooks.json:permission_request:0:0"]
 trusted_hash = "sha256:286313cc6d4ecbca4660a20a7a49d76caa2b604cbde51f911685b25ff75d7a90"
 
-[hooks.state."/Users/w/code/umath_1/.codex/hooks.json:post_tool_use:0:0"]
-trusted_hash = "sha256:d5d317e9f18f2d51908937a8228201255a5cdc62c1849fe27a556f13e9cc10ca"
-
-[hooks.state."/Users/w/code/umath_1/.codex/hooks.json:stop:0:0"]
-trusted_hash = "sha256:ff3f93c406831f4f73e980421c76588ca94ac175a90febf7be070839eb11bf25"
-
 [hooks.state."/Users/w/code/a-lp/.codex/hooks.json:post_tool_use:0:0"]
 trusted_hash = "sha256:25ceb33594717c26acd87d27a4a4cc4400b8d8a4abf62054f2f60ad1da65ed94"
 
@@ -315,12 +291,14 @@ followUpQueueMode = "queue"
 dock-icon-preference = "app-default"
 conversationDetailMode = "STEPS_COMMANDS"
 ambient-suggestions-enabled = false
+preventSleepWhileRunning = true
+enabled-reasoning-efforts = ["low", "medium", "high", "xhigh", "persistent", "max", "ultra"]
+show-context-window-usage = true
+composerEnterBehavior = "enter"
+open-link-in-target-preference = "in-app-browser"
 
 [desktop.open-in-target-preferences]
 global = "iterm2"
-
-[desktop.open-in-target-preferences.perPath]
-"/Users/w/Documents/New project" = "iterm2"
 
 [mcp_servers.node_repl]
 args = []
@@ -339,8 +317,8 @@ NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER = ""
 NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME = ""
 NODE_REPL_INSTRUCTIONS_USE_CASE_COMPUTER_USE = ""
 BROWSER_USE_CODEX_APP_BUILD_FLAVOR = "prod"
-BROWSER_USE_CODEX_APP_VERSION = "26.901.51231"
-NODE_REPL_TRUSTED_SERVICES = '{"browser":"/Users/w/.codex/plugins/cache/openai-bundled/browser/26.901.51231/scripts/browser-service.mjs","sky":"@oai/sky/service"}'
+BROWSER_USE_CODEX_APP_VERSION = "26.908.70816"
+NODE_REPL_TRUSTED_SERVICES = '{"browser":"/Users/w/.codex/plugins/cache/openai-bundled/browser/26.908.70816/scripts/browser-service.mjs","sky":"@oai/sky/service"}'
 SKY_CUA_SERVICE_PATH = "/Users/w/.codex/computer-use/Codex Computer Use.app"
 CODEX_CLI_PATH = "/Applications/ChatGPT.app/Contents/Resources/codex"
 
@@ -355,4 +333,10 @@ enabled = false
 command = "./Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient"
 args = ["mcp"]
 cwd = "."
+enabled = false
+
+[agents]
+max_concurrent_threads_per_session = 64
+
+[apps.connector_20205bf7d4e99a89d7154bb849718324]
 enabled = false

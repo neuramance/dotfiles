@@ -1,3 +1,7 @@
+if [[ "$(ulimit -Sn)" != unlimited ]] && (( $(ulimit -Sn) < 8192 )); then
+  ulimit -Sn 8192
+fi
+
 # zsh prompt: user@host:~$  (root → red user, i9 → red host)
 setopt PROMPT_SUBST
 PROMPT='%(!.%F{red}.%F{blue})%n%f@%F{${${${${HOST%%.*}:#i9}:+magenta}:-red}}%m%f:%F{green}%~%f$ '
