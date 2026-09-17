@@ -5,6 +5,9 @@
 !.codex/
 !.codex/AGENTS.md
 !.codex/config.toml
+!.codex/skills/
+!.codex/skills/git-sync/
+!.codex/skills/git-sync/**
 !.claude/
 !.claude/*.sh
 !.claude/settings.json

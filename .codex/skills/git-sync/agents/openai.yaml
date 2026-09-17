@@ -1,0 +1,3 @@
+interface:
+  display_name: "Git & GitHub Sync"
+  short_description: "Pull, reconcile, and verify repository state"
