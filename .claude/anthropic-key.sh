@@ -1,2 +1,2 @@
 #!/bin/sh
-exec security find-generic-password -a "$USER" -s tfy-auth-token -w
+exec /usr/bin/security find-generic-password -a "$USER" -s codex-tfy-api-key -w

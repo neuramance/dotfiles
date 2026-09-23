@@ -251,8 +251,27 @@ trust_level = "trusted"
 [projects."/Users/w/code/health"]
 trust_level = "trusted"
 
+[projects."/Users/w/code/tinygrad"]
+trust_level = "trusted"
+
 [shell_environment_policy]
-inherit = "core"
+inherit = "all"
+
+[shell_environment_policy.filters]
+CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "include"
+HOME = "include"
+LANG = "include"
+LC_ALL = "include"
+LC_CTYPE = "include"
+LOGNAME = "include"
+NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "include"
+PATH = "include"
+SHELL = "include"
+SSH_AUTH_SOCK = "include"
+TEMP = "include"
+TMP = "include"
+TMPDIR = "include"
+USER = "include"
 
 [shell_environment_policy.set]
 CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1"
@@ -263,6 +282,7 @@ animations = true
 whimsy = false
 status_line = ["current-dir", "git-branch", "context-used", "model-with-reasoning", "context-window-size", "fast-mode", "task-progress"]
 status_line_use_colors = true
+screen_reader_detection_done = true
 
 [tui.model_availability_nux]
 "gpt-5.5" = 4
@@ -296,6 +316,7 @@ enabled-reasoning-efforts = ["low", "medium", "high", "xhigh", "persistent", "ma
 show-context-window-usage = true
 composerEnterBehavior = "enter"
 open-link-in-target-preference = "in-app-browser"
+browser-show-full-url = true
 
 [desktop.open-in-target-preferences]
 global = "iterm2"
@@ -339,4 +360,7 @@ enabled = false
 max_concurrent_threads_per_session = 64
 
 [apps.connector_20205bf7d4e99a89d7154bb849718324]
+enabled = false
+
+[apps.asdk_app_69a1d78e929881919bba0dbda1f6436d]
 enabled = false

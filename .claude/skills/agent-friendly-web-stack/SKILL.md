@@ -10,8 +10,7 @@ Use this stack for new browser-based, authenticated relational applications buil
 | Concern | Choice |
 | --- | --- |
 | Language | TypeScript |
-| UI | React |
-| Application framework | Next.js App Router |
+| Application framework and UI | Next.js App Router with React |
 | Application bundler | Turbopack |
 | Styling | StyleX |
 | Package manager and task runner | Bun |
