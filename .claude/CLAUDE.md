@@ -10,9 +10,11 @@ Build the simplest correct solution with the least code. When goals conflict, re
 ## Engineering
 
 - Add a layer, helper, parameter, or dependency only for a concrete need in this task. Prefer existing code and the standard library.
+- Introduce an abstraction only for three real, divergent uses or a true external boundary. No boolean mode parameters, shallow wrappers, or helpers that exist only to satisfy a metric.
 - Flat, linear code with guard clauses. Make illegal states unrepresentable. Keep behavior where it is used.
 - Validate untrusted input at the edge, then trust the interior. Never mask invariant violations with silent fallbacks.
 - For a bug fix, first write a test that fails because of the bug, then make it pass. Fix the shared cause.
+- Derive test expectations from requirements, never from the code's current output. No self-comparisons, copied actual results, production logic reused as the oracle, or mocks of the behavior under test. Every new test must catch a concrete defect.
 - Run the relevant checks before claiming done. If you cannot verify, say so.
 
 ## Production safeguards (never cut for simplicity)
@@ -47,4 +49,4 @@ Do not create documentation files unless asked.
 
 ## Quality gates are one-way
 
-A red gate (linter, ceiling, verify script, hook) means the work is not done: report the failing output. Fix the code. Never loosen a ceiling, add a suppression, weaken a gate or its hooks, or bypass with --no-verify. Over a ceiling, extract along a real seam. Change a check only when independent evidence proves it defective, and show the corrected check accepts a compliant case and rejects a violating one.
+A red gate (linter, ceiling, verify script, hook) means the work is not done: report the failing output. Fix the code. Never loosen a ceiling, add a suppression or per-file override, widen ignores, loosen counting options, weaken a gate or its hooks, or bypass with --no-verify. Over a ceiling, extract along a real seam. Change a check only when independent evidence proves it defective, and show the corrected check accepts a compliant case and rejects a violating one.
