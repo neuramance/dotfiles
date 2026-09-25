@@ -18,6 +18,8 @@
 !.claude/skills/**
 !.claude/commands/
 !.claude/commands/**
+!.claude/rules/
+!.claude/rules/**
 !.gemini/
 !.gemini/settings.json
 !.gemini/antigravity-cli/

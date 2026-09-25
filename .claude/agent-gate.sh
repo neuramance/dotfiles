@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 set -uo pipefail
 input=$(cat)
-root=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
-[[ -x $root/scripts/agent-gate.sh ]] && exit 0
+command -v jq >/dev/null 2>&1 || { echo "agent-gate: jq is required to read hook events" >&2; exit 2; }
+cwd=$(jq -r '.cwd // empty' <<<"$input")
+root=$(git -C "${cwd:-.}" rev-parse --show-toplevel 2>/dev/null) || exit 0
+cd "$root" || exit 0
+[[ -x $root/scripts/agent-gate.sh ]] && grep -qF 'scripts/agent-gate.sh' "$root/.claude/settings.json" 2>/dev/null && exit 0
 verify=$root/scripts/agent-verify
 [[ -x $verify ]] || exit 0
 event=$(jq -r '.hook_event_name // empty' <<<"$input")
@@ -13,8 +16,14 @@ if [[ $event == PostToolUse ]]; then
   printf '%s\n' "$out" | tail -n 20 >&2
   exit 2
 fi
-[[ $(jq -r '.stop_hook_active // false' <<<"$input") == true ]] && exit 0
-[[ -n $(git -C "$root" status --porcelain) ]] || exit 0
 out=$("$verify" 2>&1) && exit 0
+if [[ $(jq -r '.stop_hook_active // false' <<<"$input") == true ]]; then
+  jq -n --arg detail "$(printf '%s\n' "$out" | tail -n 30)" '{
+    continue: false,
+    stopReason: "agent-verify still fails after a retry; the task is incomplete",
+    systemMessage: ("agent-verify still fails after a retry; the task is incomplete\n" + $detail)
+  }'
+  exit 0
+fi
 printf '%s\n' "$out" | tail -n 30 >&2
 exit 2
