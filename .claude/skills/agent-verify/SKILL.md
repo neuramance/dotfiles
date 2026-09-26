@@ -74,7 +74,7 @@ Keep the gate directly runnable outside the agent: selected paths request focuse
 
 ## Hook adapter contract
 
-Read one JSON object from stdin and validate the event fields before use. Resolve the repository and relative paths from the event's `cwd`. Pass paths as argument values, protecting option-like filenames with absolute paths or `--`; never interpolate them into shell commands. Never execute `tool_input.command`; for Codex patches it is data.
+Read one JSON object from stdin and validate the event fields before use. Resolve relative paths from the event's `cwd`, and the repository from the edited file's directory for edit events (a session can edit files in another repository) or from `cwd` otherwise. Pass paths as argument values, protecting option-like filenames with absolute paths or `--`; never interpolate them into shell commands. Never execute `tool_input.command`; for Codex patches it is data.
 
 | Event | Input | Action |
 | --- | --- | --- |
