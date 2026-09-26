@@ -6,7 +6,9 @@ paths:
 
 # Rust
 
-- In a repository with `scripts/agent-verify`, done means it exits 0. Elsewhere run `cargo fmt --check`, `cargo clippy --all-targets` and the tests. Start a new workspace with `git clone ~/code/rust-template <dir>`, then `git remote remove origin` and `git config core.hooksPath .githooks`.
+- In a repository with `scripts/agent-verify`, done means it exits 0. Elsewhere run `cargo fmt --check`, `cargo clippy --all-targets` and the tests. Start a new workspace with `git clone ~/code/rust-template <dir>`, then `git remote remove origin` and `git config core.hooksPath .githooks`; replace `crates/ledger` with your crate and run `cargo generate-lockfile` and `cargo fetch --locked`.
+- The template's gate also rejects doc comments (give clap help with `#[command(about = "…")]` and `#[arg(help = "…")]`), `println!`, `eprintln!` and discarded results (write with `writeln!`, handle the error, return `ExitCode` from `main`), and `#[cfg]` on anything but `test` and non-negated features.
+- The gate runs offline, so run `cargo fetch --locked` after changing dependencies. You can't edit `deny.toml`: if a crate fails its license check, choose another or stop and report. A binary needs an integration test that runs it through `env!("CARGO_BIN_EXE_<name>")`, or mutation testing reports `main` as untested. Give `git push` up to 10 minutes, because the pre-push hook runs mutation testing.
 - Model mutually exclusive states as enums carrying data. Parse untrusted input once at the boundary into newtypes with private fields and fallible constructors; interior code takes the parsed types.
 - Return `Result` for operational failures and panic only on bugs, via `expect("<which invariant failed>")`. Never discard an error or substitute a default for one.
 - Libraries define closed error enums per concern with thiserror; binaries use one application error with context naming the failed step. No catch-all error enum.
