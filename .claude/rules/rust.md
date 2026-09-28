@@ -16,7 +16,8 @@ These rules are requirements for Rust work, not preferences: apply "least code" 
 - Return `Result` for operational failures and panic only on bugs, via `expect("<which invariant failed>")`. Never discard an error or substitute a default for one.
 - Libraries define closed error enums per concern with thiserror. A binary has one error enum whose variants name the failed step and carry the source error, with one `Display` impl; never a tuple or a string as error context. No catch-all error enum.
 - Handle an error where its meaning is known: a broken pipe means success only at the stdout write, not for every error.
-- Match your own enums exhaustively, without `_` arms.
+- Match your own enums exhaustively, without `_` arms or catch-all bindings such as `other => other`, even inside a `Result`.
+- Implement public signatures exactly as the spec gives them; propose a generalization such as a `Borrow<Q>` lookup in your report instead of making it.
 - Escalate abstraction only as needed: concrete type, then enum, then generic, then `dyn`. No trait with a single implementation; no macro where a function works.
 - Borrow unless the value is stored or consumed. Restructure instead of cloning to satisfy the borrow checker.
 - Search the workspace before adding a function, type or dependency. State why a new dependency is needed and confirm the crate exists. Turn off its default features and enable only the ones the code uses, confirming each by removing it and re-running the tests. When a lint recommends a crate, satisfy it in std instead (for `naive_bytecount`, `lines += u64::from(byte == b'\n')` inside the existing pass) unless a measurement shows the crate is needed.
@@ -87,9 +88,10 @@ fn run(cli: &Cli) -> Result<(), Failure> {
 
 ## Tests
 
-- Unit tests live in a sibling `tests.rs` behind `#[cfg(test)] mod tests;`; integration tests share one `tests/it/main.rs`. A binary needs an integration test that runs it through `env!("CARGO_BIN_EXE_<name>")`, or mutation testing reports `main` as untested.
+- Unit tests live in a sibling `tests.rs` behind `#[cfg(test)] mod tests;`; integration tests share one `tests/it/main.rs`. Create `tests.rs` before adding `mod tests;` to its parent, because the per-edit gate compiles the parent at once. In tests, assert returned values (`assert_eq!(cache.put(key, value), None)`) instead of binding them to `_`, which the gate rejects. A binary needs an integration test that runs it through `env!("CARGO_BIN_EXE_<name>")`, or mutation testing reports `main` as untested.
 - Every new test must fail against a real fault; show the failing run. Assert the whole outcome (exact stdout, stderr and exit code; for a usage error, that stderr names the offending argument), not a prefix. For `--help`, assert exit 0, empty stderr and the usage line the spec gives; don't copy clap's full output into the test.
 - A tool that reads files needs tests for a missing file, a file that opens but fails to read (a directory), a failed stdin read, a failed stdout write and a closed stdout.
+- A small enum or struct of borrowed data, such as a parsed `Command<'_>` holding `&[u8]` fields, derives `Clone, Copy`; otherwise pedantic `needless_pass_by_value` rejects passing it by value.
 - Pedantic clippy checks tests too: helpers outside `#[test]` functions use `expect`, not `unwrap`, and strings are built with `join` or `write!`, not `format!` inside `collect` or `push_str`.
 - nextest's `slow-timeout` kills the test's whole process group, which bounds every process a test spawns and meets the subprocess-timeout rule for tests; don't write timeout code in tests.
 - Name fixtures under `CARGO_TARGET_TMPDIR` with `std::process::id()`, because concurrent test runs share that directory.
