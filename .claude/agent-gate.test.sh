@@ -20,6 +20,7 @@ cat >"$repo/scripts/agent-verify" <<EOF
 #!/bin/sh
 printf x >>"$runs"
 [ -f "$work/red" ] && exit 1
+if [ -f "$work/slow" ]; then sleep 300 & echo \$! >"$work/sleep-pid"; wait; fi
 [ -f "$work/create-during-run" ] && printf 'transient\n' >"$repo/appeared.txt"
 exit 0
 EOF
@@ -163,4 +164,21 @@ expect 'gate passes while a file appears under it' 1 0
 rm "$work/create-during-run" "$repo/appeared.txt"
 expect 'start state of a run that saw a transient file is not trusted' 1 0
 expect 'state verified without concurrent change is skipped' 0 0 'skipped'
+git -C "$repo" config agent-gate.stopDeadline 2
+expect 'gate within its deadline passes' 1 0
+touch "$work/slow"
+printf 'five\n' >"$repo/tracked.txt"
+expect 'gate past its deadline blocks the stop' 1 2 'FAIL [deadline]'
+if kill -0 "$(cat "$work/sleep-pid")" 2>/dev/null; then
+  echo "not ok - deadline leaves no process of the gate behind"
+  kill "$(cat "$work/sleep-pid")"
+  failed=1
+else
+  echo "ok - deadline leaves no process of the gate behind"
+fi
+stop_active=true
+expect 'gate past its deadline on the retry ends the turn' 1 0 'still fails after a retry'
+stop_active=false
+kill "$(cat "$work/sleep-pid")" 2>/dev/null
+rm "$work/slow"
 exit "$failed"

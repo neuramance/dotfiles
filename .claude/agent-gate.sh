@@ -23,6 +23,24 @@ bounded() {
       for (i = (NR > 100 ? NR - 9 : 91); i <= NR; i++) print last[i % 10]
     }'
 }
+within() {
+  perl -e '
+    my $seconds = shift;
+    my $pid = fork // die "agent-gate: fork failed: $!\n";
+    if ($pid == 0) { setpgrp; exec @ARGV or die "agent-gate: cannot run $ARGV[0]: $!\n" }
+    $SIG{ALRM} = sub {
+      kill "TERM", -$pid;
+      sleep 2;
+      kill "KILL", -$pid;
+      waitpid $pid, 0;
+      print "FAIL [deadline] $ARGV[0] did not finish within $seconds s\n";
+      exit 124;
+    };
+    alarm $seconds;
+    waitpid $pid, 0;
+    exit($? & 127 ? 128 + ($? & 127) : $? >> 8);
+  ' "$@"
+}
 if [[ -n $file ]]; then
   if [[ $file == *.rs && -f $root/rustfmt.toml ]]; then
     formatted=$(mktemp)
@@ -73,7 +91,8 @@ if [[ -n $before && -f $record && $(<"$record") == "$before" ]]; then
   jq -n '{systemMessage: "agent-gate: skipped the Stop gate; nothing changed since its last green run"}'
   exit 0
 fi
-if out=$("$verify" 2>&1); then
+deadline=$(git config --type=int --get agent-gate.stopDeadline) || deadline=280
+if out=$(within "$deadline" "$verify" 2>&1); then
   [[ -n $before && $(fingerprint) == "$before" ]] && printf '%s\n' "$before" >"$record.$$" && mv -f "$record.$$" "$record"
   exit 0
 fi
