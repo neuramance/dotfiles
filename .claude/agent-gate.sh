@@ -33,7 +33,50 @@ if [[ -n $file ]]; then
   bounded <<<"$out" >&2
   exit 2
 fi
-out=$("$verify" 2>&1) && exit 0
+if stat -c %s . >/dev/null 2>&1; then
+  stat_format=(-c '%n %s %.9Y %.9Z %f %i')
+else
+  stat_format=(-f '%N %z %Fm %Fc %p %i')
+fi
+prune=(-path ./.git -o -path ./node_modules/.cache -o -path ./node_modules/.vite)
+[[ -f Cargo.toml ]] && prune+=(-o -path ./target)
+volatile='^(_|PWD|OLDPWD|SHLVL|COLUMNS|LINES|CLAUDE_EFFORT|CLAUDE_CODE_SESSION_ID|CLAUDE_PID|TRACEPARENT|TRACESTATE)='
+fingerprint() {
+  local path_dirs
+  IFS=: read -r -a path_dirs <<<"$PATH"
+  {
+    date -u +%F
+    git rev-parse HEAD --symbolic-full-name HEAD 2>&1
+    git ls-files --stage -z | git hash-object --stdin
+    git --no-optional-locks status --porcelain --ignored -z 2>&1 | git hash-object --stdin
+    git for-each-ref
+    git config --list
+    env | LC_ALL=C sort | grep -vE "$volatile"
+    git --version
+    git hash-object --no-filters "${BASH_SOURCE[0]}"
+    [[ ! -f package.json ]] || { node --version; bun --version; } 2>&1
+    [[ ! -f Cargo.toml ]] || { rustc -vV; cargo -V; } 2>&1
+    find "${path_dirs[@]}" -maxdepth 1 \( -type f -o -type l \) -print0 2>/dev/null |
+      xargs -0 -r stat "${stat_format[@]}" 2>/dev/null | LC_ALL=C sort
+    find -L . \( "${prune[@]}" \) -prune -o -type d -print 2>/dev/null | LC_ALL=C sort
+    find -L . \( "${prune[@]}" \) -prune -o -type l -print0 2>/dev/null |
+      xargs -0 -r stat "${stat_format[@]}" 2>/dev/null | LC_ALL=C sort
+    find -L . \( "${prune[@]}" \) -prune -o ! -type d ! -type l -print0 2>/dev/null |
+      xargs -0 -r stat -L "${stat_format[@]}" | LC_ALL=C sort
+  } | git hash-object --stdin
+}
+record=
+[[ $(git config --type=bool --get agent-gate.skipUnchanged) == true ]] && record=$(git rev-parse --git-path agent-gate-green)
+before=
+[[ -z $record ]] || before=$(fingerprint) || before=
+if [[ -n $before && -f $record && $(<"$record") == "$before" ]]; then
+  jq -n '{systemMessage: "agent-gate: skipped the Stop gate; nothing changed since its last green run"}'
+  exit 0
+fi
+if out=$("$verify" 2>&1); then
+  [[ -n $before && $(fingerprint) == "$before" ]] && printf '%s\n' "$before" >"$record.$$" && mv -f "$record.$$" "$record"
+  exit 0
+fi
 if [[ $(jq -r '.stop_hook_active // false' <<<"$input") == true ]]; then
   jq -n --arg detail "$(bounded <<<"$out")" '{
     continue: false,
