@@ -24,7 +24,11 @@ bounded() {
     }'
 }
 if [[ -n $file ]]; then
-  [[ $file == *.rs ]] && rustfmt --edition 2024 --quiet -- "$file" >/dev/null 2>&1
+  if [[ $file == *.rs && -f $root/rustfmt.toml ]]; then
+    formatted=$(mktemp)
+    perl -e 'alarm 10; exec @ARGV' rustfmt --quiet --emit stdout <"$file" >"$formatted" 2>/dev/null && ! cmp -s "$formatted" "$file" && cat "$formatted" >"$file"
+    rm -f "$formatted"
+  fi
   out=$("$verify" "$file" 2>&1) && exit 0
   bounded <<<"$out" >&2
   exit 2
