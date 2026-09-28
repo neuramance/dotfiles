@@ -24,6 +24,7 @@ bounded() {
     }'
 }
 if [[ -n $file ]]; then
+  [[ $file == *.rs ]] && rustfmt --edition 2024 --quiet -- "$file" >/dev/null 2>&1
   out=$("$verify" "$file" 2>&1) && exit 0
   bounded <<<"$out" >&2
   exit 2
