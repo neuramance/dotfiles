@@ -13,7 +13,7 @@ These rules are requirements for Rust work, not preferences: apply "least code" 
 ## Design
 
 - Model mutually exclusive states as enums carrying data. Parse untrusted input once at the boundary into precise types (newtypes with private fields and fallible constructors, or std types such as `NonZeroUsize`), resolving implied values such as "no flag means all" there too; interior code takes the parsed types.
-- Return `Result` for operational failures; panic only on bugs, via `expect("<which invariant failed>")`.
+- Return `Result` for operational failures; panic only on bugs, via `expect("<which invariant failed>")`, and never inside a function that returns `Result` or `Option`, where the gate's `unwrap_in_result` rejects it: propagate the error there instead.
 - A library has a closed error enum per concern (thiserror, or a hand-written `Display` when that is simpler), never one crate-wide catch-all. A binary has one error enum whose variants name the failed step and carry the source error, with one `Display`; never `(String, E)`, a `String` or `Box<dyn Error>` as error context.
 - Handle an error where its meaning is known: a broken pipe means success only at the stdout write, not for every error.
 - Match your own enums exhaustively, without `_` arms or catch-all bindings such as `other => other` over a `Result` that holds them; a binding arm over a foreign type such as `io::Result` is fine.
@@ -88,7 +88,7 @@ fn run(cli: &Cli) -> Result<(), Failure> {
 
 ## Tests
 
-- Unit tests sit behind `#[cfg(test)] mod tests;` in the parent, with the file at `src/tests.rs` for the crate root and `src/foo/tests.rs` for `src/foo.rs`; integration tests share `tests/it/` (`main.rs` plus sibling modules). Create the tests file before adding `mod tests;`, because the per-edit gate compiles the parent at once. In tests, assert returned values (`assert_eq!(cache.put(key, value), None)`) instead of discarding them. A binary needs an integration test that runs it through `env!("CARGO_BIN_EXE_<name>")`, or mutation testing reports `main` as untested.
+- Unit tests sit behind `#[cfg(test)] mod tests;` in the parent, with the file at `src/tests.rs` for the crate root and `src/foo/tests.rs` for `src/foo.rs`; integration tests share `tests/it/`, where `main.rs` declares each sibling module once and siblings reach shared helpers through `crate::` (declaring a file twice fails `duplicate_mod`). Create the tests file before adding `mod tests;`, because the per-edit gate compiles the parent at once. In tests, assert returned values (`assert_eq!(cache.put(key, value), None)`) instead of discarding them. A binary needs an integration test that runs it through `env!("CARGO_BIN_EXE_<name>")`, or mutation testing reports `main` as untested.
 - Show each new test failing against a real fault. Assert the whole outcome (exact stdout, stderr and exit code; for a usage error, that stderr names the offending argument), not a prefix. For `--help`, assert exit 0, empty stderr and the usage line the spec gives; don't copy clap's full output into the test.
 - A tool that reads files needs tests for a missing file, a file that opens but fails to read (a directory), a failed stdin read, a failed stdout write and a stdout whose reader has exited (broken pipe).
 - Pedantic clippy checks integration tests too: helpers outside `#[test]` functions use `expect`, not `unwrap`, and strings are built with `join` or `write!`, not `format!` inside `collect` or `push_str`.
