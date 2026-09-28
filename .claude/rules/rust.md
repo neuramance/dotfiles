@@ -19,7 +19,7 @@ These rules are requirements for Rust work, not preferences: apply "least code" 
 - Match your own enums exhaustively, without `_` arms or catch-all bindings such as `other => other`, even inside a `Result`.
 - Implement public signatures exactly as the spec gives them; propose a generalization such as a `Borrow<Q>` lookup in your report instead of making it.
 - Escalate abstraction only as needed: concrete type, then enum, then generic, then `dyn`. No trait with a single implementation; no macro where a function works.
-- Borrow unless the value is stored or consumed. Restructure instead of cloning to satisfy the borrow checker.
+- Borrow unless the value is stored or consumed. Restructure instead of cloning to satisfy the borrow checker. A small enum or struct of borrowed data, such as a parsed `Command<'_>` holding `&[u8]` fields, derives `Clone, Copy`; otherwise pedantic `needless_pass_by_value` rejects passing it by value.
 - Search the workspace before adding a function, type or dependency. State why a new dependency is needed and confirm the crate exists. Turn off its default features and enable only the ones the code uses, confirming each by removing it and re-running the tests. When a lint recommends a crate, satisfy it in std instead (for `naive_bytecount`, `lines += u64::from(byte == b'\n')` inside the existing pass) unless a measurement shows the crate is needed.
 - Fix a complexity failure by flattening first (`let … else`, `?`, guard clauses, branching pushed up to the caller), then deleting, then extracting along a named seam.
 
@@ -27,7 +27,7 @@ These rules are requirements for Rust work, not preferences: apply "least code" 
 
 Apply these on any path that runs once per input item; they add no complexity:
 
-- Lock stdout once, wrap it in `BufWriter`, write with `write!` and return the final `flush()`; `println!` flushes a syscall per line. Wrap files in `BufReader`/`BufWriter` for small reads and writes.
+- Lock stdout once, wrap it in `BufWriter`, write with `write!` and return the final `flush()`; each `println!` line is its own write syscall. Wrap files in `BufReader`/`BufWriter` for small reads and writes.
 - Don't allocate per item: reuse one buffer (`read_until` then `clear`), `write!` into an existing `String`, don't `collect` only to iterate again, and use `with_capacity` when the size is known. Look up with `get_mut` and copy the key only on first insert.
 - Build expensive objects such as a `Regex` once, outside the loop. Stay in `&[u8]` for byte input instead of validating UTF-8.
 - Take the top N with `select_nth_unstable`, then sort only those N; use `sort_unstable` when equal elements need no order; replace hidden O(n) work in loops (`Vec::remove(0)`, `Vec::contains`) with `VecDeque`, a set or `swap_remove`.
@@ -91,7 +91,6 @@ fn run(cli: &Cli) -> Result<(), Failure> {
 - Unit tests live in a sibling `tests.rs` behind `#[cfg(test)] mod tests;`; integration tests share one `tests/it/main.rs`. Create `tests.rs` before adding `mod tests;` to its parent, because the per-edit gate compiles the parent at once. In tests, assert returned values (`assert_eq!(cache.put(key, value), None)`) instead of binding them to `_`, which the gate rejects. A binary needs an integration test that runs it through `env!("CARGO_BIN_EXE_<name>")`, or mutation testing reports `main` as untested.
 - Every new test must fail against a real fault; show the failing run. Assert the whole outcome (exact stdout, stderr and exit code; for a usage error, that stderr names the offending argument), not a prefix. For `--help`, assert exit 0, empty stderr and the usage line the spec gives; don't copy clap's full output into the test.
 - A tool that reads files needs tests for a missing file, a file that opens but fails to read (a directory), a failed stdin read, a failed stdout write and a closed stdout.
-- A small enum or struct of borrowed data, such as a parsed `Command<'_>` holding `&[u8]` fields, derives `Clone, Copy`; otherwise pedantic `needless_pass_by_value` rejects passing it by value.
 - Pedantic clippy checks tests too: helpers outside `#[test]` functions use `expect`, not `unwrap`, and strings are built with `join` or `write!`, not `format!` inside `collect` or `push_str`.
 - nextest's `slow-timeout` kills the test's whole process group, which bounds every process a test spawns and meets the subprocess-timeout rule for tests; don't write timeout code in tests.
 - Name fixtures under `CARGO_TARGET_TMPDIR` with `std::process::id()`, because concurrent test runs share that directory.
