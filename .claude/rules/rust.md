@@ -4,43 +4,43 @@ These rules are requirements for Rust work, not preferences: apply "least code" 
 
 ## Workflow
 
-- In a repository with `scripts/agent-verify`, done means it exits 0. Elsewhere run `cargo fmt --check`, `cargo clippy --all-targets` and the tests. Start a new workspace with `git clone ~/code/rust-template <dir>`, then `git remote remove origin` and `git config core.hooksPath .githooks`; replace `crates/ledger` with your crate and run `cargo generate-lockfile` and `cargo fetch --locked`.
-- The gate runs offline, so run `cargo fetch --locked` after changing dependencies. You can't edit `deny.toml`: if a crate fails its license check, choose another or stop and report. Give `git push` up to 10 minutes, because the pre-push hook runs mutation testing.
+- In a repository with `scripts/agent-verify`, done means it exits 0. Elsewhere run `cargo fmt --all --check`, `cargo clippy --workspace --all-targets --all-features -- -D warnings` and `cargo test --workspace --all-features`. Start a new workspace with `git clone ~/code/rust-template <dir>`, then `git remote remove origin` and `git config core.hooksPath .githooks`; replace `crates/ledger` with your crate and run `cargo generate-lockfile` and `cargo fetch --locked`.
+- The gate runs offline. Add dependencies with `cargo add`, which updates the lockfile; after editing `Cargo.toml` by hand, run `cargo fetch` without `--locked`. You can't edit `deny.toml`: if a crate fails its license check, choose another or stop and report.
+- When tests or logic change, run `cargo mutants --test-tool nextest --file '<crate>/src/**/*.rs'` before reporting done. The pre-push hook runs it with cargo-deny and the gate's self-test and can take up to 30 minutes, so give `git push` that long.
 - Before reporting done, check the diff against each rule here and in `~/.claude/CLAUDE.md`, one at a time, and report every deviation with its reason. Give review subagents both files as their rubric.
-- Measure a performance requirement on the platform CI runs; against a system tool, that means GNU coreutils on Linux, not only macOS.
-- Never edit lint configuration, `.lints-baseline`, gate scripts, snapshots or proptest regressions to get green. Stop and report the failure instead.
+- Measure a performance requirement on the platform CI runs (for a system-tool baseline on Linux CI, GNU coreutils).
 
 ## Design
 
 - Model mutually exclusive states as enums carrying data. Parse untrusted input once at the boundary into precise types (newtypes with private fields and fallible constructors, or std types such as `NonZeroUsize`), resolving implied values such as "no flag means all" there too; interior code takes the parsed types.
-- Return `Result` for operational failures and panic only on bugs, via `expect("<which invariant failed>")`. Never discard an error or substitute a default for one.
-- Libraries define closed error enums per concern with thiserror. A binary has one error enum whose variants name the failed step and carry the source error, with one `Display` impl; never a tuple or a string as error context. No catch-all error enum.
+- Return `Result` for operational failures; panic only on bugs, via `expect("<which invariant failed>")`.
+- A library has a closed error enum per concern (thiserror, or a hand-written `Display` when that is simpler), never one crate-wide catch-all. A binary has one error enum whose variants name the failed step and carry the source error, with one `Display`; never `(String, E)`, a `String` or `Box<dyn Error>` as error context.
 - Handle an error where its meaning is known: a broken pipe means success only at the stdout write, not for every error.
-- Match your own enums exhaustively, without `_` arms or catch-all bindings such as `other => other`, even inside a `Result`.
-- Implement public signatures exactly as the spec gives them; propose a generalization such as a `Borrow<Q>` lookup in your report instead of making it.
-- Escalate abstraction only as needed: concrete type, then enum, then generic, then `dyn`. No trait with a single implementation; no macro where a function works.
-- Borrow unless the value is stored or consumed. Restructure instead of cloning to satisfy the borrow checker. A small enum or struct of borrowed data, such as a parsed `Command<'_>` holding `&[u8]` fields, derives `Clone, Copy`; otherwise pedantic `needless_pass_by_value` rejects passing it by value.
-- Search the workspace before adding a function, type or dependency. State why a new dependency is needed and confirm the crate exists. Turn off its default features and enable only the ones the code uses, confirming each by removing it and re-running the tests. When a lint recommends a crate, satisfy it in std instead (for `naive_bytecount`, `lines += u64::from(byte == b'\n')` inside the existing pass) unless a measurement shows the crate is needed.
-- Fix a complexity failure by flattening first (`let … else`, `?`, guard clauses, branching pushed up to the caller), then deleting, then extracting along a named seam.
+- Match your own enums exhaustively, without `_` arms or catch-all bindings such as `other => other` over a `Result` that holds them; a binding arm over a foreign type such as `io::Result` is fine.
+- Implement public signatures exactly as the spec gives them; propose a generalization such as a `Borrow<Q>` lookup in your report instead of making it, and say so if a given signature can't pass the gate.
+- Escalate abstraction only as needed: concrete type, then enum, then generic, then `dyn`. No trait with a single implementation unless it is a true external boundary; no macro where a function works.
+- Borrow unless the value is stored or consumed. Restructure instead of cloning to satisfy the borrow checker. A small crate-internal enum or struct of borrowed data, such as a parsed `Command<'_>` holding `&[u8]` fields, derives `Clone, Copy`, or pedantic `needless_pass_by_value` rejects passing it by value; on a public type `Copy` is a semver promise.
+- Turn off a dependency's default features and enable only the ones the code uses, confirming each by removing it and re-running the tests. When a lint recommends a crate, satisfy it in std instead (for `naive_bytecount`, `lines += u64::from(byte == b'\n')` inside the existing pass) unless a measurement shows the crate is needed.
+- Fix a complexity failure by flattening first (`let … else`, `?`, guard clauses), then deleting, then extracting along a named seam.
 
 ## Performance
 
-Apply these on any path that runs once per input item; they add no complexity:
+These defaults are pre-approved exceptions to "optimize only with measurement"; apply them on any path that runs once per input item:
 
-- Lock stdout once, wrap it in `BufWriter`, write with `write!` and return the final `flush()`; each `println!` line is its own write syscall. Wrap files in `BufReader`/`BufWriter` for small reads and writes.
-- Don't allocate per item: reuse one buffer (`read_until` then `clear`), `write!` into an existing `String`, don't `collect` only to iterate again, and use `with_capacity` when the size is known. Look up with `get_mut` and copy the key only on first insert.
+- For batch output, lock stdout once, wrap it in `BufWriter`, write with `write!` or `write_all` and return the final `flush()`; each `println!` line is its own write syscall. Output that must stream (interactive tools, pipelines read live, logs) flushes per record. Wrap files in `BufReader`/`BufWriter` for small reads and writes.
+- Don't allocate per item: reuse one buffer (`read_until` then `clear`), `write!` into an existing `String`, don't `collect` only to iterate again, and use `with_capacity` when the size is known. When building an owned key is costly, look up with `get_mut` and copy the key only on first insert; otherwise use the entry API.
 - Build expensive objects such as a `Regex` once, outside the loop. Stay in `&[u8]` for byte input instead of validating UTF-8.
-- Take the top N with `select_nth_unstable`, then sort only those N; use `sort_unstable` when equal elements need no order; replace hidden O(n) work in loops (`Vec::remove(0)`, `Vec::contains`) with `VecDeque`, a set or `swap_remove`.
+- Take the top N with `select_nth_unstable(n)` guarded by `n < len` (it panics at `n == len`, so test that case), then sort only those N; use `sort_unstable` when equal elements need no order; replace hidden O(n) work in loops (`Vec::remove(0)`, `Vec::contains`) with `VecDeque`, a set or `swap_remove`.
 
 Escalate further only when the spec asks for speed or a profile shows the hotspot, and report the measured gain:
 
-- A hash map on a hot path with trusted keys uses `rustc_hash::FxHashMap` (Apache-2.0 or MIT, no dependencies; 1.3-1.4x faster than std on short byte keys). Keep std's SipHash for attacker-controlled keys. foldhash is Zlib-licensed and fails `deny.toml`.
+- A hash map on a hot path with trusted keys uses `rustc_hash::FxHashMap` (Apache-2.0 or MIT, no dependencies; about 1.3-1.9x faster than std on short keys, depending on the workload). Keep std's SipHash for attacker-controlled keys. foldhash is Zlib-licensed and fails `deny.toml`.
 - Store many small keys in one contiguous arena with indices instead of a `Vec` each; accumulate per thread and merge once instead of locking shared state per item; use an enum or generics instead of `Box<dyn>` in hot loops.
-- When the spec sets a performance target, benchmark the release build on realistic input (median of several runs, compared in one session against the previous version), profile with `samply record` before optimizing past the defaults, and keep the fastest correct version. Never change tests, benchmark inputs or build flags to win.
+- When the spec sets a performance target, benchmark the release build on realistic input (median of several runs, compared in one session against the previous version), profile before optimizing past the defaults (`samply record`, installed with `cargo install --locked samply`, or `perf` on Linux), and keep the fastest correct version. Never change tests, benchmark inputs or build flags to win.
 
 ## Binaries
 
-The template's gate rejects comments, including doc comments (give clap help with `#[command(about = "…")]` and `#[arg(help = "…")]`), `println!`, `eprintln!`, `process::exit`, discarded results, and `#[cfg]` on anything but `test` and non-negated features. This shape, from a line-counting CLI, passes the gate and mutation testing:
+The template's gate rejects comments, including doc comments (give clap help with `#[command(about = "…")]` and `#[arg(help = "…")]`), `println!`, `eprintln!`, `process::exit` outside `main`, `let _ =` on must-use or drop types, unused `Result`s and `.ok()`, and `#[cfg]` on anything but `test` and non-negated features. `let _x =`, `drop(result)`, `.is_ok()` and `unwrap_or_default()` pass the gate but break the Design rules. This shape, from a line-counting CLI, passes the gate and mutation testing:
 
 ```rust
 enum Failure {
@@ -84,15 +84,15 @@ fn run(cli: &Cli) -> Result<(), Failure> {
 }
 ```
 
-`main` returns `io::Result<ExitCode>` so that a failed diagnostic write propagates instead of being dropped. `print` writes through `BufWriter::new(io::stdout().lock())` and returns its final `flush()`, so write errors surface.
+`main` returns `io::Result<ExitCode>` so a failed diagnostic write propagates; `print` writes through `BufWriter::new(io::stdout().lock())` and returns its final `flush()`.
 
 ## Tests
 
-- Unit tests live in a sibling `tests.rs` behind `#[cfg(test)] mod tests;`; integration tests share one `tests/it/main.rs`. Create `tests.rs` before adding `mod tests;` to its parent, because the per-edit gate compiles the parent at once. In tests, assert returned values (`assert_eq!(cache.put(key, value), None)`) instead of binding them to `_`, which the gate rejects. A binary needs an integration test that runs it through `env!("CARGO_BIN_EXE_<name>")`, or mutation testing reports `main` as untested.
-- Every new test must fail against a real fault; show the failing run. Assert the whole outcome (exact stdout, stderr and exit code; for a usage error, that stderr names the offending argument), not a prefix. For `--help`, assert exit 0, empty stderr and the usage line the spec gives; don't copy clap's full output into the test.
-- A tool that reads files needs tests for a missing file, a file that opens but fails to read (a directory), a failed stdin read, a failed stdout write and a closed stdout.
-- Pedantic clippy checks tests too: helpers outside `#[test]` functions use `expect`, not `unwrap`, and strings are built with `join` or `write!`, not `format!` inside `collect` or `push_str`.
-- nextest's `slow-timeout` kills the test's whole process group, which bounds every process a test spawns and meets the subprocess-timeout rule for tests; don't write timeout code in tests.
+- Unit tests sit behind `#[cfg(test)] mod tests;` in the parent, with the file at `src/tests.rs` for the crate root and `src/foo/tests.rs` for `src/foo.rs`; integration tests share `tests/it/` (`main.rs` plus sibling modules). Create the tests file before adding `mod tests;`, because the per-edit gate compiles the parent at once. In tests, assert returned values (`assert_eq!(cache.put(key, value), None)`) instead of discarding them. A binary needs an integration test that runs it through `env!("CARGO_BIN_EXE_<name>")`, or mutation testing reports `main` as untested.
+- Show each new test failing against a real fault. Assert the whole outcome (exact stdout, stderr and exit code; for a usage error, that stderr names the offending argument), not a prefix. For `--help`, assert exit 0, empty stderr and the usage line the spec gives; don't copy clap's full output into the test.
+- A tool that reads files needs tests for a missing file, a file that opens but fails to read (a directory), a failed stdin read, a failed stdout write and a stdout whose reader has exited (broken pipe).
+- Pedantic clippy checks integration tests too: helpers outside `#[test]` functions use `expect`, not `unwrap`, and strings are built with `join` or `write!`, not `format!` inside `collect` or `push_str`.
+- Under the template's nextest profile (`terminate-after = 2` at 60 s) a hung test's process group is killed, which bounds children that stay in the group; don't write timeout code for those. Nothing bounds `cargo test`, so no test may be able to hang: feed stdin from fixture files, and never wait on a child that waits on you.
 - Give every fixture under `CARGO_TARGET_TMPDIR` a name that no other test uses, prefixed with `std::process::id()`: `cargo test` runs tests as threads of one process, and concurrent runs share the directory. The suite must pass under both `cargo test` and nextest, although the gate runs only nextest.
-- For a closed stdout, drop the reader of `std::io::pipe()` and pass its writer as stdout. For a failed write, run the binary as `sh -c 'ulimit -f 0 && trap "" XFSZ && exec "$0" "$@"'` with stdout redirected to a file, which fails with EFBIG; std treats EBADF on stdout as success, so a read-only descriptor doesn't work.
-- cargo-mutants counts a timeout as a failure. A loop that stops when a comparison sees a repeating end-of-input value hangs once the comparison is mutated, so drive read loops by a pattern, `while let 1.. = reader.read_until(b'\n', &mut line)?`, or by an iterator.
+- For a stdout whose reader has exited, drop the reader of `std::io::pipe()` and pass its writer as stdout. For a failed write, run the binary as `sh -c 'ulimit -f 0 && trap "" XFSZ && exec "$0" "$@"'` with stdout redirected to a file, which fails with EFBIG; std treats EBADF on stdout as success, so a closed or read-only descriptor doesn't work.
+- cargo-mutants counts a timeout as a failure. A loop that stops when a comparison sees a repeating end-of-input value hangs once the comparison is mutated, so drive read loops by a pattern, `while let 1.. = reader.read_until(b'\n', &mut line)?`, or by an iterator that doesn't allocate per item.
