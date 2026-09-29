@@ -23,7 +23,7 @@ These rules are requirements for Rust work, not preferences: apply "least code" 
 - Implement public signatures exactly as the spec gives them; propose a generalization such as a `Borrow<Q>` lookup in your report instead of making it, and say so if a given signature can't pass the gate.
 - When a synchronous binary spreads work over threads or reorders output, put that logic in `src/lib.rs` behind `impl Read`/`impl Write` parameters and keep `main.rs` to argument parsing and wiring, so tests drive ordering and bounds deterministically instead of by timing. This does not apply to an async server: its protocol belongs in a library crate that does no I/O, and its connection handling stays in the binary.
 - Escalate abstraction only as needed: concrete type, then enum, then generic, then `dyn`. No trait with a single implementation unless it is a true external boundary; no macro where a function works.
-- Borrow unless the value is stored or consumed. Restructure instead of cloning to satisfy the borrow checker. A small crate-internal enum or struct of borrowed data, such as a parsed `Command<'_>` holding `&[u8]` fields, derives `Clone, Copy`, or pedantic `needless_pass_by_value` rejects passing it by value. A public type implements the common traits that hold for it (`Debug`, `Clone`, `PartialEq`, `Eq`, `Hash`, `Default`); add `Copy` to a public type only if it will stay small, because removing it later breaks callers. A type that holds values the spec calls secret implements `Debug` by hand and prints none of them, for example `f.debug_struct("Store").field("len", &self.entries.len()).finish_non_exhaustive()`.
+- Borrow unless the value is stored or consumed. Restructure instead of cloning to satisfy the borrow checker. A small crate-internal enum or struct of borrowed data, such as a parsed `Command<'_>` holding `&[u8]` fields, derives `Clone, Copy`, or pedantic `needless_pass_by_value` rejects passing it by value. A public type implements the common traits that hold for it (`Debug`, `Clone`, `PartialEq`, `Eq`, `Hash`, `Default`); add `Copy` to a public type only if it will stay small, because removing it later breaks callers. Mark `#[must_use]` a public function whose ignored result loses data or hides a failure, such as a `try_pop` returning `Option`. A type that holds values the spec calls secret implements `Debug` by hand and prints none of them, for example `f.debug_struct("Store").field("len", &self.entries.len()).finish_non_exhaustive()`.
 - Turn off a dependency's default features and enable only the ones the code uses, confirming each by removing it and re-running the tests. When a lint recommends a crate, satisfy it in std instead (for `naive_bytecount`, `lines += u64::from(byte == b'\n')` inside the existing pass) unless a measurement shows the crate is needed.
 - Fix a complexity failure by flattening first (`let … else`, `?`, guard clauses), then deleting, then extracting along a named seam.
 
@@ -35,6 +35,7 @@ These defaults are pre-approved exceptions to "optimize only with measurement"; 
 - Don't allocate per item: reuse one buffer (`read_until` then `clear`), `write!` into an existing `String`, don't `collect` only to iterate again, and use `with_capacity` when the size is known. When building an owned key is costly, look up with `get_mut` and copy the key only on first insert; otherwise use the entry API.
 - Build expensive objects such as a `Regex` once, outside the loop. Stay in `&[u8]` for byte input instead of validating UTF-8.
 - Take the top N with `select_nth_unstable(n)` guarded by `n < len` (it panics at `n == len`, so test that case), then sort only those N; use `sort_unstable` when equal elements need no order; replace hidden O(n) work in loops (`Vec::remove(0)`, `Vec::contains`) with `VecDeque`, a set or `swap_remove`.
+- In a lock-free structure, keep independently contended atomics, such as a queue's head and tail, on separate cache lines with a `#[repr(align(128))]` wrapper type, because atomics sharing a line make every core that touches one invalidate the other.
 - Spread work over threads dynamically: spawn `min(jobs, items)` workers that each claim the next item from a shared `AtomicUsize::fetch_add` counter or a channel, never a static partition such as `step_by(workers)`, so one slow item cannot idle the others. `std::thread::available_parallelism()` can fail; fall back to 1 thread instead of failing the run.
 
 Escalate further only when the spec asks for speed or a profile shows the hotspot, and report the measured gain:
@@ -48,6 +49,7 @@ Escalate further only when the spec asks for speed or a profile shows the hotspo
 The template's gate rejects comments, including doc comments (give clap help with `#[command(about = "…")]` and `#[arg(help = "…")]`), `println!`, `eprintln!`, `process::exit` outside `main`, `let _ =` on must-use or drop types, unused `Result`s and `.ok()`, and `#[cfg]` on anything but `test` and non-negated features. `let _x =`, `drop(result)`, `.is_ok()` and `unwrap_or_default()` pass the gate but break the Design rules. This shape, from a line-counting CLI, passes the gate and mutation testing:
 
 ```rust
+#[derive(Debug)]
 enum Failure {
     ReadStdin(io::Error),
     ReadFile(PathBuf, io::Error),
@@ -63,6 +65,8 @@ impl fmt::Display for Failure {
         }
     }
 }
+
+impl std::error::Error for Failure {}
 
 fn main() -> io::Result<ExitCode> {
     let Err(failure) = run(&Cli::parse()) else {
