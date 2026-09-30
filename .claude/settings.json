@@ -44,10 +44,12 @@
       "EndConversation"
     ]
   },
+  "model": "opus",
   "disableClaudeAiConnectors": true,
   "skillOverrides": {
     "repo-metrics": "user-invocable-only",
-    "loop": "user-invocable-only"
+    "loop": "user-invocable-only",
+    "standards-review": "user-invocable-only"
   },
   "hooks": {
     "PostToolUse": [
