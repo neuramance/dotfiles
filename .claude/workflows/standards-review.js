@@ -148,7 +148,7 @@ function verifyBatch(batch) {
     .map(issue => `#${issue.id} ${issue.file}:${issue.line}\nRules: ${issue.rules.join(' | ')}\nClaim: ${issue.violation}\nQuoted code: ${issue.evidence}\nProposed fix: ${issue.fix}`)
     .join('\n\n')
   return parallel(LENSES.map((lens, i) => () => agent(
-    `Each issue below claims that the change printed by ${scope.diffCommand} violates a CLAUDE.md rule. Try to refute each claim on its own merits, and answer refuted=true when uncertain. Return one verdict per issue id, each reason in at most two sentences.
+    `Each issue below claims that the change printed by ${scope.diffCommand} violates a CLAUDE.md rule. Try to refute each claim on its own merits, and answer refuted=true when uncertain. Return one verdict per issue id, each reason naming the code or rule that decides it.
 
 Your lens. ${lens}
 

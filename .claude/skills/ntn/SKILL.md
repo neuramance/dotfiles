@@ -55,4 +55,4 @@ Parent targets: `page:<id>`, `database:<id>`, `data-source:<id>`. `query` takes 
 - Don't pass `--allow-deleting-content` to `pages edit` without explicit user authorization to delete child pages or databases
 - Don't trash pages without `--yes` and user authorization
 - Don't guess API request bodies; read `ntn api <path> --spec` first
-- Don't run `ntn update`, `ntn login`, or `ntn logout` unless the user asks
+- Don't run `ntn update` or `ntn logout` unless the user asks
