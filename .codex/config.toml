@@ -254,6 +254,15 @@ trust_level = "trusted"
 [projects."/Users/w/code/tinygrad"]
 trust_level = "trusted"
 
+[projects."/Users/w/code/.vault-eval-44814-codex"]
+trust_level = "trusted"
+
+[projects."/Users/w/code/.vault-eval-66035-codex"]
+trust_level = "trusted"
+
+[projects."/Users/w/code/.vault-eval-9442-codex"]
+trust_level = "trusted"
+
 [shell_environment_policy]
 inherit = "all"
 
@@ -309,7 +318,7 @@ trusted_hash = "sha256:a0cb350ebf4ea28a6110207b30ab4ebbdb19529135787738ab2384129
 [desktop]
 followUpQueueMode = "queue"
 dock-icon-preference = "app-default"
-conversationDetailMode = "STEPS_COMMANDS"
+conversationDetailMode = "STEPS_PROSE"
 ambient-suggestions-enabled = false
 preventSleepWhileRunning = true
 enabled-reasoning-efforts = ["low", "medium", "high", "xhigh", "persistent", "max", "ultra"]
@@ -338,8 +347,8 @@ NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER = ""
 NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME = ""
 NODE_REPL_INSTRUCTIONS_USE_CASE_COMPUTER_USE = ""
 BROWSER_USE_CODEX_APP_BUILD_FLAVOR = "prod"
-BROWSER_USE_CODEX_APP_VERSION = "26.908.70816"
-NODE_REPL_TRUSTED_SERVICES = '{"browser":"/Users/w/.codex/plugins/cache/openai-bundled/browser/26.908.70816/scripts/browser-service.mjs","sky":"@oai/sky/service"}'
+BROWSER_USE_CODEX_APP_VERSION = "26.911.61220"
+NODE_REPL_TRUSTED_SERVICES = '{"browser":"/Users/w/.codex/plugins/cache/openai-bundled/browser/26.911.61220/scripts/browser-service.mjs","sky":"@oai/sky/service"}'
 SKY_CUA_SERVICE_PATH = "/Users/w/.codex/computer-use/Codex Computer Use.app"
 CODEX_CLI_PATH = "/Applications/ChatGPT.app/Contents/Resources/codex"
 
