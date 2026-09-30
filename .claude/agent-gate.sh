@@ -56,7 +56,8 @@ if stat -c %s . >/dev/null 2>&1; then
 else
   stat_format=(-f '%N %z %Fm %Fc %p %i')
 fi
-prune=(-path ./.git -o -path ./node_modules/.cache -o -path ./node_modules/.vite)
+prune=(-path ./.git)
+for cache in .cache .tmp .vite .vitest-cache; do prune+=(-o -path "./node_modules/$cache"); done
 [[ -f Cargo.toml ]] && prune+=(-o -path ./target)
 volatile='^(_|PWD|OLDPWD|SHLVL|COLUMNS|LINES|CLAUDE_EFFORT|CLAUDE_CODE_SESSION_ID|CLAUDE_PID|TRACEPARENT|TRACESTATE)='
 fingerprint() {

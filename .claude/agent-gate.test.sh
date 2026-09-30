@@ -22,6 +22,11 @@ printf x >>"$runs"
 [ -f "$work/red" ] && exit 1
 if [ -f "$work/slow" ]; then sleep 300 & echo \$! >"$work/sleep-pid"; wait; fi
 [ -f "$work/create-during-run" ] && printf 'transient\n' >"$repo/appeared.txt"
+if [ -f "$work/cache-during-run" ]; then
+  for cache in .cache .tmp .vite .vitest-cache; do
+    mkdir -p "$repo/node_modules/\$cache" && printf x >>"$repo/node_modules/\$cache/entry"
+  done
+fi
 exit 0
 EOF
 chmod +x "$repo/scripts/agent-verify"
@@ -164,6 +169,11 @@ expect 'gate passes while a file appears under it' 1 0
 rm "$work/create-during-run" "$repo/appeared.txt"
 expect 'start state of a run that saw a transient file is not trusted' 1 0
 expect 'state verified without concurrent change is skipped' 0 0 'skipped'
+touch "$work/cache-during-run"
+printf 'cached\n' >"$repo/tracked.txt"
+expect 'gate that writes only its tool caches runs' 1 0
+expect 'state verified while the gate wrote only tool caches is skipped' 0 0 'skipped'
+rm "$work/cache-during-run"
 git -C "$repo" config agent-gate.stopDeadline 2
 expect 'gate within its deadline passes' 1 0
 touch "$work/slow"
