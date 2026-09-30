@@ -263,6 +263,12 @@ trust_level = "trusted"
 [projects."/Users/w/code/.vault-eval-9442-codex"]
 trust_level = "trusted"
 
+[projects."/private/var/folders/tb/0fjx9wf93m7fhv4vtfcsq1br0000gn/T/tmp.VzFmRBZ6Vg/repo"]
+trust_level = "trusted"
+
+[projects."/Users/w/code/umath_3"]
+trust_level = "trusted"
+
 [shell_environment_policy]
 inherit = "all"
 
@@ -292,6 +298,7 @@ whimsy = false
 status_line = ["current-dir", "git-branch", "context-used", "model-with-reasoning", "context-window-size", "fast-mode", "task-progress"]
 status_line_use_colors = true
 screen_reader_detection_done = true
+theme = "davinci"
 
 [tui.model_availability_nux]
 "gpt-5.5" = 4
