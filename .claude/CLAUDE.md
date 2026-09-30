@@ -1,6 +1,6 @@
 # CLAUDE.md (global)
 
-Build the simplest correct solution with the least code. When goals conflict, resolve in this order:
+Build the simplest, correct, most irreducible solution with the least code and most optimal/best/simplest architecture. When goals conflict, resolve in this order:
 
 1. Correctness, including edge cases, failure paths, and required performance.
 2. Simplest architecture: fewest concepts, no extra layers, idiomatic.
