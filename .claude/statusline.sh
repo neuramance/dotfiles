@@ -8,43 +8,10 @@ cwd="${cwd:-$PWD}"
 model=$(echo "$input" | grep -o '"display_name":"[^"]*"' | head -1 | sed 's/"display_name":"//;s/"$//')
 [ -z "$model" ] && model=$(echo "$input" | grep -o '"model":"[^"]*"' | head -1 | sed 's/"model":"//;s/"$//')
 used_pct=$(echo "$input" | grep -o '"used_percentage":[0-9.]*' | head -1 | sed 's/"used_percentage"://')
-transcript=$(echo "$input" | grep -o '"transcript_path":"[^"]*"' | head -1 | sed 's/"transcript_path":"//;s/"$//')
-
-# Total context tokens from latest assistant usage block in transcript
-total_tokens=""
-if [ -n "$transcript" ] && [ -f "$transcript" ]; then
-  last_usage=$(grep -o '"usage":{[^}]*}' "$transcript" | tail -1)
-  if [ -n "$last_usage" ]; then
-    in_t=$(echo "$last_usage" | grep -o '"input_tokens":[0-9]*' | sed 's/.*://')
-    cc_t=$(echo "$last_usage" | grep -o '"cache_creation_input_tokens":[0-9]*' | sed 's/.*://')
-    cr_t=$(echo "$last_usage" | grep -o '"cache_read_input_tokens":[0-9]*' | sed 's/.*://')
-    total_tokens=$(( ${in_t:-0} + ${cc_t:-0} + ${cr_t:-0} ))
-  fi
-fi
-
-# Format token count as human-readable (e.g. 125k, 1.2M)
-fmt_tokens=""
-if [ -n "$total_tokens" ] && [ "$total_tokens" -gt 0 ]; then
-  if [ "$total_tokens" -ge 1000000 ]; then
-    fmt_tokens=$(awk -v n="$total_tokens" 'BEGIN{printf "%.1fM", n/1000000}')
-  elif [ "$total_tokens" -ge 1000 ]; then
-    fmt_tokens=$(awk -v n="$total_tokens" 'BEGIN{printf "%dk", n/1000}')
-  else
-    fmt_tokens="$total_tokens"
-  fi
-fi
 
 # Shorten cwd
 home=$(echo ~)
 short_cwd=$(echo "$cwd" | sed "s|^$home|~|")
-
-# Git stats (today's commits)
-today_start="$(date +%Y-%m-%d) 00:00:00"
-today_end="$(date +%Y-%m-%d) 23:59:59"
-numstat=$(git -C "$cwd" log --since="$today_start" --until="$today_end" --pretty=format: --numstat 2>/dev/null | awk '{a+=$1; r+=$2} END {printf "%d %d", a+0, r+0}')
-added=${numstat%% *}
-removed=${numstat##* }
-commits=$(git -C "$cwd" log --since="$today_start" --until="$today_end" --oneline 2>/dev/null | wc -l | tr -d ' ')
 
 # Git branch
 branch=$(git -C "$cwd" rev-parse --abbrev-ref HEAD 2>/dev/null)
@@ -77,19 +44,12 @@ if [ -n "$branch" ]; then
   out+=" \033[38;2;139;92;246m(${branch})\033[0m"
 fi
 
-out+=" \033[38;2;0;196;92m+${added}\033[0m\033[38;2;203;213;225m/\033[0m\033[38;2;249;115;22m-${removed}\033[0m"
-out+=" \033[38;2;234;179;8m${commits}c\033[0m"
-
-if [ -n "$fmt_tokens" ]; then
-  out+=" \033[38;2;236;72;153m${fmt_tokens}\033[0m"
-fi
-
 if [ -n "$used_pct" ]; then
   out+=" ${ctx_color}${pct_int}%\033[0m"
 fi
 
 short_model=$(echo "$model" | sed -E 's/^Claude (Sonnet|Opus|Haiku) ([0-9.]+).*/\1\2/; s/^Sonnet/So/; s/^Opus/Op/; s/^Haiku/Ha/; s/^([A-Z][a-z])[a-z]* ([0-9.]+).*/\1\2/')
 [[ "$model" == *"1M"* ]] && short_model="${short_model}-1M"
-out+=" \033[38;2;99;102;241m${short_model}\033[0m"
+out+=" \033[38;2;0;0;0m${short_model}\033[0m"
 
 printf '%b' "$out"
