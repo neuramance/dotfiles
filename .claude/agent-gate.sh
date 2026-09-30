@@ -47,6 +47,14 @@ if [[ -n $file ]]; then
     perl -e 'alarm 10; exec @ARGV' rustfmt --quiet --emit stdout <"$file" >"$formatted" 2>/dev/null && ! cmp -s "$formatted" "$file" && cat "$formatted" >"$file"
     rm -f "$formatted"
   fi
+  if [[ ($file == *.py || $file == *.pyi) && -f $root/ruff.toml && -x $root/.venv/bin/ruff ]]; then
+    ruff=$root/.venv/bin/ruff
+    formatted=$(mktemp)
+    perl -e 'alarm 10; exec @ARGV' "$ruff" check --config "$root/ruff.toml" --select I --fix-only --exit-zero --stdin-filename "$file" - <"$file" 2>/dev/null |
+      perl -e 'alarm 10; exec @ARGV' "$ruff" format --config "$root/ruff.toml" --stdin-filename "$file" - >"$formatted" 2>/dev/null &&
+      ! cmp -s "$formatted" "$file" && cat "$formatted" >"$file"
+    rm -f "$formatted"
+  fi
   out=$("$verify" "$file" 2>&1) && exit 0
   bounded <<<"$out" >&2
   exit 2
@@ -59,6 +67,7 @@ fi
 prune=(-path ./.git)
 for cache in .cache .tmp .vite .vitest-cache; do prune+=(-o -path "./node_modules/$cache"); done
 [[ -f Cargo.toml ]] && prune+=(-o -path ./target)
+[[ -f pyproject.toml ]] && prune+=(-o -path ./.venv -o -path ./mutants -o -path ./.pytest_cache -o -path ./.ruff_cache -o -name __pycache__)
 volatile='^(_|PWD|OLDPWD|SHLVL|COLUMNS|LINES|CLAUDE_EFFORT|CLAUDE_CODE_SESSION_ID|CLAUDE_PID|TRACEPARENT|TRACESTATE)='
 fingerprint() {
   local path_dirs
@@ -75,6 +84,12 @@ fingerprint() {
     git hash-object --no-filters "${BASH_SOURCE[0]}"
     [[ ! -f package.json ]] || { node --version; bun --version; } 2>&1
     [[ ! -f Cargo.toml ]] || { rustc -vV; cargo -V; } 2>&1
+    [[ ! -f pyproject.toml ]] || {
+      uv --version
+      .venv/bin/python --version
+      find .venv -name '*.dist-info' -print 2>/dev/null | LC_ALL=C sort
+      find .venv -name '*.pth' -print0 2>/dev/null | LC_ALL=C sort -z | xargs -0 -r cat
+    } 2>&1
     find "${path_dirs[@]}" -maxdepth 1 \( -type f -o -type l \) -print0 2>/dev/null |
       xargs -0 -r stat "${stat_format[@]}" 2>/dev/null | LC_ALL=C sort
     find -L . \( "${prune[@]}" \) -prune -o -type d -print 2>/dev/null | LC_ALL=C sort

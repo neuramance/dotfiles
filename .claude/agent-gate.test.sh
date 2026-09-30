@@ -22,6 +22,9 @@ printf x >>"$runs"
 [ -f "$work/red" ] && exit 1
 if [ -f "$work/slow" ]; then sleep 300 & echo \$! >"$work/sleep-pid"; wait; fi
 [ -f "$work/create-during-run" ] && printf 'transient\n' >"$repo/appeared.txt"
+if [ -f "$work/pycache-during-run" ]; then
+  mkdir -p "$repo/.pytest_cache" "$repo/pkg/__pycache__" && printf x >>"$repo/.pytest_cache/v" && printf x >>"$repo/pkg/__pycache__/m.pyc"
+fi
 if [ -f "$work/cache-during-run" ]; then
   for cache in .cache .tmp .vite .vitest-cache; do
     mkdir -p "$repo/node_modules/\$cache" && printf x >>"$repo/node_modules/\$cache/entry"
@@ -174,6 +177,19 @@ printf 'cached\n' >"$repo/tracked.txt"
 expect 'gate that writes only its tool caches runs' 1 0
 expect 'state verified while the gate wrote only tool caches is skipped' 0 0 'skipped'
 rm "$work/cache-during-run"
+printf '[project]\nname = "x"\n' >"$repo/pyproject.toml"
+expect 'python project runs the gate' 1 0
+touch "$work/pycache-during-run"
+printf 'python\n' >"$repo/tracked.txt"
+expect 'gate that creates python caches runs' 1 0
+expect 'caches first seen in the last run make the next stop run once more' 1 0
+expect 'state verified while the gate rewrote only python caches is skipped' 0 0 'skipped'
+rm "$work/pycache-during-run"
+mkdir -p "$repo/.venv/lib/site-packages" && printf 'import os\n' >"$repo/.venv/lib/site-packages/extra.pth"
+expect 'new .pth file in .venv runs the gate' 1 0
+expect 'unchanged .venv is skipped again' 0 0 'skipped'
+printf 'import sys\n' >"$repo/.venv/lib/site-packages/extra.pth"
+expect 'rewritten .pth file in .venv runs the gate' 1 0
 git -C "$repo" config agent-gate.stopDeadline 2
 expect 'gate within its deadline passes' 1 0
 touch "$work/slow"
@@ -191,4 +207,23 @@ expect 'gate past its deadline on the retry ends the turn' 1 0 'still fails afte
 stop_active=false
 kill "$(cat "$work/sleep-pid")" 2>/dev/null
 rm "$work/slow"
+pyrepo=$work/pyrepo
+mkdir -p "$pyrepo/scripts" "$pyrepo/.venv/bin"
+git -C "$pyrepo" init -q -b main
+printf '#!/bin/sh\nexit 0\n' >"$pyrepo/scripts/agent-verify" && chmod +x "$pyrepo/scripts/agent-verify"
+printf 'line-length = 88\n' >"$pyrepo/ruff.toml"
+if real_ruff=$(command -v ruff); then
+  printf '#!/bin/sh\nexec "%s" "$@"\n' "$real_ruff" >"$pyrepo/.venv/bin/ruff" && chmod +x "$pyrepo/.venv/bin/ruff"
+  printf 'import sys\nimport os\nx=[os.sep,sys.argv]\n' >"$pyrepo/mod.py"
+  status=$(printf '{"hook_event_name":"PostToolUse","cwd":"%s","tool_input":{"file_path":"%s"}}' "$pyrepo" "$pyrepo/mod.py" |
+    perl -e 'alarm 60; exec @ARGV' "$hook_path" >/dev/null 2>&1; echo $?)
+  if [[ $status == 0 && $(<"$pyrepo/mod.py") == $'import os\nimport sys\n\nx = [os.sep, sys.argv]' ]]; then
+    echo "ok - python edit is import-sorted and formatted before the gate"
+  else
+    echo "not ok - python edit is import-sorted and formatted before the gate: status=$status: $(<"$pyrepo/mod.py")"
+    failed=1
+  fi
+else
+  echo "ok - python formatting case skipped: ruff is not installed"
+fi
 exit "$failed"
