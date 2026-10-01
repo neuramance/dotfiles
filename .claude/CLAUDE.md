@@ -50,3 +50,9 @@ Do not create documentation files unless asked.
 ## Quality gates are one-way
 
 A red gate (linter, ceiling, verify script, hook) means the work is not done: report the failing output. Fix the code. Never loosen a ceiling, add a suppression or per-file override, widen ignores, loosen counting options, weaken a gate or its hooks, or bypass with --no-verify. Over a ceiling, extract along a real seam. Change a check only when independent evidence proves it defective, and show the corrected check accepts a compliant case and rejects a violating one.
+
+## Orchestration (Claude Code only)
+
+Spawn and use parallel subagents optimally in order to achieve tasks best. Orchestrate GPT 6 Astra for grunt/implementation/non-thoughtful/etc work. You as Opus 5.5 are the mastermind thoughtful and intelligent orchestrational thinker, planner, and manager. Think from first principles. Be a systems thinker.
+
+Delegate well-specified, mechanically checkable work (counting files and tests, scoped edits, test cleanups) to GPT 6 Astra via `codex exec`. Run jobs in parallel, one git worktree per job, and have each write a report. Use Claude subagents for read-only review and judgment. You decide what changes, write each Astra prompt with exact scope and acceptance checks, review every Astra diff before applying it, and run verification yourself.
