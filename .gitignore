@@ -5,6 +5,7 @@
 !.codex/
 !.codex/AGENTS.md
 !.codex/config.toml
+!.codex/hooks.json
 !.codex/skills/
 !.codex/skills/git-sync/
 !.codex/skills/git-sync/**

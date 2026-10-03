@@ -80,6 +80,9 @@ enabled = true
 [plugins."unified-computer-use@openai-bundled"]
 enabled = true
 
+[plugins."code-review@openai-bundled"]
+enabled = true
+
 [projects."/Users/w"]
 trust_level = "trusted"
 
@@ -269,6 +272,12 @@ trust_level = "trusted"
 [projects."/Users/w/code/umath_3"]
 trust_level = "trusted"
 
+[projects."/Users/w/code/website"]
+trust_level = "trusted"
+
+[projects."/Users/w/code/ai-playtime"]
+trust_level = "trusted"
+
 [shell_environment_policy]
 inherit = "all"
 
@@ -322,6 +331,9 @@ trusted_hash = "sha256:25ceb33594717c26acd87d27a4a4cc4400b8d8a4abf62054f2f60ad1d
 [hooks.state."/Users/w/code/a-lp/.codex/hooks.json:stop:0:0"]
 trusted_hash = "sha256:a0cb350ebf4ea28a6110207b30ab4ebbdb19529135787738ab2384129b721598"
 
+[hooks.state."/Users/w/.codex/hooks.json:stop:1:0"]
+trusted_hash = "sha256:7b499eba69c28926605275164e8568860cba27bb61556b6e5e34336b53757bf6"
+
 [desktop]
 followUpQueueMode = "queue"
 dock-icon-preference = "app-default"
@@ -348,16 +360,16 @@ NODE_REPL_NODE_MODULE_DIRS = "/Applications/ChatGPT.app/Contents/Resources/cua_n
 NODE_REPL_NODE_PATH = "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node"
 NODE_REPL_TRUSTED_CODE_PATHS = "/Users/w/.codex:/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules"
 CODEX_HOME = "/Users/w/.codex"
-BROWSER_USE_AVAILABLE_BACKENDS = "chrome,iab"
+BROWSER_USE_AVAILABLE_BACKENDS = "chrome,iab,mcpapps"
 BROWSER_USE_TINYSKY_ENABLED = "1"
 NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER = ""
 NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME = ""
 NODE_REPL_INSTRUCTIONS_USE_CASE_COMPUTER_USE = ""
 BROWSER_USE_CODEX_APP_BUILD_FLAVOR = "prod"
-BROWSER_USE_CODEX_APP_VERSION = "26.911.61220"
-NODE_REPL_TRUSTED_SERVICES = '{"browser":"/Users/w/.codex/plugins/cache/openai-bundled/browser/26.911.61220/scripts/browser-service.mjs","sky":"@oai/sky/service"}'
+BROWSER_USE_CODEX_APP_VERSION = "26.930.21537"
+NODE_REPL_TRUSTED_SERVICES = '{"browser":"/Users/w/.codex/plugins/cache/openai-bundled/browser/26.930.21537/scripts/browser-service.mjs","sky":"@oai/sky/service"}'
 SKY_CUA_SERVICE_PATH = "/Users/w/.codex/computer-use/Codex Computer Use.app"
-CODEX_CLI_PATH = "/Applications/ChatGPT.app/Contents/Resources/codex"
+CODEX_CLI_PATH = "/Applications/ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex"
 
 [mcp_servers.openaiDeveloperDocs]
 url = "https://developers.openai.com/mcp"

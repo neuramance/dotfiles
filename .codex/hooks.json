@@ -1,0 +1,31 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          { "type": "command", "command": "$HOME/.claude/play-notification.sh" }
+        ]
+      },
+      {
+        "hooks": [
+          { "type": "command", "command": "$HOME/.claude/agent-gate.sh", "timeout": 300 }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "hooks": [
+          { "type": "command", "command": "$HOME/.claude/play-notification.sh" }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "request_user_input",
+        "hooks": [
+          { "type": "command", "command": "$HOME/.claude/play-notification.sh", "async": true }
+        ]
+      }
+    ]
+  }
+}

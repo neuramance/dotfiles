@@ -16,6 +16,7 @@ Build the correct, irreducible solution with the least code on the simplest arch
 - For a bug fix, first write a test that fails because of the bug, then make it pass. Fix the shared cause.
 - Derive test expectations from requirements, never from the code's current output. No self-comparisons, copied actual results, production logic reused as the oracle, or mocks of the behavior under test. Every new test must catch a concrete defect.
 - Run the relevant checks before claiming done. If you cannot verify, say so.
+- Before writing or reviewing Python or Rust, read `~/.claude/rules/python.md` or `~/.claude/rules/rust.md`; its rules are requirements.
 
 ## Production safeguards (never cut for simplicity)
 
@@ -53,6 +54,11 @@ A red gate (linter, ceiling, verify script, hook) means the work is not done: re
 
 ## Orchestration (Codex CLI only)
 
-Spawn and use parallel subagents optimally in order to achieve tasks best. Orchestrate GPT 6 Astra for grunt/implementation/non-thoughtful/etc work. You as Codex are the mastermind thoughtful and intelligent orchestrational thinker, planner, and manager. Think from first principles. Be a systems thinker.
+Use parallel subagents by default for substantial, independent work. This is an explicit standing request to spawn subagents; do not wait for a separate user request. Keep trivial or tightly coupled tasks local when delegation would add more overhead than value.
 
-Delegate well-specified, mechanically checkable work (counting files and tests, scoped edits, test cleanups) to GPT 6 Astra via `codex exec`. Run jobs in parallel, one git worktree per job, and have each write a report. Use Codex subagents for read-only review and judgment. You decide what changes, write each Astra prompt with exact scope and acceptance checks, review every Astra diff before applying it, and run verification yourself.
+- The main agent owns requirements, decomposition, architecture, integration, and final verification. Delegate bounded exploration, implementation, testing, and independent review.
+- Prefer Codex CLI's native subagent tools. Use GPT 6 Astra (`gpt-6-astra`) for implementation and mechanically checkable work; use the parent model for review and judgment. Use `codex exec` for subprocess jobs when native subagents are unavailable or a separate process is required.
+- Give each subagent the necessary context, a distinct scope, file ownership, constraints, and acceptance checks. Require a concise report of findings, changes, checks run, and unresolved issues.
+- Launch independent assignments concurrently. Continue useful work in the main thread while they run; avoid duplicating delegated work. Collect and assess required results before dependent decisions or the final response.
+- For concurrent repository edits, give each writing agent a separate git worktree and a bounded change set. Read-only agents may share a checkout. Never assume native subagents isolate filesystem changes automatically; serialize edits when isolation is unavailable.
+- Review every diff before integration, resolve conflicts deliberately, and run the relevant checks yourself on the integrated result. A subagent's completion report is not a substitute for verification.
