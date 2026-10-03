@@ -2,7 +2,10 @@
 set -uo pipefail
 hook=${1:-$HOME/.claude/agent-gate.sh}
 work=$(mktemp -d "${TMPDIR:-/tmp}/agent-gate-test.XXXXXX") || exit 2
+work=$(cd "$work" && pwd -P) || exit 2
 trap 'chmod -R u+rwx "$work" 2>/dev/null; rm -rf "$work"' EXIT
+export TMPDIR=$work/tmp
+mkdir -p "$TMPDIR" || exit 2
 repo=$work/repo
 runs=$work/runs
 : >"$runs"
@@ -43,14 +46,21 @@ failed=0
 hook_event=Stop
 stop_active=false
 hook_path=$hook
+session_id=
+turn_id=
+event_cwd=
+unset event_file
+stderr_pattern=
 expect() {
   local name=$1 runs_expected=$2 status_expected=$3 pattern=${4:-} before output status ran
   before=$(wc -c <"$runs")
-  output=$(printf '{"hook_event_name":"%s","cwd":"%s","stop_hook_active":%s,"tool_input":{"file_path":"%s"}}' \
-    "$hook_event" "$repo" "$stop_active" "$repo/tracked.txt" | perl -e 'alarm 60; exec @ARGV' "$hook_path" 2>&1)
+  output=$(printf '{"hook_event_name":"%s","cwd":"%s","session_id":"%s","turn_id":"%s","stop_hook_active":%s,"tool_input":{"file_path":"%s"}}' \
+    "$hook_event" "${event_cwd:-$repo}" "$session_id" "$turn_id" "$stop_active" "${event_file-$repo/tracked.txt}" |
+    perl -e 'alarm 60; exec @ARGV' "$hook_path" 2>"$work/stderr")
   status=$?
+  output+=$(<"$work/stderr")
   ran=$(($(wc -c <"$runs") - before))
-  if [[ $ran == "$runs_expected" && $status == "$status_expected" && $output == *"$pattern"* ]]; then
+  if [[ $ran == "$runs_expected" && $status == "$status_expected" && $output == *"$pattern"* && $(<"$work/stderr") == *"$stderr_pattern"* ]]; then
     echo "ok - $name"
   else
     echo "not ok - $name: expected runs=$runs_expected status=$status_expected output~'$pattern'; got runs=$ran status=$status output: $output"
@@ -225,5 +235,347 @@ if real_ruff=$(command -v ruff); then
   fi
 else
   echo "ok - python formatting case skipped: ruff is not installed"
+fi
+git -C "$repo" config agent-gate.skipUnchanged false
+git -C "$repo" config agent-gate.stopDeadline 280
+unset event_file
+mkdir "$work/nonrepo"
+for name in B C D slow-one slow-two; do
+  directory=$work/$name
+  mkdir -p "$directory/scripts"
+  git -C "$directory" init -q -b main
+  printf 'one\n' >"$directory/tracked.txt"
+  cat >"$directory/scripts/agent-verify" <<EOF
+#!/bin/sh
+printf x >>"$runs"
+printf '%s\n' '$name' >>"$work/order"
+if [ -f "$work/$name-slow" ]; then sleep 300 & echo \$! >"$work/$name-pid"; wait; fi
+if [ -f "$work/$name-orphan" ]; then sleep 3 & echo \$! >"$work/$name-pid"; exit 0; fi
+if [ -f "$work/$name-late" ]; then echo "$name passed and printed enough to move its offset"; (sleep 1; echo "LATE-FROM-$name") & exit 0; fi
+[ ! -f "$work/$name-delay" ] || sleep 2
+if [ -f "$work/$name-detached" ]; then perl -MPOSIX -e 'fork and exit; POSIX::setsid(); sleep 5' & exit 0; fi
+[ ! -f "$work/$name-silent" ] || exit 1
+if [ -f "$work/$name-whitespace" ]; then printf ' \t\n\n'; exit 1; fi
+if [ -f "$work/$name-red" ]; then printf '%s\n' '$name failed'; exit 1; fi
+exit 0
+EOF
+  chmod +x "$directory/scripts/agent-verify"
+  git -C "$directory" add -A
+  git -C "$directory" -c user.name=agent-gate-test -c user.email=test@example.invalid commit -qm initial
+done
+session_id=session_B
+event_file=$work/B/tracked.txt
+hook_event=PostToolUse
+expect 'editing another repository records its session' 1 0
+expect 'repeated edits in another repository still run focused checks' 1 0
+hook_event=Stop
+event_cwd=$work/nonrepo
+expect 'Stop outside git gates the edited repository once' 1 0
+session_id=different_session
+expect 'a different session does not gate another sessions edits' 0 0
+session_id=session_B
+event_cwd=$repo
+touch "$work/B-red"
+stderr_pattern="agent-gate: $work/B"
+expect 'Stop gates cwd and a failing edited repository' 2 2 'B failed'
+stderr_pattern=
+stop_active=true
+expect 'a retry reports the failing edited repository' 2 0 "still fails after a retry; the task is incomplete\nagent-gate: $work/B"
+stop_active=false
+session_id=failed_edit
+hook_event=PostToolUse
+expect 'a failing focused check still records its repository' 1 2 'B failed'
+hook_event=Stop
+event_cwd=$work/nonrepo
+expect 'Stop gates a repository recorded before focused failure' 1 2 'B failed'
+rm "$work/B-red"
+session_id=../escape
+hook_event=PostToolUse
+expect 'an invalid session id still runs its focused check' 1 0
+if [[ -e $TMPDIR/escape || -e $TMPDIR/agent-gate/escape ]]; then
+  echo 'not ok - invalid session id creates no record'
+  failed=1
+else
+  echo 'ok - invalid session id creates no record'
+fi
+hook_event=Stop
+expect 'an invalid session id provides no recorded roots' 0 0
+for name in C D; do
+  printf '#!/bin/sh\nexit 0\n' >"$work/$name/scripts/agent-gate.sh"
+  chmod +x "$work/$name/scripts/agent-gate.sh"
+done
+mkdir "$work/C/.claude" "$work/D/.codex"
+printf '{"command":"scripts/agent-gate.sh"}\n' >"$work/C/.claude/settings.json"
+printf '{"command":"scripts/agent-gate.sh"}\n' >"$work/D/.codex/hooks.json"
+session_id=delegation
+event_cwd=$work/nonrepo
+event_file=$work/C/tracked.txt
+hook_event=PostToolUse
+export CLAUDE_PROJECT_DIR=$work/C
+expect 'Claude delegates an edit only when its adapter was loaded' 0 0
+export CLAUDE_PROJECT_DIR=$work/nonrepo
+expect 'Claude gates an edit whose adapter was not loaded' 1 0
+hook_event=Stop
+expect 'Claude gates a recorded repository whose adapter was not loaded' 1 0
+export CLAUDE_PROJECT_DIR=$work/C
+expect 'Claude delegates a recorded repository whose adapter was loaded' 0 0
+session_id=
+turn_id=codex_turn
+event_cwd=$work/C
+expect 'Codex ignores Claude adapter settings and inherited launch directory' 1 0
+event_cwd=$work/D
+expect 'Codex delegates to its loaded repository adapter' 0 0
+event_cwd=$work/nonrepo
+event_file=$work/D/tracked.txt
+hook_event=PostToolUse
+expect 'Codex gates edits outside its loaded repository' 1 0
+turn_id=
+hook_event=Stop
+event_cwd=$work/B
+touch "$work/B-silent"
+stderr_pattern="agent-gate: $work/B"
+expect 'silent failure has nonempty stderr diagnostics' 1 2 'exited non-zero without output'
+stderr_pattern=
+rm "$work/B-silent"
+touch "$work/B-whitespace"
+expect 'whitespace-only failure has useful diagnostics' 1 2 'exited non-zero without output'
+rm "$work/B-whitespace"
+touch "$work/B-orphan"
+started=$SECONDS
+expect 'a gate may finish before its background child' 1 0
+if (( SECONDS - started < 3 )) && kill -0 "$(<"$work/B-pid")" 2>/dev/null; then
+  echo 'ok - a background child neither delays the gate nor is killed by it'
+else
+  echo 'not ok - a background child neither delays the gate nor is killed by it'
+  failed=1
+fi
+kill "$(<"$work/B-pid")" 2>/dev/null
+rm "$work/B-orphan"
+touch "$work/B-detached"
+started=$SECONDS
+expect 'a gate may leave a detached child holding its output' 1 0
+if (( SECONDS - started < 4 )); then
+  echo 'ok - a detached child does not delay the gate'
+else
+  echo 'not ok - a detached child does not delay the gate'
+  failed=1
+fi
+rm "$work/B-detached"
+session_id=session_B
+expect 'cwd and recorded repository are deduplicated' 1 0
+hook_event=PostToolUse
+event_file=
+cp "$TMPDIR/agent-gate/session_B" "$work/record-before"
+expect 'other hosts without a file path do not verify' 0 0
+if cmp -s "$TMPDIR/agent-gate/session_B" "$work/record-before"; then
+  echo 'ok - other hosts without a file path do not record'
+else
+  echo 'not ok - other hosts without a file path do not record'
+  failed=1
+fi
+session_id=ordered
+event_cwd=$work/nonrepo
+export CLAUDE_PROJECT_DIR=$work/nonrepo
+for name in C B C; do
+  event_file=$work/$name/tracked.txt
+  expect "record $name in first-seen order" 1 0
+done
+hook_event=Stop
+: >"$work/order"
+expect 'recorded repositories run once each' 2 0
+if [[ $(<"$work/order") == $'C\nB' ]]; then
+  echo 'ok - recorded repositories run in first-seen order'
+else
+  echo "not ok - recorded repositories run in first-seen order: $(<"$work/order")"
+  failed=1
+fi
+for name in B C; do git -C "$work/$name" config agent-gate.skipUnchanged true; done
+expect 'each recorded repository establishes its own green fingerprint' 2 0
+stderr_pattern=
+expect 'unchanged recorded repositories share one skip message' 0 0 "agent-gate: $work/C\nagent-gate: $work/B"
+touch "$work/B-red" "$work/C-red"
+for name in B C; do git -C "$work/$name" config agent-gate.skipUnchanged false; done
+stderr_pattern="agent-gate: $work/C"$'\nC failed\n'"agent-gate: $work/B"$'\nB failed'
+expect 'all failing repositories have separate headers and diagnostics' 2 2 'B failed'
+stderr_pattern=
+rm "$work/B-red" "$work/C-red"
+mkdir -p "$TMPDIR/agent-gate"
+printf '%s\n' "$work/missing" "$work/nonrepo" >>"$TMPDIR/agent-gate/$session_id"
+expect 'missing and ungated recorded directories are ignored' 2 0
+hook_event=PostToolUse
+session_id=budget
+for name in slow-one slow-two; do
+  event_file=$work/$name/tracked.txt
+  expect "record $name before its slow gate" 1 0
+  git -C "$work/$name" config agent-gate.stopDeadline 2
+  touch "$work/$name-slow"
+done
+hook_event=Stop
+event_cwd=$repo
+git -C "$repo" config agent-gate.stopDeadline 3
+started=$SECONDS
+stderr_pattern="FAIL [deadline] agent-gate: no time left to verify $work/slow-two"
+expect 'Stop shares its deadline across repositories' 2 2 'FAIL [deadline]'
+stderr_pattern=
+if (( SECONDS - started < 8 )); then
+  echo 'ok - shared Stop budget finishes in under eight seconds'
+else
+  echo 'not ok - shared Stop budget finishes in under eight seconds'
+  failed=1
+fi
+if [[ -f $work/slow-one-pid ]] && ! kill -0 "$(<"$work/slow-one-pid")" 2>/dev/null; then
+  echo 'ok - the timed-out gate leaves no process behind'
+else
+  echo 'not ok - the timed-out gate leaves no process behind'
+  failed=1
+fi
+if [[ ! -e $work/slow-two-pid ]]; then
+  echo 'ok - a repository reached with no time left is not started'
+else
+  echo 'not ok - a repository reached with no time left is not started'
+  failed=1
+fi
+git -C "$work/slow-one" config agent-gate.stopDeadline 1
+session_id=own_deadline
+printf '%s\n' "$work/slow-one" >"$TMPDIR/agent-gate/$session_id"
+event_cwd=$work/nonrepo
+expect 'a recorded repository keeps its own deadline' 1 2 'within 1 s'
+mkdir -p "$work/plain/scripts"
+printf '#!/bin/sh\nprintf x >>"%s"\n' "$runs" >"$work/plain/scripts/agent-verify"
+chmod +x "$work/plain/scripts/agent-verify"
+session_id=plain
+printf '%s\n' "$work/plain" >"$TMPDIR/agent-gate/$session_id"
+expect 'a recorded directory that is not a repository toplevel is not run' 0 0
+spaced="$work/my repo"
+mkdir -p "$spaced/scripts"
+git -C "$spaced" init -q -b main
+cp "$work/plain/scripts/agent-verify" "$spaced/scripts/agent-verify"
+session_id=
+event_cwd=$spaced
+expect 'a repository path with a space passes its green gate' 1 0
+hook_event=PostToolUse
+event_cwd=$work/nonrepo
+event_file=$work/B/tracked.txt
+session_id=unreadable
+expect 'an edit records its repository for the unreadable case' 1 0
+chmod 000 "$TMPDIR/agent-gate/$session_id"
+hook_event=Stop
+expect 'an unreadable record fails loudly' 0 2 'cannot read'
+chmod 600 "$TMPDIR/agent-gate/$session_id"
+hook_event=PostToolUse
+session_id=blocked
+mkdir "$work/blocked" && : >"$work/blocked/agent-gate"
+export TMPDIR=$work/blocked
+expect 'a record that cannot be written fails loudly' 0 2 'cannot record'
+mkdir "$work/linked-state" "$work/real-state" && ln -s "$work/real-state" "$work/linked-state/agent-gate"
+export TMPDIR=$work/linked-state
+expect 'a symlinked record directory is refused' 0 2 'cannot record'
+export TMPDIR=$work/tmp
+git -C "$work/B" worktree add -q --detach "$work/B-tree"
+session_id=worktree
+event_file=$work/B-tree/tracked.txt
+expect 'an edit in a linked worktree runs its focused check' 1 0
+if [[ ! -e $TMPDIR/agent-gate/$session_id ]]; then
+  echo 'ok - a linked worktree is not recorded'
+else
+  echo 'not ok - a linked worktree is not recorded'
+  failed=1
+fi
+unset CLAUDE_PROJECT_DIR
+session_id=
+event_cwd=$work/C
+event_file=$work/C/tracked.txt
+expect 'without CLAUDE_PROJECT_DIR Claude delegates by the event cwd' 0 0
+event_cwd=$work/nonrepo
+expect 'without CLAUDE_PROJECT_DIR Claude gates a repository outside the event cwd' 1 0
+newline_repo=$work/new$'\n'line
+mkdir -p "$newline_repo/scripts"
+git -C "$newline_repo" init -q -b main
+cp "$work/plain/scripts/agent-verify" "$newline_repo/scripts/agent-verify"
+status=$(jq -n --arg cwd "$newline_repo" '{hook_event_name: "Stop", cwd: $cwd}' |
+  perl -e 'alarm 60; exec @ARGV' "$hook_path" 2>"$work/stderr" >/dev/null; echo $?)
+if [[ $status == 2 && $(<"$work/stderr") == *'contains a newline'* ]]; then
+  echo 'ok - a cwd repository path with a newline fails loudly'
+else
+  echo "not ok - a cwd repository path with a newline fails loudly: status=$status $(<"$work/stderr")"
+  failed=1
+fi
+status=$(jq -n --arg file "$newline_repo/tracked" '{hook_event_name: "PostToolUse", session_id: "newline", tool_input: {file_path: $file}}' |
+  perl -e 'alarm 60; exec @ARGV' "$hook_path" 2>"$work/stderr" >/dev/null; echo $?)
+if [[ $status == 2 && $(<"$work/stderr") == *'cannot record'* ]]; then
+  echo 'ok - a repository path with a newline is not recorded'
+else
+  echo "not ok - a repository path with a newline is not recorded: status=$status $(<"$work/stderr")"
+  failed=1
+fi
+export CLAUDE_PROJECT_DIR=$work/nonrepo
+hook_event=Stop
+session_id=unreadable
+chmod 000 "$TMPDIR/agent-gate/$session_id"
+stop_active=true
+expect 'an unreadable record on the retry ends the turn' 0 0 'cannot read'
+stop_active=false
+chmod 600 "$TMPDIR/agent-gate/$session_id"
+mkdir "$work/readonly" && chmod 500 "$work/readonly"
+export TMPDIR=$work/readonly
+session_id=
+stop_active=true
+expect 'an unwritable TMPDIR does not block a Stop with nothing to gate' 0 0
+stop_active=false
+hook_event=PostToolUse
+event_file=$work/nonrepo/file.txt
+expect 'an unwritable TMPDIR does not block an edit outside any repository' 0 0
+export TMPDIR=$work/tmp
+session_id=late
+for name in C B; do
+  event_file=$work/$name/tracked.txt
+  expect "record $name for the late output case" 1 0
+done
+touch "$work/C-late" "$work/B-delay" "$work/B-red"
+hook_event=Stop
+expect 'a failing repository after one with a late child still fails' 2 2 'B failed'
+if [[ $(<"$work/stderr") != *LATE-FROM-C* ]]; then
+  echo 'ok - output from an earlier repository never lands in a later repository diagnostics'
+else
+  echo "not ok - output from an earlier repository never lands in a later repository diagnostics: $(<"$work/stderr")"
+  failed=1
+fi
+rm "$work/C-late" "$work/B-delay" "$work/B-red"
+rm -f "$work/B-pid"
+touch "$work/B-slow"
+jq -n --arg file "$work/B/tracked.txt" '{hook_event_name: "PostToolUse", tool_input: {file_path: $file}}' >"$work/event.json"
+perl -e 'setpgrp; exec @ARGV' "$hook_path" <"$work/event.json" >/dev/null 2>&1 &
+hook_pid=$!
+for _ in 1 2 3 4 5 6 7 8 9 10; do [[ -s $work/B-pid ]] && break; sleep 0.5; done
+kill -TERM -"$hook_pid" 2>/dev/null
+wait "$hook_pid" 2>/dev/null
+sleep 1
+if [[ -s $work/B-pid ]] && ! kill -0 "$(<"$work/B-pid")" 2>/dev/null; then
+  echo 'ok - killing the hook also stops its gate'
+else
+  echo 'not ok - killing the hook also stops its gate'
+  [[ -s $work/B-pid ]] && kill "$(<"$work/B-pid")" 2>/dev/null
+  failed=1
+fi
+rm "$work/B-slow"
+mkdir -p "$work/E/scripts" "$work/slowbin"
+git -C "$work/E" init -q -b main
+: >"$work/E/rustfmt.toml"
+printf 'fn main() {}\n' >"$work/E/x.rs"
+printf '#!/bin/sh\nexec sleep 300\n' >"$work/E/scripts/agent-verify"
+printf '#!/bin/sh\nexec sleep 60\n' >"$work/slowbin/rustfmt"
+chmod +x "$work/E/scripts/agent-verify" "$work/slowbin/rustfmt"
+saved_path=$PATH
+export PATH=$work/slowbin:$PATH
+started=$SECONDS
+status=$(jq -n --arg file "$work/E/x.rs" '{hook_event_name: "PostToolUse", tool_input: {file_path: $file}}' |
+  perl -e 'alarm 60; exec @ARGV' "$hook_path" 2>"$work/stderr" >/dev/null; echo $?)
+elapsed=$((SECONDS - started))
+export PATH=$saved_path
+if [[ $status == 2 && $elapsed -lt 30 && $(<"$work/stderr") == *'did not finish within'* ]]; then
+  echo 'ok - a slow formatter and a hung focused check still finish inside the 30 s hook timeout'
+else
+  echo "not ok - a slow formatter and a hung focused check still finish inside the 30 s hook timeout: status=$status elapsed=$elapsed $(<"$work/stderr")"
+  failed=1
 fi
 exit "$failed"

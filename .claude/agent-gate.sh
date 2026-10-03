@@ -8,13 +8,26 @@ file=
 if [[ $event == PostToolUse ]]; then
   file=$(jq -r '.tool_input.file_path // empty' <<<"$input")
   [[ -n $file ]] || exit 0
-  dir=$(dirname "$file")
 fi
-root=$(git -C "${dir:-.}" rev-parse --show-toplevel 2>/dev/null) || exit 0
-cd "$root" || exit 0
-[[ -x $root/scripts/agent-gate.sh ]] && grep -qF 'scripts/agent-gate.sh' "$root/.claude/settings.json" 2>/dev/null && exit 0
-verify=$root/scripts/agent-verify
-[[ -x $verify ]] || exit 0
+launch=${dir:-$PWD}
+settings=.codex/hooks.json
+if [[ -z $(jq -r '.turn_id // empty' <<<"$input") ]]; then
+  launch=${CLAUDE_PROJECT_DIR:-$launch}
+  settings=.claude/settings.json
+fi
+delegated() {
+  [[ -x $1/scripts/agent-gate.sh ]] && grep -qF 'scripts/agent-gate.sh' "$1/$settings" 2>/dev/null &&
+    [[ $1 == "$(git -C "$launch" rev-parse --show-toplevel 2>/dev/null)" ]]
+}
+session=$(jq -r '.session_id // empty' <<<"$input")
+session_record=
+[[ $session =~ ^[A-Za-z0-9_-]+$ ]] && session_record=${TMPDIR:-/tmp}/agent-gate/$session
+log=
+trap 'rm -f "$log"' EXIT
+new_log() {
+  rm -f "$log"
+  log=$(mktemp "${TMPDIR:-/tmp}/agent-gate.XXXXXX")
+}
 bounded() {
   awk 'NR <= 90 { print; next } { last[NR % 10] = $0 }
     END {
@@ -23,11 +36,17 @@ bounded() {
       for (i = (NR > 100 ? NR - 9 : 91); i <= NR; i++) print last[i % 10]
     }'
 }
+diagnostics() {
+  local out
+  out=$(<"$log")
+  [[ $out == *[![:space:]]* ]] || out='FAIL [agent-verify] exited non-zero without output'
+  bounded <<<"$out"
+}
 within() {
   perl -e '
     my $seconds = shift;
     my $pid = fork // die "agent-gate: fork failed: $!\n";
-    if ($pid == 0) { setpgrp; exec @ARGV or die "agent-gate: cannot run $ARGV[0]: $!\n" }
+    if ($pid == 0) { setpgrp; exec { $ARGV[0] } @ARGV or die "agent-gate: cannot run $ARGV[0]: $!\n" }
     $SIG{ALRM} = sub {
       kill "TERM", -$pid;
       sleep 2;
@@ -36,12 +55,30 @@ within() {
       print "FAIL [deadline] $ARGV[0] did not finish within $seconds s\n";
       exit 124;
     };
+    $SIG{$_} = sub { kill "KILL", -$pid; exit 143 } for qw(TERM INT HUP);
     alarm $seconds;
     waitpid $pid, 0;
     exit($? & 127 ? 128 + ($? & 127) : $? >> 8);
   ' "$@"
 }
 if [[ -n $file ]]; then
+  root=$(git -C "$(dirname "$file")" rev-parse --show-toplevel 2>/dev/null) || exit 0
+  cd "$root" || exit 0
+  delegated "$root" && exit 0
+  verify=$root/scripts/agent-verify
+  [[ -x $verify ]] || exit 0
+  if [[ -n $session_record ]]; then
+    git_dirs=$(git rev-parse --git-dir --git-common-dir 2>/dev/null)
+    record_dir=${session_record%/*}
+    if [[ $root == *$'\n'* ]] ||
+      { [[ ${git_dirs%$'\n'*} == "${git_dirs#*$'\n'}" ]] &&
+        ! { { mkdir -m 700 "$record_dir" 2>/dev/null || [[ -d $record_dir ]]; } &&
+          [[ -O $record_dir && ! -L $record_dir ]] &&
+          printf '%s\n' "$root" >>"$session_record"; }; }; then
+      echo "agent-gate: cannot record $root in $session_record, so the Stop gate would not verify it" >&2
+      exit 2
+    fi
+  fi
   if [[ $file == *.rs && -f $root/rustfmt.toml ]]; then
     formatted=$(mktemp)
     perl -e 'alarm 10; exec @ARGV' rustfmt --quiet --emit stdout <"$file" >"$formatted" 2>/dev/null && ! cmp -s "$formatted" "$file" && cat "$formatted" >"$file"
@@ -55,19 +92,16 @@ if [[ -n $file ]]; then
       ! cmp -s "$formatted" "$file" && cat "$formatted" >"$file"
     rm -f "$formatted"
   fi
-  out=$("$verify" "$file" 2>&1) && exit 0
-  bounded <<<"$out" >&2
+  new_log || { echo "agent-gate: cannot create a log file" >&2; exit 2; }
+  within $((SECONDS < 24 ? 25 - SECONDS : 1)) "$verify" "$file" >"$log" 2>&1 && exit 0
+  diagnostics >&2
   exit 2
 fi
-if stat -c %s . >/dev/null 2>&1; then
+if stat -c %s / >/dev/null 2>&1; then
   stat_format=(-c '%n %s %.9Y %.9Z %f %i')
 else
   stat_format=(-f '%N %z %Fm %Fc %p %i')
 fi
-prune=(-path ./.git)
-for cache in .cache .tmp .vite .vitest-cache; do prune+=(-o -path "./node_modules/$cache"); done
-[[ -f Cargo.toml ]] && prune+=(-o -path ./target)
-[[ -f pyproject.toml ]] && prune+=(-o -path ./.venv -o -path ./mutants -o -path ./.pytest_cache -o -path ./.ruff_cache -o -name __pycache__)
 volatile='^(_|PWD|OLDPWD|SHLVL|COLUMNS|LINES|CLAUDE_EFFORT|CLAUDE_CODE_SESSION_ID|CLAUDE_PID|TRACEPARENT|TRACESTATE)='
 fingerprint() {
   local path_dirs
@@ -99,26 +133,74 @@ fingerprint() {
       xargs -0 -r stat -L "${stat_format[@]}" | LC_ALL=C sort
   } | git hash-object --stdin
 }
-record=
-[[ $(git config --type=bool --get agent-gate.skipUnchanged) == true ]] && record=$(git rev-parse --git-path agent-gate-green)
-before=
-[[ -z $record ]] || before=$(fingerprint) || before=
-if [[ -n $before && -f $record && $(<"$record") == "$before" ]]; then
-  jq -n '{systemMessage: "agent-gate: skipped the Stop gate; nothing changed since its last green run"}'
-  exit 0
+cwd_root=$(git -C "${dir:-.}" rev-parse --show-toplevel 2>/dev/null)
+budget=280
+failures=
+if [[ $cwd_root == *$'\n'* ]]; then
+  [[ -x $cwd_root/scripts/agent-verify ]] && failures+="agent-gate: cannot gate a repository whose path contains a newline: $cwd_root"$'\n'
+  cwd_root=
 fi
-deadline=$(git config --type=int --get agent-gate.stopDeadline) || deadline=280
-if out=$(within "$deadline" "$verify" 2>&1); then
-  [[ -n $before && $(fingerprint) == "$before" ]] && printf '%s\n' "$before" >"$record.$$" && mv -f "$record.$$" "$record"
-  exit 0
+[[ -z $cwd_root ]] || budget=$(git -C "$cwd_root" config --type=int --get agent-gate.stopDeadline 2>/dev/null) || budget=280
+stop_end=$((SECONDS + budget + 1))
+roots=$cwd_root
+if [[ -n $session_record && -e $session_record ]]; then
+  if [[ -O ${session_record%/*} && ! -L ${session_record%/*} ]] && recorded=$(<"$session_record"); then
+    roots+=$'\n'$recorded
+  else
+    failures+="agent-gate: cannot read $session_record, so the Stop gate cannot verify the repositories this session edited"$'\n'
+  fi
 fi
-if [[ $(jq -r '.stop_hook_active // false' <<<"$input") == true ]]; then
-  jq -n --arg detail "$(bounded <<<"$out")" '{
+seen=$'\n'
+gated=0
+skipped=
+while IFS= read -r root <&3; do
+  [[ -n $root && $seen != *$'\n'"$root"$'\n'* ]] || continue
+  seen+=$root$'\n'
+  verify=$root/scripts/agent-verify
+  if [[ ! -x $verify || $(git -C "$root" rev-parse --show-toplevel 2>/dev/null) != "$root" ]] || delegated "$root" || ! cd "$root"; then
+    continue
+  fi
+  gated=$((gated + 1))
+  prune=(-path ./.git)
+  for cache in .cache .tmp .vite .vitest-cache; do prune+=(-o -path "./node_modules/$cache"); done
+  [[ -f Cargo.toml ]] && prune+=(-o -path ./target)
+  [[ -f pyproject.toml ]] && prune+=(-o -path ./.venv -o -path ./mutants -o -path ./.pytest_cache -o -path ./.ruff_cache -o -name __pycache__)
+  record=
+  [[ $(git config --type=bool --get agent-gate.skipUnchanged) == true ]] && record=$(git rev-parse --git-path agent-gate-green)
+  before=
+  [[ -z $record ]] || ((stop_end <= SECONDS)) || before=$(fingerprint) || before=
+  if [[ -n $before && -f $record && $(<"$record") == "$before" ]]; then
+    skipped+=$'\n'"agent-gate: $root"
+    continue
+  fi
+  if ! new_log; then
+    failures+="agent-gate: $root"$'\n'"agent-gate: cannot create a log file"$'\n'
+    continue
+  fi
+  deadline=$(git config --type=int --get agent-gate.stopDeadline) || deadline=280
+  ((deadline <= stop_end - SECONDS)) || deadline=$((stop_end - SECONDS))
+  if ((deadline <= 0)); then
+    echo "FAIL [deadline] agent-gate: no time left to verify $root" >"$log"
+  elif within "$deadline" "$verify" >"$log" 2>&1; then
+    [[ -n $before && $(fingerprint) == "$before" ]] && printf '%s\n' "$before" >"$record.$$" && mv -f "$record.$$" "$record"
+    continue
+  fi
+  failures+="agent-gate: $root"$'\n'$(diagnostics)$'\n'
+done 3<<<"$roots"
+failures=${failures%$'\n'}
+if [[ -n $failures && $(jq -r '.stop_hook_active // false' <<<"$input") == true ]]; then
+  jq -n --arg detail "$failures" '{
     continue: false,
     stopReason: "agent-verify still fails after a retry; the task is incomplete",
     systemMessage: ("agent-verify still fails after a retry; the task is incomplete\n" + $detail)
   }'
   exit 0
 fi
-bounded <<<"$out" >&2
-exit 2
+if [[ -n $failures ]]; then
+  printf '%s\n' "$failures" >&2
+  exit 2
+fi
+[[ -n $skipped ]] || exit 0
+message="agent-gate: skipped the Stop gate; nothing changed since its last green run"
+((gated == 1)) || message+=$skipped
+jq -n --arg message "$message" '{systemMessage: $message}'
