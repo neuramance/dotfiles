@@ -53,7 +53,7 @@ command -v zoxide >/dev/null && eval "$(zoxide init zsh)"
 
 
 # Added by Antigravity CLI installer
-export PATH="/Users/w/.local/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
 export AGY_CLI_HIDE_LOGO=1
 export AGY_CLI_HIDE_ACCOUNT_INFO=1
 

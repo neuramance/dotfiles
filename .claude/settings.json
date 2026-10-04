@@ -1,5 +1,5 @@
 {
-  "apiKeyHelper": "/Users/w/.claude/anthropic-key.sh",
+  "apiKeyHelper": "$HOME/.claude/tfy-key.sh",
   "env": {
     "ANTHROPIC_BASE_URL": "https://tfy.promptlens.trilogy.com",
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "anthropic-primary/claude-opus-5-5[1m]",

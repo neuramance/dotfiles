@@ -1,4 +1,4 @@
-model_catalog_json = "/Users/w/.codex/models-bundled.json"
+model_catalog_json = "models-bundled.json"
 model_provider = "tfy"
 model = "gpt-6-astra"
 model_reasoning_effort = "xhigh"
@@ -16,8 +16,8 @@ base_url = "https://tfy.promptlens.trilogy.com"
 wire_api = "responses"
 
 [model_providers.tfy.auth]
-command = "/usr/bin/security"
-args = ["find-generic-password", "-a", "w", "-s", "codex-tfy-api-key", "-w"]
+command = "/bin/sh"
+args = ["-c", 'exec "$HOME/.claude/tfy-key.sh"']
 timeout_ms = 5000
 
 [features]
@@ -84,6 +84,9 @@ enabled = true
 enabled = true
 
 [projects."/Users/w"]
+trust_level = "trusted"
+
+[projects."/root"]
 trust_level = "trusted"
 
 [projects."/Users/w/code/sb/ls_test"]
