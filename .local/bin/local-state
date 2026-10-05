@@ -4,6 +4,7 @@ set -euo pipefail
 usage='usage: local-state backup | local-state restore <host>'
 account=my.1password.com
 op_timeout_seconds=120
+state=$HOME/.local/state/local-state
 paths=(.ssh .aws/config .aws/credentials .gitconfig.local .zsh_aliases.local .zsh_secrets)
 archive=$(mktemp)
 trap 'rm -f "$archive"' EXIT
@@ -21,7 +22,7 @@ op() {
 }
 
 backup() {
-  local name existing=() path id store
+  local name existing=() path digest id stored missing store
   name=local-state-$(scutil --get LocalHostName)
   for path in "${paths[@]}"; do
     if [[ -e $HOME/$path ]]; then
@@ -32,14 +33,31 @@ backup() {
     echo "local-state: nothing to back up" >&2
     exit 1
   fi
-  COPYFILE_DISABLE=1 tar -C "$HOME" --exclude .ssh/agent -chvf "$archive" "${existing[@]}"
+  COPYFILE_DISABLE=1 tar -C "$HOME" --exclude .ssh/agent -chf "$archive" "${existing[@]}"
+  digest=$(shasum -a 256 <"$archive")
+  if [[ -f $state/$name.sha256 && $(<"$state/$name.sha256") == "$digest" ]]; then
+    echo "local-state: $name is unchanged"
+    return
+  fi
   id=$(op item list --categories Document --account "$account" --format json |
     jq -r --arg name "$name" '[.[] | select(.title == $name) | .id] | if length > 1 then error("more than one item is named \($name)") else .[0] // "" end')
   store=(op document create "$archive" --title "$name")
   if [[ -n $id ]]; then
+    stored=$(op document get "$id" --account "$account" | tar -tf -)
+    missing=$(comm -23 <(sort <<<"$stored") <(tar -tf "$archive" | sort))
+    if [[ -n $missing ]]; then
+      while IFS= read -r path; do
+        echo "local-state: refusing to drop ~/$path" >&2
+      done <<<"$missing"
+      echo "local-state: restore those files, or delete $name in 1Password to start a new backup" >&2
+      exit 1
+    fi
     store=(op document edit "$id" "$archive")
   fi
   "${store[@]}" --file-name "$name.tar" --account "$account" >/dev/null
+  mkdir -p "$state"
+  printf '%s\n' "$digest" >"$state/$name.sha256"
+  echo "local-state: saved $name"
 }
 
 restore() {

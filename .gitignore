@@ -51,6 +51,9 @@
 !.local/bin/wifi-speed
 !.local/bin/open-remote
 !.local/bin/local-state
+!Library/
+!Library/LaunchAgents/
+!Library/LaunchAgents/io.github.neuramance.local-state.plist
 !.hushlogin
 !.psqlrc
 !.tmux.conf

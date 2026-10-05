@@ -92,11 +92,13 @@ The rule matches only `/root`, `/home`, and `/srv` paths, which macOS does not u
 `~/.local/bin/local-state` keeps the untracked files a new machine needs in 1Password, so this repository plus 1Password restores the whole setup. It stores `~/.ssh` (configuration and keys, without the agent sockets in `~/.ssh/agent`), `~/.aws/config`, `~/.aws/credentials`, `~/.gitconfig.local`, `~/.zsh_aliases.local`, and `~/.zsh_secrets`, whichever exist, as one tar archive in a Document item named `local-state-<host>`, where `<host>` is the Mac's local hostname (`scutil --get LocalHostName`), in the personal 1Password account (`my.1password.com`), never a company account.
 
 ```sh
-local-state backup          # after changing any of those files
+local-state backup          # also runs daily on its own
 local-state restore m4      # on a new machine, from host m4's backup
 ```
 
-Backup stores the contents of symlinked files, and replaces the item's archive only after every file was read; it stops if more than one item has that name. Each `op` call is stopped after 120 seconds, Touch ID prompt included. Restore refuses to replace anything already at a restored path, symlinks included, except a real directory, and names each one; move them aside and run it again. The passphrase of `~/.ssh/id_ed25519` is not in the archive; it is the separate 1Password item `SSH key passphrase (id_ed25519)`.
+Backup stores the contents of symlinked files, and replaces the item's archive only after every file was read; it stops if more than one item has that name. It uploads only when the archive differs from the last upload from this Mac, whose hash it keeps in `~/.local/state/local-state/`, and it refuses to drop a file the stored backup has: restore the file, or delete the item in 1Password to start a new backup. Each `op` call is stopped after 120 seconds, Touch ID prompt included. Restore refuses to replace anything already at a restored path, symlinks included, except a real directory, and names each one; move them aside and run it again. The passphrase of `~/.ssh/id_ed25519` is not in the archive; it is the separate 1Password item `SSH key passphrase (id_ed25519)`.
+
+`~/Library/LaunchAgents/io.github.neuramance.local-state.plist` runs `local-state backup` daily at 13:00, or at the next wake if the Mac was asleep. It asks for Touch ID only when something changed, logs to `~/Library/Logs/local-state.log`, and shows a notification when a run fails. macOS loads it at login; `launchctl bootout gui/$(id -u)/io.github.neuramance.local-state` stops it.
 
 It needs the 1Password app, installed by hand and signed in to the personal account with Settings → Developer → Integrate with 1Password CLI turned on, plus the 1Password CLI and `jq`, which `mac-setup.sh` installs.
 
