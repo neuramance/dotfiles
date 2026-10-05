@@ -30,7 +30,7 @@ bash ~/.config/scripts/apt-setup.sh
 
 Open a new shell or run `source ~/.zshrc`. The equivalent aliases are `macsetup` and `aptsetup`.
 
-The macOS script installs Homebrew when needed, then `jq`, Node.js, the 1Password CLI, and the `fast-cli` npm package. The apt script installs the shell, editor, terminal, PostgreSQL client, compiler, and download utilities used by these dotfiles, including `eza` from its upstream apt repository. These scripts install managed dependencies, not a complete workstation image.
+The macOS script installs Homebrew when needed, then `jq`, Node.js, the 1Password CLI, and the `fast-cli` npm package. The apt script installs the shell, editor, terminal, PostgreSQL client, compiler, and download utilities used by these dotfiles, including `eza` and `gh` from their upstream apt repositories. These scripts install managed dependencies, not a complete workstation image.
 
 On macOS, restore the untracked files from 1Password with [`local-state`](#local-state):
 

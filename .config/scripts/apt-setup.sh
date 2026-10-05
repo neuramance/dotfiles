@@ -27,4 +27,14 @@ else
   echo "eza is already installed."
 fi
 
+if [ ! -f /etc/apt/sources.list.d/github-cli.list ]; then
+  echo "Adding the gh repository from cli.github.com..."
+  $SUDO mkdir -p /etc/apt/keyrings
+  wget -qO- https://cli.github.com/packages/githubcli-archive-keyring.gpg | $SUDO tee /etc/apt/keyrings/githubcli-archive-keyring.gpg >/dev/null
+  echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | $SUDO tee /etc/apt/sources.list.d/github-cli.list
+  $SUDO chmod 644 /etc/apt/keyrings/githubcli-archive-keyring.gpg /etc/apt/sources.list.d/github-cli.list
+  $SUDO apt update
+fi
+$SUDO apt install -y gh
+
 echo "All packages installed."
