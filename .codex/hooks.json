@@ -1,29 +1,54 @@
 {
   "hooks": {
-    "Stop": [
-      {
-        "hooks": [
-          { "type": "command", "command": "$HOME/.claude/play-notification.sh" }
-        ]
-      },
-      {
-        "hooks": [
-          { "type": "command", "command": "$HOME/.claude/agent-gate.sh", "timeout": 300 }
-        ]
-      }
-    ],
     "PermissionRequest": [
       {
         "hooks": [
-          { "type": "command", "command": "$HOME/.claude/play-notification.sh" }
+          {
+            "command": "$HOME/.claude/play-notification.sh",
+            "type": "command"
+          }
         ]
       }
     ],
     "PreToolUse": [
       {
-        "matcher": "request_user_input",
         "hooks": [
-          { "type": "command", "command": "$HOME/.claude/play-notification.sh", "async": true }
+          {
+            "async": true,
+            "command": "$HOME/.claude/play-notification.sh",
+            "type": "command"
+          }
+        ],
+        "matcher": "request_user_input"
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "bash $HOME/.codex/herdr-agent-state.sh session",
+            "timeout": 10,
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "command": "$HOME/.claude/play-notification.sh",
+            "type": "command"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "command": "$HOME/.claude/agent-gate.sh",
+            "timeout": 300,
+            "type": "command"
+          }
         ]
       }
     ]

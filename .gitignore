@@ -6,6 +6,7 @@
 !.codex/AGENTS.md
 !.codex/config.toml
 !.codex/hooks.json
+!.codex/herdr-agent-state.sh
 !.codex/skills/
 !.codex/skills/git-sync/
 !.codex/skills/git-sync/**

@@ -21,6 +21,7 @@ args = ["-c", 'exec "$HOME/.claude/tfy-key.sh"']
 timeout_ms = 5000
 
 [features]
+hooks = true
 apps = true
 fast_mode = true
 context_management = { experimental_mode = true }
