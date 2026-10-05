@@ -3,9 +3,22 @@ set -euo pipefail
 
 usage='usage: local-state backup | local-state restore <host>'
 account=my.1password.com
+op_timeout_seconds=120
 paths=(.ssh .aws/config .aws/credentials .gitconfig.local .zsh_aliases.local .zsh_secrets)
 archive=$(mktemp)
 trap 'rm -f "$archive"' EXIT
+
+op() {
+  perl -e '
+    my ($seconds, @command) = @ARGV;
+    my $pid = fork // die "local-state: fork: $!\n";
+    if ($pid == 0) { exec { $command[0] } @command or die "local-state: $command[0]: $!\n" }
+    $SIG{ALRM} = sub { kill "TERM", $pid; die "local-state: $command[0] timed out after ${seconds}s\n" };
+    alarm $seconds;
+    waitpid $pid, 0;
+    exit($? ? ($? >> 8 || 1) : 0);
+  ' "$op_timeout_seconds" op "$@"
+}
 
 backup() {
   local name existing=() path id store

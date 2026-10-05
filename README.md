@@ -95,7 +95,7 @@ local-state backup          # after changing any of those files
 local-state restore m4      # on a new machine, from host m4's backup
 ```
 
-Backup stores the contents of symlinked files, and replaces the item's archive only after every file was read; it stops if more than one item has that name. Restore refuses to replace anything already at a restored path, symlinks included, except a real directory, and names each one; move them aside and run it again. Keep the passphrase of `~/.ssh/id_ed25519` in 1Password as well, since the restored key needs it once before the macOS keychain remembers it.
+Backup stores the contents of symlinked files, and replaces the item's archive only after every file was read; it stops if more than one item has that name. Each `op` call is stopped after 120 seconds, Touch ID prompt included. Restore refuses to replace anything already at a restored path, symlinks included, except a real directory, and names each one; move them aside and run it again. Keep the passphrase of `~/.ssh/id_ed25519` in 1Password as well, since the restored key needs it once before the macOS keychain remembers it.
 
 It needs the 1Password app, installed by hand and signed in to the personal account with Settings → Developer → Integrate with 1Password CLI turned on, plus the 1Password CLI and `jq`, which `mac-setup.sh` installs.
 
