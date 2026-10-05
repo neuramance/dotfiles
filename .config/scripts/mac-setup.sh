@@ -33,6 +33,13 @@ for pkg in "${brew_pkgs[@]}"; do
   fi
 done
 
+if brew list --cask 1password-cli &>/dev/null; then
+  echo "1password-cli already installed."
+else
+  echo "Installing 1password-cli..."
+  brew install --cask 1password-cli
+fi
+
 # --- Global npm CLIs -------------------------------------------------------
 # fast-cli: Netflix Open Connect speed test, used by ~/.local/bin/wifi-speed.
 if ! command -v fast &>/dev/null; then

@@ -66,6 +66,7 @@ brew "zoxide"
 brew "greptileai/tap/greptile", trusted: true
 # Supabase CLI
 brew "supabase/tap/supabase", trusted: true
+cask "1password-cli"
 # Set of tools to manage resources and applications hosted on Google Cloud
 cask "gcloud-cli"
 # Utility to hide menu bar items

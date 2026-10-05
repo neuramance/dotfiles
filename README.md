@@ -30,7 +30,17 @@ bash ~/.config/scripts/apt-setup.sh
 
 Open a new shell or run `source ~/.zshrc`. The equivalent aliases are `macsetup` and `aptsetup`.
 
-The macOS script installs Homebrew when needed, then `jq`, Node.js, and the `fast-cli` npm package. The apt script installs the shell, editor, terminal, PostgreSQL client, compiler, and download utilities used by these dotfiles, including `eza` from its upstream apt repository. These scripts install managed dependencies, not a complete workstation image.
+The macOS script installs Homebrew when needed, then `jq`, Node.js, the 1Password CLI, and the `fast-cli` npm package. The apt script installs the shell, editor, terminal, PostgreSQL client, compiler, and download utilities used by these dotfiles, including `eza` from its upstream apt repository. These scripts install managed dependencies, not a complete workstation image.
+
+On macOS, restore the untracked files from 1Password with [`local-state`](#local-state):
+
+1. Install the 1Password app, sign in with the personal account, and turn on Settings → Developer → Integrate with 1Password CLI.
+2. Open a new terminal window, so the Homebrew tools from `mac-setup.sh` are on `PATH`, and run the command below, replacing `m4` with the host whose backup to restore.
+3. Open another terminal window to load the restored shell files.
+
+```sh
+local-state restore m4
+```
 
 ## Managed configuration
 
@@ -76,6 +86,19 @@ Under Edit Actions, add **Run Command…** with this parameter, replacing `w@i9`
 
 The rule matches only `/root`, `/home`, and `/srv` paths, which macOS does not use, so Cmd-click on local paths keeps its normal behavior. The server must accept your SSH key without a prompt. Failures appear as a macOS notification and in iTerm2's Script Console (Scripts → Manage → Console).
 
+## `local-state`
+
+`~/.local/bin/local-state` keeps the untracked files a new machine needs in 1Password, so this repository plus 1Password restores the whole setup. It stores `~/.ssh` (configuration and keys, without the agent sockets in `~/.ssh/agent`), `~/.aws/config`, `~/.aws/credentials`, `~/.gitconfig.local`, `~/.zsh_aliases.local`, and `~/.zsh_secrets`, whichever exist, as one tar archive in a Document item named `local-state-<host>`, where `<host>` is the Mac's local hostname (`scutil --get LocalHostName`), in the personal 1Password account (`my.1password.com`), never a company account.
+
+```sh
+local-state backup          # after changing any of those files
+local-state restore m4      # on a new machine, from host m4's backup
+```
+
+Backup stores the contents of symlinked files, and replaces the item's archive only after every file was read; it stops if more than one item has that name. Restore refuses to replace anything already at a restored path, symlinks included, except a real directory, and names each one; move them aside and run it again. Keep the passphrase of `~/.ssh/id_ed25519` in 1Password as well, since the restored key needs it once before the macOS keychain remembers it.
+
+It needs the 1Password app, installed by hand and signed in to the personal account with Settings → Developer → Integrate with 1Password CLI turned on, plus the 1Password CLI and `jq`, which `mac-setup.sh` installs.
+
 ## Local-only state
 
-This is a public repository. Secrets, identities, SSH configuration, histories, caches, logs, and application runtime state remain untracked. Before committing, run `git diff --cached | grep -inE 'sk-|glpat|gho_|\.ts\.net|[0-9]{1,3}(\.[0-9]{1,3}){3}'` and confirm every hit is an intended public value such as `1.1.1.1`. Put shell secrets in `~/.zsh_secrets`, local aliases in `~/.zsh_aliases.local`, and Git identity, credential helper, and signing key in `~/.gitconfig.local`. The first two are sourced automatically when present; the third is pulled in by the tracked `.gitconfig`, which also points `gpg.ssh.allowedSignersFile` at the untracked `~/.ssh/allowed_signers`; commits sign without that file, but verifying them needs it. Fastfetch reads `~/.config/fastfetch/logo.png`, an untracked per-host symlink: link it to the tracked logo for the machine with `ln -sf logo.m4.png ~/.config/fastfetch/logo.png`.
+This is a public repository. Secrets, identities, SSH configuration, histories, caches, logs, and application runtime state remain untracked; [`local-state`](#local-state) backs up the files a new machine needs. Before committing, run `git diff --cached | grep -inE 'sk-|glpat|gho_|\.ts\.net|[0-9]{1,3}(\.[0-9]{1,3}){3}'` and confirm every hit is an intended public value such as `1.1.1.1`. Put shell secrets in `~/.zsh_secrets`, local aliases in `~/.zsh_aliases.local`, and Git identity, credential helper, and signing key in `~/.gitconfig.local`. The first two are sourced automatically when present; the third is pulled in by the tracked `.gitconfig`, which also points `gpg.ssh.allowedSignersFile` at the untracked `~/.ssh/allowed_signers`; commits sign without that file, but verifying them needs it. Fastfetch reads `~/.config/fastfetch/logo.png`, an untracked per-host symlink: link it to the tracked logo for the machine with `ln -sf logo.m4.png ~/.config/fastfetch/logo.png`.
