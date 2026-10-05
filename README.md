@@ -36,7 +36,7 @@ On macOS, restore the untracked files from 1Password with [`local-state`](#local
 
 1. Install the 1Password app, sign in with the personal account, and turn on Settings → Developer → Integrate with 1Password CLI.
 2. Open a new terminal window, so the Homebrew tools from `mac-setup.sh` are on `PATH`, and run the first command below, replacing `m4` with the host whose backup to restore.
-3. Open another terminal window to load the restored shell files, and run the second command, entering the passphrase from the 1Password item `SSH key passphrase (id_ed25519)` once so the macOS keychain remembers it.
+3. Open another terminal window to load the restored shell files, and run the second command, entering the passphrase from the 1Password item `SSH key passphrase (id_ed25519)` once so the macOS keychain remembers it. From then on `.zprofile` loads the key into ssh-agent at login, so Git can sign commits after a restart.
 
 ```sh
 local-state restore m4
