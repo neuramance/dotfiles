@@ -35,11 +35,12 @@ The macOS script installs Homebrew when needed, then `jq`, Node.js, the 1Passwor
 On macOS, restore the untracked files from 1Password with [`local-state`](#local-state):
 
 1. Install the 1Password app, sign in with the personal account, and turn on Settings → Developer → Integrate with 1Password CLI.
-2. Open a new terminal window, so the Homebrew tools from `mac-setup.sh` are on `PATH`, and run the command below, replacing `m4` with the host whose backup to restore.
-3. Open another terminal window to load the restored shell files.
+2. Open a new terminal window, so the Homebrew tools from `mac-setup.sh` are on `PATH`, and run the first command below, replacing `m4` with the host whose backup to restore.
+3. Open another terminal window to load the restored shell files, and run the second command, entering the passphrase from the 1Password item `SSH key passphrase (id_ed25519)` once so the macOS keychain remembers it.
 
 ```sh
 local-state restore m4
+ssh-add --apple-use-keychain ~/.ssh/id_ed25519
 ```
 
 ## Managed configuration
@@ -95,7 +96,7 @@ local-state backup          # after changing any of those files
 local-state restore m4      # on a new machine, from host m4's backup
 ```
 
-Backup stores the contents of symlinked files, and replaces the item's archive only after every file was read; it stops if more than one item has that name. Each `op` call is stopped after 120 seconds, Touch ID prompt included. Restore refuses to replace anything already at a restored path, symlinks included, except a real directory, and names each one; move them aside and run it again. Keep the passphrase of `~/.ssh/id_ed25519` in 1Password as well, since the restored key needs it once before the macOS keychain remembers it.
+Backup stores the contents of symlinked files, and replaces the item's archive only after every file was read; it stops if more than one item has that name. Each `op` call is stopped after 120 seconds, Touch ID prompt included. Restore refuses to replace anything already at a restored path, symlinks included, except a real directory, and names each one; move them aside and run it again. The passphrase of `~/.ssh/id_ed25519` is not in the archive; it is the separate 1Password item `SSH key passphrase (id_ed25519)`.
 
 It needs the 1Password app, installed by hand and signed in to the personal account with Settings → Developer → Integrate with 1Password CLI turned on, plus the 1Password CLI and `jq`, which `mac-setup.sh` installs.
 
