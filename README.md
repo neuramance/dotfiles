@@ -68,10 +68,10 @@ Connect it in iTerm2 under Settings → Profiles → Advanced → Smart Selectio
 (?<![A-Za-z0-9._~+@%/-])/(?:root|home|srv)/[A-Za-z0-9._~+@%,=/-]*[A-Za-z0-9_~+@%=/-](?::[0-9]+){0,2}
 ```
 
-Under Edit Actions, add **Run Command…** with this parameter, replacing `root@i9` with the server:
+Under Edit Actions, add **Run Command…** with this parameter, replacing `w@i9` with the server:
 
 ```sh
-"$HOME/.local/bin/open-remote" root@i9 '\0'
+"$HOME/.local/bin/open-remote" w@i9 '\0'
 ```
 
 The rule matches only `/root`, `/home`, and `/srv` paths, which macOS does not use, so Cmd-click on local paths keeps its normal behavior. The server must accept your SSH key without a prompt. Failures appear as a macOS notification and in iTerm2's Script Console (Scripts → Manage → Console).
