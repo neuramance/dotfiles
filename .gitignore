@@ -48,6 +48,7 @@
 !.local/
 !.local/bin/
 !.local/bin/wifi-speed
+!.local/bin/open-remote
 !.hushlogin
 !.psqlrc
 !.tmux.conf

@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage='usage: open-remote <[user@]host> <absolute server path[:line[:column]]>'
+server_path='^/(root|home|srv)/[A-Za-z0-9._~+@%,=/-]+$'
+dot_segment='(^|/)\.\.?(/|$)'
+
+notify() {
+  echo "open-remote: $1" >&2
+  osascript -e 'on run argv' -e 'display notification (item 1 of argv) with title "open-remote"' -e 'end run' "$1"
+}
+
+if (($# != 2)); then
+  echo "$usage" >&2
+  exit 2
+fi
+
+host=$1
+path=${2%%:*}
+if [[ ! $path =~ $server_path || $path =~ $dot_segment ]]; then
+  notify "Not a server file path: $2"
+  exit 2
+fi
+
+copy="$HOME/Library/Caches/open-remote/${host#*@}$path"
+mkdir -p "${copy%/*}"
+if ! error=$(scp -q -o BatchMode=yes -o ConnectTimeout=5 -o ServerAliveInterval=5 -o ServerAliveCountMax=2 "$host:$path" "$copy" 2>&1); then
+  notify "${error:-Could not copy $host:$path}"
+  exit 1
+fi
+open "$copy"

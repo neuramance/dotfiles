@@ -58,6 +58,24 @@ wifi-speed --show      # last ten logged results
 
 Run `wifi-speed --help` for all options.
 
+## `open-remote`
+
+`~/.local/bin/open-remote` makes Cmd-click work on server paths printed in an SSH session, such as files Claude Code writes on a remote host. It copies the file over SSH into `~/Library/Caches/open-remote/<host>/` and opens the copy with its default app. Each click copies the file again, and edits to the copy stay on the Mac.
+
+Connect it in iTerm2 under Settings → Profiles → Advanced → Smart Selection → Edit. Add a rule with precision **Very High** and this regular expression:
+
+```text
+/(?:root|home|srv)/[A-Za-z0-9._~+@%,=/-]*[A-Za-z0-9_~+@%=/-](?::[0-9]+){0,2}
+```
+
+Under Edit Actions, add **Run Command…** with this parameter, replacing `root@i9` with the server:
+
+```sh
+"$HOME/.local/bin/open-remote" root@i9 '\0'
+```
+
+The rule matches only `/root`, `/home`, and `/srv` paths, which macOS does not use, so Cmd-click on local paths keeps its normal behavior. The server must accept your SSH key without a prompt. Failures appear as a macOS notification and in iTerm2's Script Console (Scripts → Manage → Console).
+
 ## Local-only state
 
 This is a public repository. Secrets, identities, SSH configuration, histories, caches, logs, and application runtime state remain untracked. Before committing, run `git diff --cached | grep -inE 'sk-|glpat|gho_|\.ts\.net|[0-9]{1,3}(\.[0-9]{1,3}){3}'` and confirm every hit is an intended public value such as `1.1.1.1`. Put shell secrets in `~/.zsh_secrets`, local aliases in `~/.zsh_aliases.local`, and Git identity, credential helper, and signing key in `~/.gitconfig.local`. The first two are sourced automatically when present; the third is pulled in by the tracked `.gitconfig`, which also points `gpg.ssh.allowedSignersFile` at the untracked `~/.ssh/allowed_signers`; commits sign without that file, but verifying them needs it. Fastfetch reads `~/.config/fastfetch/logo.png`, an untracked per-host symlink: link it to the tracked logo for the machine with `ln -sf logo.m4.png ~/.config/fastfetch/logo.png`.
