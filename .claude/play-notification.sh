@@ -12,7 +12,7 @@ case "$event" in
     *) sound="Purr" ;;
 esac
 
-lock_file="/tmp/play_notification_last"
+lock_file="${TMPDIR:-/tmp}/play_notification_last.$UID"
 now=$(date +%s%N 2>/dev/null)
 [[ "$now" == *N ]] && now="$(date +%s)000000000"
 now=$((now / 1000000))
