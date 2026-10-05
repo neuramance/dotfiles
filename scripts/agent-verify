@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -uo pipefail
-cd "$(git rev-parse --show-toplevel)"
+cd "$(git rev-parse --show-toplevel)" || exit 2
 check() {
   case $1 in
     *.sh) bash -n "$1" ;;
-    *.json) jq empty "$1" ;;
+    *.json) jq -en '[inputs] | length == 1' "$1" >/dev/null ;;
     *) true ;;
   esac
 }
