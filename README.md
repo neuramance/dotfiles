@@ -52,7 +52,7 @@ local-state restore m4
 | System display | `.config/fastfetch/` and `.config/herdr/config.toml` — Fastfetch theme, host-specific logos, resource helpers, and Herdr theme/key bindings. |
 | AI agents | `.codex/` and `.claude/` — global Codex and Claude Code instructions, settings, notifications, status line, plugin configuration, and reusable skills. |
 | macOS | Moved to [macstate](https://github.com/neuramance/macstate) — declared system state with a read-only audit and an idempotent apply, no longer tracked in this repository. |
-| Homebrew | `.Brewfile` — snapshot of top-level formulae, casks, taps, and Mac App Store apps. A record for deliberate review, not an automatic restore. Refresh with `brew bundle dump --file=~/.Brewfile --force --formula --cask --tap --mas --no-vscode`; verify with `brew bundle check --file=~/.Brewfile --no-upgrade`. Dropping `--no-upgrade` also reports available updates, so it fails whenever any package or App Store app has one pending. |
+| Homebrew | `.Brewfile` — snapshot of top-level formulae, casks, taps, Mac App Store apps, and global npm, cargo, and uv tools. A record for deliberate review, not an automatic restore. Refresh with `brew bundle dump --file=~/.Brewfile --force --no-vscode`; verify with `brew bundle check --file=~/.Brewfile --no-upgrade`. Dropping `--no-upgrade` also reports available updates, so it fails whenever any package or App Store app has one pending. |
 | Bootstrap | `.config/scripts/apt-setup.sh` and `.config/scripts/mac-setup.sh` — idempotent platform package setup. |
 | Repository tooling | `repomix.config.json` and `.repomixignore` — bounded Repomix export configuration. |
 
