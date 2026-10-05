@@ -48,6 +48,10 @@ Before writing or patching a file, inspect the exact text to be emitted and remo
 
 Do not create documentation files unless asked.
 
+## File paths
+
+When you point the user to a file, write its absolute path. Sessions often run over SSH inside herdr, where iTerm2 opens only absolute paths on Cmd-click.
+
 ## Quality gates are one-way
 
 A red gate (linter, ceiling, verify script, hook) means the work is not done: report the failing output. Fix the code. Never loosen a ceiling, add a suppression or per-file override, widen ignores, loosen counting options, weaken a gate or its hooks, or bypass with --no-verify. Over a ceiling, extract along a real seam. Change a check only when independent evidence proves it defective, and show the corrected check accepts a compliant case and rejects a violating one.
