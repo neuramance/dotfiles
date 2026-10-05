@@ -50,7 +50,9 @@ export AGY_CLI_HIDE_LOGO=1
 export AGY_CLI_HIDE_ACCOUNT_INFO=1
 
 # >>> grok installer >>>
-export PATH="$HOME/.grok/bin:$PATH"
-fpath=(~/.grok/completions/zsh $fpath)
-autoload -Uz compinit && compinit -C
+if [ -d "$HOME/.grok" ]; then
+  export PATH="$HOME/.grok/bin:$PATH"
+  fpath=(~/.grok/completions/zsh $fpath)
+  autoload -Uz compinit && compinit -C
+fi
 # <<< grok installer <<<

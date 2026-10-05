@@ -52,7 +52,7 @@ alias tma="tmux attach"
 alias tmka="tmux kill-server"
 
 # echo PATH formatted (must be sourced after PATH is fully set)
-alias echopath="echo '$PATH' | tr ':' '\n'"
+alias echopath='print -l $path'
 
 # Claude Code
 alias ccd="claude --dangerously-skip-permissions"
