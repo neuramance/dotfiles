@@ -281,6 +281,9 @@ trust_level = "trusted"
 [projects."/Users/w/code/ai-playtime"]
 trust_level = "trusted"
 
+[projects."/Users/w/code/airsheen-kb"]
+trust_level = "trusted"
+
 [shell_environment_policy]
 inherit = "all"
 
@@ -336,6 +339,24 @@ trusted_hash = "sha256:a0cb350ebf4ea28a6110207b30ab4ebbdb19529135787738ab2384129
 
 [hooks.state."/Users/w/.codex/hooks.json:stop:1:0"]
 trusted_hash = "sha256:7b499eba69c28926605275164e8568860cba27bb61556b6e5e34336b53757bf6"
+
+[hooks.state."/Users/w/code/airsheen-kb/.codex/hooks.json:post_tool_use:0:0"]
+trusted_hash = "sha256:1a8e9a76553669acbda75ef123683797230fdc08d6f9c3fcadd42d230a86f9c4"
+
+[hooks.state."/Users/w/code/airsheen-kb/.codex/hooks.json:stop:0:0"]
+trusted_hash = "sha256:a0cb350ebf4ea28a6110207b30ab4ebbdb19529135787738ab2384129b721598"
+
+[hooks.state."/root/.codex/hooks.json:stop:0:0"]
+trusted_hash = "sha256:43a196c0ac3b0ce4fb6a8723c8e8c61b40aa801dac270555f10d43d49a7015f2"
+
+[hooks.state."/root/.codex/hooks.json:stop:1:0"]
+trusted_hash = "sha256:7b499eba69c28926605275164e8568860cba27bb61556b6e5e34336b53757bf6"
+
+[hooks.state."/root/.codex/hooks.json:pre_tool_use:0:0"]
+trusted_hash = "sha256:c5a03baf7498ccebcdb7ffc55f76e2ea5e4df72be565b0bbc693c8b4999189fe"
+
+[hooks.state."/root/.codex/hooks.json:permission_request:0:0"]
+trusted_hash = "sha256:286313cc6d4ecbca4660a20a7a49d76caa2b604cbde51f911685b25ff75d7a90"
 
 [desktop]
 followUpQueueMode = "queue"

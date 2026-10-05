@@ -12,7 +12,7 @@ fi
 $SUDO apt update
 
 # Standard packages
-$SUDO apt install -y bat git vim tmux zsh less python3 postgresql-client curl build-essential xterm gpg wget
+$SUDO apt install -y bat git vim tmux zsh less python3 postgresql-client curl build-essential xterm gpg wget jq fzf zoxide
 
 # eza - requires external repo
 if ! command -v eza &>/dev/null; then
