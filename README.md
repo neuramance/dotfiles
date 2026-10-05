@@ -65,7 +65,7 @@ Run `wifi-speed --help` for all options.
 Connect it in iTerm2 under Settings → Profiles → Advanced → Smart Selection → Edit. Add a rule with precision **Very High** and this regular expression:
 
 ```text
-/(?:root|home|srv)/[A-Za-z0-9._~+@%,=/-]*[A-Za-z0-9_~+@%=/-](?::[0-9]+){0,2}
+(?<![A-Za-z0-9._~+@%/-])/(?:root|home|srv)/[A-Za-z0-9._~+@%,=/-]*[A-Za-z0-9_~+@%=/-](?::[0-9]+){0,2}
 ```
 
 Under Edit Actions, add **Run Command…** with this parameter, replacing `root@i9` with the server:
