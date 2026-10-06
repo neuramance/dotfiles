@@ -30,7 +30,7 @@ bash ~/.config/scripts/apt-setup.sh
 
 Open a new shell or run `source ~/.zshrc`. The equivalent aliases are `macsetup` and `aptsetup`.
 
-The macOS script installs Homebrew when needed, then `jq`, Node.js, herdr, the 1Password CLI, and the `fast-cli` npm package. The apt script installs the shell, editor, terminal, PostgreSQL client, compiler, and download utilities used by these dotfiles, including `eza` and `gh` from their upstream apt repositories. These scripts install managed dependencies, not a complete workstation image.
+The macOS script installs Homebrew when needed, then `jq`, Node.js, herdr, the 1Password CLI, and the `fast-cli` npm package. The apt script installs the shell, editor, terminal, mosh, PostgreSQL client, compiler, and download utilities used by these dotfiles, including `eza` and `gh` from their upstream apt repositories. These scripts install managed dependencies, not a complete workstation image.
 
 On macOS, restore the untracked files from 1Password with [`local-state`](#local-state):
 
@@ -129,6 +129,14 @@ Claude Code and Codex run `~/.claude/play-notification.sh` when a turn ends (Pur
 `~/Library/LaunchAgents/io.github.neuramance.agent-sounds.plist` listens on the Mac's `127.0.0.1:47123`, plays `Purr` or `Funk` from `/System/Library/Sounds` and ignores anything else; launchd starts it only when a sound arrives. `~/Library/LaunchAgents/io.github.neuramance.agent-sounds-tunnel.plist` keeps the reverse tunnel from i9's `127.0.0.1:47123` to it open through the same `Host i9` entry as [`i9-tunnel`](#i9-tunnel), and writes its latest attempt to `~/Library/Logs/agent-sounds-tunnel.log`. It runs apart from `i9-tunnel` because it exits whenever i9 still holds the port for a dropped connection, and retries every 10 seconds until it gets it. macOS loads both at login; to load them now, run `launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/<label>.plist` for each, and `launchctl bootout gui/$(id -u)/io.github.neuramance.agent-sounds-tunnel` stops the tunnel.
 
 On the Mac, `printf 'Purr\n' | nc -w 1 127.0.0.1 47123` plays Purr and prints `ok`; on i9, `echo '{"hook_event_name":"Stop"}' | ~/.claude/play-notification.sh` plays it through the tunnel. A new sound must be named in both `play-notification.sh` and the listener's `case`.
+
+## Moshi on i9
+
+The Moshi iOS app logs in to i9's OpenSSH on port 2222 with a key it creates on the phone, then switches to mosh. Tailscale SSH answers port 22 on the tailnet and authenticates by Tailscale identity, ignoring `authorized_keys`, so `tailscale ssh` keeps port 22 and Moshi uses the other port. Root-owned files, none tracked here, make this work. `/etc/systemd/system/ssh.socket.d/60-extra-port.conf` adds IPv4 and IPv6 `ListenStream` lines for port 2222 to `ssh.socket`; apply it with `sudo systemctl daemon-reload && sudo systemctl restart ssh.socket`. `/etc/nftables.d/ingress-guard.nft`, loaded by `ingress-guard.service`, drops new connections from tailnet devices other than m4 except ICMP and the ports it lists, which must include TCP 2222 and, for mosh, `udp dport 60000-61000`; apply it with `sudo systemctl reload ingress-guard`. Without the UDP rule the app logs in but mosh fails with `Time out waiting for server`, which the app's Auto transport hides by falling back to SSH. `AllowUsers` in `/etc/ssh/sshd_config.d/90-access.conf` must name every account that logs in.
+
+To pair an account, install mosh, which `apt-setup.sh` does, and moshi-hook as that user: `curl -fsSL https://getmoshi.app/install.sh | sh` puts it in `~/.local/bin` and starts its daemon as a systemd user service. Then run `moshi-hook host setup --port 2222` as that user and scan the QR code with Moshi before it expires; whoever scans it gets SSH access as that user. Setup adds the phone's public key to that user's `~/.ssh/authorized_keys`, which [`local-state`](#local-state) backs up for w only. `moshi-hook host list` shows the pairings, `moshi-hook host revoke` removes one, and `moshi-hook doctor` checks which app features work.
+
+heila pairs the same way, from a phone signed in to Tailscale with the account i9 is shared with, using moshi-hook installed with `MOSHI_HOOK_SKIP_SERVICE=1`. heila runs no daemon, because the app always reaches it through an SSH tunnel to `127.0.0.1:24543`, which w's daemon holds and `/etc/heila-guard.nft` blocks for heila; the features the daemon serves, such as the diff viewer and Jump To, work only for w.
 
 ## Local-only state
 
