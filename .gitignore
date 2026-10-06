@@ -58,6 +58,8 @@
 !Library/LaunchAgents/
 !Library/LaunchAgents/io.github.neuramance.local-state.plist
 !Library/LaunchAgents/io.github.neuramance.i9-tunnel.plist
+!Library/LaunchAgents/io.github.neuramance.agent-sounds.plist
+!Library/LaunchAgents/io.github.neuramance.agent-sounds-tunnel.plist
 !.hushlogin
 !.psqlrc
 !.tmux.conf

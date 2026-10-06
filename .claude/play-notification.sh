@@ -12,6 +12,25 @@ case "$event" in
     *) sound="Purr" ;;
 esac
 
+mac_sound_port=47123
+
+play_through_ssh_tunnel() {
+    timeout 1 bash -c 'exec 3<>"/dev/tcp/127.0.0.1/$2" && printf "%s\n" "$1" >&3 && read -r reply <&3 && [ "$reply" = ok ]' _ "$1" "$mac_sound_port" 2>/dev/null
+}
+
+ring_terminal_bell() {
+    { printf '\a' > /dev/tty; } 2>/dev/null && return
+    local pid=$PPID tty
+    while [ "${pid:-1}" -gt 1 ]; do
+        tty=$(ps -o tty= -p "$pid" 2>/dev/null | tr -d ' ')
+        if [ -n "$tty" ] && [ "$tty" != "?" ]; then
+            { printf '\a' > "/dev/$tty"; } 2>/dev/null
+            return
+        fi
+        pid=$(ps -o ppid= -p "$pid" 2>/dev/null | tr -d ' ')
+    done
+}
+
 lock_file="${TMPDIR:-/tmp}/play_notification_last.$UID"
 now=$(date +%s%N 2>/dev/null)
 [[ "$now" == *N ]] && now="$(date +%s)000000000"
@@ -30,8 +49,10 @@ if [ "$should_play" -eq 1 ]; then
         afplay -v 1.8 "/System/Library/Sounds/${sound}.aiff" &
     elif [[ -f /proc/sys/kernel/osrelease ]] && grep -qi "microsoft" /proc/sys/kernel/osrelease 2>/dev/null; then
         powershell.exe -Command "(New-Object Media.SoundPlayer 'C:\Windows\Media\Windows Notify.wav').PlaySync()" 2>/dev/null &
-    elif [[ "$OSTYPE" == "linux-gnu"* ]] && command -v paplay &> /dev/null; then
+    elif [[ -z "${SSH_CONNECTION:-}" ]] && command -v paplay &> /dev/null; then
         paplay /usr/share/sounds/freedesktop/stereo/message.oga 2>/dev/null &
+    else
+        play_through_ssh_tunnel "$sound" || ring_terminal_bell
     fi
 fi
 
