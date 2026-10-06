@@ -8,7 +8,7 @@
 	<array>
 		<string>/bin/bash</string>
 		<string>-c</string>
-		<string>exec &gt;&gt;"$HOME/Library/Logs/local-state.log" 2&gt;&amp;1; date; "$HOME/.local/bin/local-state" backup || osascript -e 'display notification "Run local-state backup in a terminal to see why." with title "local-state backup failed"'</string>
+		<string>exec &gt;&gt;"$HOME/Library/Logs/local-state.log" 2&gt;&amp;1; date; "$HOME/.local/bin/local-state" backup || osascript -e 'display notification "Run local-state backup in a terminal to see why." with title "local-state backup failed"'; "$HOME/.local/bin/local-state" backup i9 || osascript -e 'display notification "Run local-state backup i9 in a terminal to see why." with title "local-state backup of i9 failed"'</string>
 	</array>
 	<key>EnvironmentVariables</key>
 	<dict>
