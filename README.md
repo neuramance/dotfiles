@@ -30,7 +30,7 @@ bash ~/.config/scripts/apt-setup.sh
 
 Open a new shell or run `source ~/.zshrc`. The equivalent aliases are `macsetup` and `aptsetup`.
 
-The macOS script installs Homebrew when needed, then `jq`, Node.js, the 1Password CLI, and the `fast-cli` npm package. The apt script installs the shell, editor, terminal, PostgreSQL client, compiler, and download utilities used by these dotfiles, including `eza` and `gh` from their upstream apt repositories. These scripts install managed dependencies, not a complete workstation image.
+The macOS script installs Homebrew when needed, then `jq`, Node.js, herdr, the 1Password CLI, and the `fast-cli` npm package. The apt script installs the shell, editor, terminal, PostgreSQL client, compiler, and download utilities used by these dotfiles, including `eza` and `gh` from their upstream apt repositories. These scripts install managed dependencies, not a complete workstation image.
 
 On macOS, restore the untracked files from 1Password with [`local-state`](#local-state):
 
@@ -53,7 +53,7 @@ ssh-add --apple-use-keychain ~/.ssh/id_ed25519
 | Terminal and editors | `.tmux.conf`, `.vimrc`, `.psqlrc`, `.config/rustfmt.toml` — tmux navigation and display, Vim defaults, PostgreSQL client behavior, and Rust formatting. |
 | Toolchain | `.config/mise/config.<host>.toml` — each machine's global mise tools and settings: i9 pins Bun, Node, the Supabase CLI and pyright; m4 takes Node from Homebrew. |
 | Git | `.gitconfig` — default branch and SSH commit signing. Identity, credential helper, and signing key live in untracked `~/.gitconfig.local`, which the tracked file includes last so local values win. Required on any new machine, like `.zsh_secrets`. |
-| System display | `.config/fastfetch/` and `.config/herdr/config.toml` — Fastfetch theme, host-specific logos, resource helpers, and Herdr theme/key bindings. |
+| System display | `.config/fastfetch/` and `.config/herdr/config.toml` — Fastfetch theme, host-specific logos, resource helpers, and Herdr theme, key bindings, and sound setting. |
 | AI agents | `.codex/` and `.claude/` — global Codex and Claude Code instructions, settings, notifications, status line, plugin configuration, and reusable skills. |
 | macOS | Moved to [macstate](https://github.com/neuramance/macstate) — declared system state with a read-only audit and an idempotent apply, no longer tracked in this repository. |
 | Homebrew | `.Brewfile` — snapshot of top-level formulae, casks, taps, Mac App Store apps, and global npm, cargo, and uv tools. A record for deliberate review, not an automatic restore. Refresh with `brew bundle dump --file=~/.Brewfile --force --no-vscode`; verify with `brew bundle check --file=~/.Brewfile --no-upgrade`. Dropping `--no-upgrade` also reports available updates, so it fails whenever any package or App Store app has one pending. |
@@ -88,7 +88,7 @@ Under Edit Actions, add **Run Command…** with this parameter, replacing `w@i9`
 "$HOME/.local/bin/open-remote" w@i9 '\0'
 ```
 
-The rule matches only `/root`, `/home`, and `/srv` paths, which macOS does not use, so Cmd-click on local paths keeps its normal behavior. The server must accept your SSH key without a prompt. Failures appear as a macOS notification and in iTerm2's Script Console (Scripts → Manage → Console).
+The rule matches only `/root`, `/home`, and `/srv` paths, which macOS does not use, so Cmd-click on local paths keeps its normal behavior. The server must accept your SSH key without a prompt, and the user must be your login user: Tailscale SSH refuses `root`, which shows as `scp: Connection closed`. Failures appear as a macOS notification and in iTerm2's Script Console (Scripts → Manage → Console).
 
 ## `local-state`
 
@@ -116,7 +116,7 @@ It needs the 1Password app, installed by hand and signed in to the personal acco
 
 `~/Library/LaunchAgents/io.github.neuramance.i9-tunnel.plist` keeps one SSH tunnel to `i9` open, so a dev server on i9 opens in the Mac's browser at the same `http://localhost:<port>`, hot reload included. It forwards ports 3000–3099 and the local Supabase ports 54321–54324, connects through the `Host i9` entry and `known_hosts` that [`local-state`](#local-state) restores, and writes its latest attempt to `~/Library/Logs/i9-tunnel.log`. macOS loads it at login and restarts it within 10 seconds whenever it exits. A port another Mac process already holds is skipped, so stop the tunnel with `launchctl bootout gui/$(id -u)/io.github.neuramance.i9-tunnel` before running a local Supabase on the same ports.
 
-It needs Tailscale on both machines, with Tailscale SSH enabled on i9 (`sudo tailscale set --ssh`). After replacing i9, run `ssh-keygen -R i9` and `ssh i9` once on the Mac to trust its new host key; the tunnel reconnects on its own.
+It needs Tailscale on both machines, with Tailscale SSH enabled on i9 (`sudo tailscale set --ssh`) and allowed to forward ports, as [`agent-sounds`](#agent-sounds) also needs: when `tailscaled` runs with `TS_SSH_DISABLE_FORWARDING` set, for example from a systemd drop-in in `/etc/systemd/system/tailscaled.service.d/`, every forward fails with `administratively prohibited: port forwarding is disabled`; remove the drop-in, then run `sudo systemctl daemon-reload && sudo systemctl restart tailscaled`. After replacing i9, run `ssh-keygen -R i9` and `ssh i9` once on the Mac to trust its new host key; the tunnel reconnects on its own.
 
 ## herdr on i9
 
@@ -126,7 +126,7 @@ Agents run in i9's herdr session. Attach to it from the Mac with `herdr --remote
 
 Claude Code and Codex run `~/.claude/play-notification.sh` when a turn ends (Purr) and when they need input (Funk). On the Mac it plays the sound with `afplay`. On i9 it sends the sound's name to `127.0.0.1:47123`, which a reverse SSH tunnel carries to the Mac, and the Mac plays it; when the Mac does not answer `ok` within a second, it rings the terminal bell instead, which iTerm2 plays.
 
-`~/Library/LaunchAgents/io.github.neuramance.agent-sounds.plist` listens on the Mac's `127.0.0.1:47123`, plays `Purr` or `Funk` from `/System/Library/Sounds` and ignores anything else; launchd starts it only when a sound arrives. `~/Library/LaunchAgents/io.github.neuramance.agent-sounds-tunnel.plist` keeps the reverse tunnel from i9's `127.0.0.1:47123` to it open through the same `Host i9` entry as [`i9-tunnel`](#i9-tunnel), and writes its latest attempt to `~/Library/Logs/agent-sounds-tunnel.log`. It runs apart from `i9-tunnel` because it exits whenever i9 still holds the port for a dropped connection, and retries every 10 seconds until it gets it. macOS loads both at login; `launchctl bootout gui/$(id -u)/io.github.neuramance.agent-sounds-tunnel` stops the tunnel.
+`~/Library/LaunchAgents/io.github.neuramance.agent-sounds.plist` listens on the Mac's `127.0.0.1:47123`, plays `Purr` or `Funk` from `/System/Library/Sounds` and ignores anything else; launchd starts it only when a sound arrives. `~/Library/LaunchAgents/io.github.neuramance.agent-sounds-tunnel.plist` keeps the reverse tunnel from i9's `127.0.0.1:47123` to it open through the same `Host i9` entry as [`i9-tunnel`](#i9-tunnel), and writes its latest attempt to `~/Library/Logs/agent-sounds-tunnel.log`. It runs apart from `i9-tunnel` because it exits whenever i9 still holds the port for a dropped connection, and retries every 10 seconds until it gets it. macOS loads both at login; to load them now, run `launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/<label>.plist` for each, and `launchctl bootout gui/$(id -u)/io.github.neuramance.agent-sounds-tunnel` stops the tunnel.
 
 On the Mac, `printf 'Purr\n' | nc -w 1 127.0.0.1 47123` plays Purr and prints `ok`; on i9, `echo '{"hook_event_name":"Stop"}' | ~/.claude/play-notification.sh` plays it through the tunnel. A new sound must be named in both `play-notification.sh` and the listener's `case`.
 
