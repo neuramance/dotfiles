@@ -1,0 +1,8 @@
+[settings]
+idiomatic_version_file_enable_tools = ["node", "bun"]
+
+[tools]
+bun = "1.4.2"
+node = "24.21.0"
+"npm:pyright" = "1.1.414"
+supabase = "2.117.0"

@@ -43,6 +43,9 @@
 # only config.toml — the rest of .config/herdr is runtime state (sockets, logs, session.json)
 !.config/herdr/
 !.config/herdr/config.toml
+!.config/mise/
+!.config/mise/config.i9.toml
+!.config/mise/config.m4.toml
 !.config/rustfmt.toml
 !.config/scripts/
 !.config/scripts/**
