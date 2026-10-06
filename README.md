@@ -118,6 +118,10 @@ It needs the 1Password app, installed by hand and signed in to the personal acco
 
 It needs Tailscale on both machines, with Tailscale SSH enabled on i9 (`sudo tailscale set --ssh`). After replacing i9, run `ssh-keygen -R i9` and `ssh i9` once on the Mac to trust its new host key; the tunnel reconnects on its own.
 
+## herdr on i9
+
+Agents run in i9's herdr session. Attach to it from the Mac with `herdr --remote i9` rather than running `herdr` inside `ssh i9`: the panes and their processes stay on i9, the Mac draws the interface, and Ctrl+V sends the Mac's clipboard image, such as a screenshot taken with Cmd-Ctrl-Shift-4, to a temporary file on i9 and pastes its path, which Claude Code attaches as an image. Inside `ssh i9`, herdr runs entirely on i9 and a dropped screenshot arrives as a Mac path that i9 cannot open. herdr's own sounds are off in `.config/herdr/config.toml`, because [`agent-sounds`](#agent-sounds) plays them for every pane.
+
 ## `agent-sounds`
 
 Claude Code and Codex run `~/.claude/play-notification.sh` when a turn ends (Purr) and when they need input (Funk). On the Mac it plays the sound with `afplay`. On i9 it sends the sound's name to `127.0.0.1:47123`, which a reverse SSH tunnel carries to the Mac, and the Mac plays it; when the Mac does not answer `ok` within a second, it rings the terminal bell instead, which iTerm2 plays.

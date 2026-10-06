@@ -16,3 +16,6 @@ prefix = "backtick"
 
 [ui]
 agent_panel_sort = "priority"
+
+[ui.sound]
+enabled = false

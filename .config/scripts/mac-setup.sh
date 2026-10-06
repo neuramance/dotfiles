@@ -23,7 +23,7 @@ fi
 # --- Homebrew formulae -----------------------------------------------------
 # Tools assumed by the dotfiles / scripts under ~/.local/bin.
 # jq is used by wifi-speed; node provides npm for global CLI installs below.
-brew_pkgs=(jq node)
+brew_pkgs=(jq node herdr)
 for pkg in "${brew_pkgs[@]}"; do
   if brew list --formula "$pkg" &>/dev/null; then
     echo "$pkg already installed."
