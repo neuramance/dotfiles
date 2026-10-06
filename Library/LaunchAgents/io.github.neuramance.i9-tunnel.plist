@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>io.github.neuramance.i9-tunnel</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/bin/bash</string>
+		<string>-c</string>
+		<string>exec &gt;"$HOME/Library/Logs/i9-tunnel.log" 2&gt;&amp;1; for port in {3000..3099} {54321..54324}; do forwards+=(-L "$port:127.0.0.1:$port"); done; exec /usr/bin/ssh -N -o ConnectTimeout=10 -o ServerAliveInterval=15 -o ServerAliveCountMax=3 "${forwards[@]}" i9</string>
+	</array>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>KeepAlive</key>
+	<true/>
+</dict>
+</plist>

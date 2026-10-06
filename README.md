@@ -102,6 +102,12 @@ Backup stores the contents of symlinked files, and replaces the item's archive o
 
 It needs the 1Password app, installed by hand and signed in to the personal account with Settings → Developer → Integrate with 1Password CLI turned on, plus the 1Password CLI and `jq`, which `mac-setup.sh` installs.
 
+## `i9-tunnel`
+
+`~/Library/LaunchAgents/io.github.neuramance.i9-tunnel.plist` keeps one SSH tunnel to `i9` open, so a dev server on i9 opens in the Mac's browser at the same `http://localhost:<port>`, hot reload included. It forwards ports 3000–3099 and the local Supabase ports 54321–54324, connects through the `Host i9` entry and `known_hosts` that [`local-state`](#local-state) restores, and writes its latest attempt to `~/Library/Logs/i9-tunnel.log`. macOS loads it at login and restarts it within 10 seconds whenever it exits. A port another Mac process already holds is skipped, so stop the tunnel with `launchctl bootout gui/$(id -u)/io.github.neuramance.i9-tunnel` before running a local Supabase on the same ports.
+
+It needs Tailscale on both machines, with Tailscale SSH enabled on i9 (`sudo tailscale set --ssh`). After replacing i9, run `ssh-keygen -R i9` and `ssh i9` once on the Mac to trust its new host key; the tunnel reconnects on its own.
+
 ## Local-only state
 
 This is a public repository. Secrets, identities, SSH configuration, histories, caches, logs, and application runtime state remain untracked; [`local-state`](#local-state) backs up the files a new machine needs. Before committing, run `git diff --cached | grep -inE 'sk-|glpat|gho_|\.ts\.net|[0-9]{1,3}(\.[0-9]{1,3}){3}'` and confirm every hit is an intended public value such as `1.1.1.1`. Put shell secrets in `~/.zsh_secrets`, local aliases in `~/.zsh_aliases.local`, and Git identity, credential helper, and signing key in `~/.gitconfig.local`. The first two are sourced automatically when present; the third is pulled in by the tracked `.gitconfig`, which also points `gpg.ssh.allowedSignersFile` at the untracked `~/.ssh/allowed_signers`; commits sign without that file, but verifying them needs it. Fastfetch reads `~/.config/fastfetch/logo.png`, an untracked per-host symlink: link it to the tracked logo for the machine with `ln -sf logo.m4.png ~/.config/fastfetch/logo.png`.
