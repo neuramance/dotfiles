@@ -51,6 +51,10 @@
 !.config/rustfmt.toml
 !.config/scripts/
 !.config/scripts/**
+!.config/systemd/
+!.config/systemd/user/
+!.config/systemd/user/neuramance-deploy.service
+!.config/systemd/user/neuramance-deploy.timer
 !.local/
 !.local/bin/
 !.local/bin/wifi-speed
