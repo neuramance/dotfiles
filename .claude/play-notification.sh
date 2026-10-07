@@ -31,13 +31,16 @@ ring_terminal_bell() {
     done
 }
 
-lock_file="${TMPDIR:-/tmp}/play_notification_last.$UID"
+lock_dir="${XDG_RUNTIME_DIR:-${TMPDIR:-$HOME/.cache}}"
+mkdir -p "$lock_dir"
+lock_file="$lock_dir/play_notification_last"
 now=$(date +%s%N 2>/dev/null)
 [[ "$now" == *N ]] && now="$(date +%s)000000000"
 now=$((now / 1000000))
 should_play=1
 if [ -f "$lock_file" ]; then
-    last=$(cat "$lock_file" 2>/dev/null || echo 0)
+    last=$(cat "$lock_file" 2>/dev/null)
+    [[ "$last" =~ ^[0-9]+$ ]] || last=0
     if [ $((now - last)) -lt 2000 ] && [ $((now - last)) -ge 0 ]; then
         should_play=0
     fi
@@ -46,18 +49,14 @@ fi
 if [ "$should_play" -eq 1 ]; then
     echo "$now" > "$lock_file"
     if [[ "$OSTYPE" == "darwin"* ]]; then
-        afplay -v 1.8 "/System/Library/Sounds/${sound}.aiff" &
+        afplay -v 1.8 "/System/Library/Sounds/${sound}.aiff" >/dev/null 2>&1 &
     elif [[ -f /proc/sys/kernel/osrelease ]] && grep -qi "microsoft" /proc/sys/kernel/osrelease 2>/dev/null; then
-        powershell.exe -Command "(New-Object Media.SoundPlayer 'C:\Windows\Media\Windows Notify.wav').PlaySync()" 2>/dev/null &
+        powershell.exe -Command "(New-Object Media.SoundPlayer 'C:\Windows\Media\Windows Notify.wav').PlaySync()" >/dev/null 2>&1 &
     elif [[ -z "${SSH_CONNECTION:-}" ]] && command -v paplay &> /dev/null; then
-        paplay /usr/share/sounds/freedesktop/stereo/message.oga 2>/dev/null &
+        paplay /usr/share/sounds/freedesktop/stereo/message.oga >/dev/null 2>&1 &
     else
         play_through_ssh_tunnel "$sound" || ring_terminal_bell
     fi
 fi
 
-if [ "$event" = "PreToolUse" ]; then
-    printf '{"decision":"allow"}\n'
-else
-    printf '{}\n'
-fi
+printf '{}\n'

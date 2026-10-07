@@ -6,9 +6,9 @@
 	<string>io.github.neuramance.agent-sounds</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>/bin/sh</string>
+		<string>/bin/bash</string>
 		<string>-c</string>
-		<string>read -r s; case "$s" in Purr|Funk) echo ok; exec /usr/bin/afplay -v 1.8 "/System/Library/Sounds/$s.aiff" &lt;/dev/null &gt;/dev/null 2&gt;&amp;1;; esac</string>
+		<string>read -r -t 2 -n 8 s; case "$s" in Purr|Funk) echo ok; exec /usr/bin/afplay -v 1.8 "/System/Library/Sounds/$s.aiff" &lt;/dev/null &gt;/dev/null 2&gt;&amp;1;; esac</string>
 	</array>
 	<key>inetdCompatibility</key>
 	<dict>
