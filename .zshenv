@@ -9,3 +9,4 @@ export PATH="$PATH:$HOME/.foundry/bin"
 export PATH="$HOME/.local/share/mise/shims:$HOME/.local/bin:$PATH"
 
 export SUPABASE_ANALYTICS_ENABLED=false
+export SUPABASE_TELEMETRY_DISABLED=1

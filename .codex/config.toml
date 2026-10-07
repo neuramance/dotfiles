@@ -303,6 +303,7 @@ inherit = "all"
 [shell_environment_policy.filters]
 CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "include"
 CLOUDFLARE_API_TOKEN = "include"
+SUPABASE_TELEMETRY_DISABLED = "include"
 HOME = "include"
 LANG = "include"
 LC_ALL = "include"
