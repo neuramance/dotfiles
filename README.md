@@ -38,7 +38,7 @@ On macOS, restore the untracked files from 1Password with [`local-state`](#local
 2. Open a new terminal window, so the Homebrew tools from `mac-setup.sh` are on `PATH`, and run the first command below, replacing `m4` with the host whose backup to restore.
 3. Open another terminal window to load the restored shell files, and run the second command, entering the passphrase from the 1Password item `SSH key passphrase (id_ed25519)` once so the macOS keychain remembers it. From then on `.zprofile` loads the key into ssh-agent at login, so Git can sign commits after a restart.
 
-On i9, restore its untracked files from the Mac with the command under [`local-state`](#local-state), then link its mise config as described under [Local-only state](#local-only-state).
+On i9, restore its untracked files from the Mac with the command under [`local-state`](#local-state), then link its mise config as described under [Local-only state](#local-only-state) and its herdr tab-name plugin as described under [herdr on i9](#herdr-on-i9).
 
 ```sh
 local-state restore m4
@@ -53,7 +53,7 @@ ssh-add --apple-use-keychain ~/.ssh/id_ed25519
 | Terminal and editors | `.tmux.conf`, `.vimrc`, `.psqlrc`, `.config/rustfmt.toml` — tmux navigation and display, Vim defaults, PostgreSQL client behavior, and Rust formatting. |
 | Toolchain | `.config/mise/config.<host>.toml` — each machine's global mise tools and settings: i9 pins Bun, Node, the Supabase CLI and pyright; m4 takes Node from Homebrew. |
 | Git | `.gitconfig` — default branch and SSH commit signing. Identity, credential helper, and signing key live in untracked `~/.gitconfig.local`, which the tracked file includes last so local values win. Required on any new machine, like `.zsh_secrets`. i9 signs with its own `~/.ssh/id_ed25519_signing`, which has no passphrase so agents there can commit unattended, and which GitHub holds as a signing key only. |
-| System display | `.config/fastfetch/` and `.config/herdr/config.toml` — Fastfetch theme, host-specific logos, resource helpers, and Herdr theme, key bindings, and sound setting. |
+| System display | `.config/fastfetch/`, `.config/herdr/config.toml`, and `.config/herdr/tab-cwd/` — Fastfetch theme, host-specific logos, resource helpers, and Herdr theme, key bindings, sound setting, and tab names. |
 | AI agents | `.codex/` and `.claude/` — global Codex and Claude Code instructions, settings, notifications, status line, plugin configuration, and reusable skills. |
 | macOS | Moved to [macstate](https://github.com/neuramance/macstate) — declared system state with a read-only audit and an idempotent apply, no longer tracked in this repository. |
 | Homebrew | `.Brewfile` — snapshot of top-level formulae, casks, taps, Mac App Store apps, and global npm, cargo, and uv tools. A record for deliberate review, not an automatic restore. Refresh with `brew bundle dump --file=~/.Brewfile --force --no-vscode`; verify with `brew bundle check --file=~/.Brewfile --no-upgrade`. Dropping `--no-upgrade` also reports available updates, so it fails whenever any package or App Store app has one pending. |
@@ -121,6 +121,8 @@ It needs Tailscale on both machines, with Tailscale SSH enabled on i9 (`sudo tai
 ## herdr on i9
 
 Agents run in i9's herdr session. Attach to it from the Mac with `herdr --remote i9` rather than running `herdr` inside `ssh i9`: the panes and their processes stay on i9, the Mac draws the interface, and Ctrl+V sends the Mac's clipboard image, such as a screenshot taken with Cmd-Ctrl-Shift-4, to a temporary file on i9 and pastes its path, which Claude Code attaches as an image. Inside `ssh i9`, herdr runs entirely on i9 and a dropped screenshot arrives as a Mac path that i9 cannot open. herdr's own sounds are off in `.config/herdr/config.toml`, because [`agent-sounds`](#agent-sounds) plays them for every pane.
+
+Each tab is named after the working directory of its focused pane, as tmux names windows with `#{b:pane_current_path}` in `.tmux.conf`: `~/code/umath_1` shows as `umath_1`, the home directory as `w`, and `/` as `/`. `~/.config/herdr/tab-cwd/label-tabs.sh` reads the session with `herdr api snapshot` and renames each tab whose label differs from the last component of that directory, as herdr reports it, with symlinks resolved; it stops each herdr call after 2 seconds. zsh runs it from a `chpwd` hook in `.zshrc` whenever a shell in a herdr pane changes directory, and herdr runs it from the plugin in the same directory whenever a pane is created, focused, moved, closed, or exits, or a tab is moved or closed, which renumbers the tabs still showing their position. Link the plugin once on each machine whose herdr server runs the panes, i9 here, with `herdr plugin link ~/.config/herdr/tab-cwd`; herdr records the link in the untracked `~/.config/herdr/plugins.json`. A tab renamed by hand keeps its name only until the next directory or focus change, so `.config/herdr/config.toml` turns off herdr's name prompt for new tabs.
 
 ## `agent-sounds`
 

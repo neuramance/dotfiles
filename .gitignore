@@ -40,9 +40,11 @@
 !.config/fastfetch/**
 # logo.png is an untracked per-host symlink — link it to a tracked logo.<host>.png by hand
 .config/fastfetch/logo.png
-# only config.toml — the rest of .config/herdr is runtime state (sockets, logs, session.json)
+# only config.toml and the tab-cwd plugin — the rest of .config/herdr is runtime state (sockets, logs, session.json, plugins.json)
 !.config/herdr/
 !.config/herdr/config.toml
+!.config/herdr/tab-cwd/
+!.config/herdr/tab-cwd/**
 !.config/mise/
 !.config/mise/config.i9.toml
 !.config/mise/config.m4.toml

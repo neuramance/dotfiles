@@ -43,6 +43,9 @@ command -v fzf >/dev/null && source <(fzf --zsh)
 # zoxide
 command -v zoxide >/dev/null && eval "$(zoxide init zsh)"
 
+_herdr_label_tabs() { (( ZSH_SUBSHELL )) || ~/.config/herdr/tab-cwd/label-tabs.sh }
+[[ $HERDR_ENV == 1 ]] && autoload -Uz add-zsh-hook && add-zsh-hook chpwd _herdr_label_tabs
+
 
 # Added by Antigravity CLI installer
 export PATH="$HOME/.local/bin:$PATH"

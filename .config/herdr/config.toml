@@ -16,6 +16,7 @@ prefix = "backtick"
 
 [ui]
 agent_panel_sort = "priority"
+prompt_new_tab_name = false
 
 [ui.sound]
 enabled = false
