@@ -294,11 +294,15 @@ trust_level = "trusted"
 [projects."/home/w/code/umath_2"]
 trust_level = "trusted"
 
+[projects."/home/w/code/website"]
+trust_level = "trusted"
+
 [shell_environment_policy]
 inherit = "all"
 
 [shell_environment_policy.filters]
 CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "include"
+CLOUDFLARE_API_TOKEN = "include"
 HOME = "include"
 LANG = "include"
 LC_ALL = "include"

@@ -51,6 +51,10 @@ Do not create documentation files unless asked.
 
 When you point the user to a file, write its absolute path. Sessions often run over SSH inside herdr, where iTerm2 opens only absolute paths on Cmd-click.
 
+## Cloudflare
+
+When `CLOUDFLARE_API_TOKEN` is set, it is a scoped token for the user's Cloudflare zones and tunnels. Call `https://api.cloudflare.com/client/v4` with curl, sending it as `Authorization: Bearer`, and take the account ID from `/zones`. Never print it. A PUT to a ruleset phase entrypoint replaces every rule in that phase: read the entrypoint first and send back the full list.
+
 ## Quality gates are one-way
 
 A red gate (linter, ceiling, verify script, hook) means the work is not done: report the failing output. Fix the code. Never loosen a ceiling, add a suppression or per-file override, widen ignores, loosen counting options, weaken a gate or its hooks, or bypass with --no-verify. Over a ceiling, extract along a real seam. Change a check only when independent evidence proves it defective, and show the corrected check accepts a compliant case and rejects a violating one.
