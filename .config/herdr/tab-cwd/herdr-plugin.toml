@@ -1,8 +1,8 @@
 id = "neuramance.tab-cwd"
 name = "Tab cwd"
-version = "1.0.0"
+version = "1.1.0"
 min_herdr_version = "0.9.3"
-description = "Name each tab after its focused pane's working directory"
+description = "Name each tab by its position and its focused pane's working directory"
 platforms = ["linux", "macos"]
 
 [[events]]
