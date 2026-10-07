@@ -1,0 +1,3 @@
+interface:
+  display_name: "m4 Audit"
+  short_description: "Audit m4's energy, health, and hygiene; fix verified defects"

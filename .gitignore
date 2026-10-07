@@ -87,5 +87,6 @@
 __pycache__/
 *.pyc
 *.swp
+*.local.md
 !scripts/
 !scripts/agent-verify
