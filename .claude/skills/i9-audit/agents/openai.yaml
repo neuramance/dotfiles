@@ -1,0 +1,3 @@
+interface:
+  display_name: "i9 Audit"
+  short_description: "Audit i9's health and hygiene; fix verified defects"
