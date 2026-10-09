@@ -376,6 +376,9 @@ trusted_hash = "sha256:286313cc6d4ecbca4660a20a7a49d76caa2b604cbde51f911685b25ff
 [hooks.state."/home/w/.codex/hooks.json:session_start:0:0"]
 trusted_hash = "sha256:6ea51dab1d0fc985d6b412406fb01bb6c80cd78e094122872296a61399deb6fb"
 
+[hooks.state."/home/w/code/website/.codex/hooks.json:post_tool_use:0:0"]
+trusted_hash = "sha256:da886a52e1ce141bc8d7e68505897a975707ae221cebfd1657e72f7b61105952"
+
 [desktop]
 followUpQueueMode = "queue"
 dock-icon-preference = "app-default"
