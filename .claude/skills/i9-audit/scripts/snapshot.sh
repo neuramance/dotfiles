@@ -197,6 +197,9 @@ timeout -v 10 networkctl list --no-pager --no-legend | awk '$2 !~ /^(veth|br-)/'
 sudo -n timeout -v 10 ufw status
 printf 'DOCKER-USER DROP rules: ipv4 %s, ipv6 %s\n' \
   "$(sudo -n timeout -v 10 iptables -S DOCKER-USER | grep -c DROP)" "$(sudo -n timeout -v 10 ip6tables -S DOCKER-USER | grep -c DROP)"
+printf 'ingress-guard %s: ' "$(timeout -v 10 systemctl is-active ingress-guard)"
+sudo -n timeout -v 10 nft list table inet ingress_guard | tr -s '[:space:]' ' '
+echo
 sudo -n timeout -v 10 tailscale serve status
 timeout -v 10 chronyc -n tracking | grep -E '^(Reference ID|System time|Leap status)'
 

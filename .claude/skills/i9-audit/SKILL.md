@@ -16,7 +16,7 @@ Produce an evidence-backed account of what on i9 is broken, at risk, or wasteful
 
 ## 1. Collect
 
-- Read `known-state.md`: host facts, the exposure baseline, accepted decisions, and open findings. They change how signals are judged.
+- Read `known-state.md`: host facts, the exposure baseline, accepted decisions, and any open findings. They change how signals are judged.
 - Run `scripts/snapshot.sh`: read-only, about 10 seconds, every daemon or filesystem call bounded by `timeout -v`, which prints a line when it fires. It needs passwordless `sudo -n` and stops without it, because partial data reads as absence. It is the inventory, not the audit: follow each signal it raises with targeted commands until its cause is known.
 - For history behind a current reading, such as a past load spike, read `sar` (sysstat samples every 10 minutes): `sar -q`, `sar -r`, `sar -d`.
 - Batch independent follow-up commands in parallel. Give every command a timeout.
@@ -32,7 +32,7 @@ A signal is a finding when it crosses these defaults. Explain a signal below the
 | Disk | Space or inodes at 80% on any real filesystem, or a measured growth rate reaching 90% within 30 days. NVMe `critical_warning` not 0, `media_errors` above 0, `available_spare` at or below its threshold, `percentage_used` at 80%, or `unsafe_shutdowns` above its recorded baseline. |
 | Services | A failed unit, nonzero `NRestarts`, a timer's service whose last `Result` is not `success` or that is stuck `activating`, an expected timer with no next run, or a container unhealthy, restarting, restarted, or OOM-killed. |
 | Logs | Any recurring source in the journal summary, at any priority: a real fault, or noise that hides real faults; both are defects. Any kernel fault signature. A previous boot that did not end with `Journal stopped`, which means a crash or power loss. |
-| Exposure | A listener, ufw rule, or `DOCKER-USER` DROP count that differs from the baseline, or ufw inactive. |
+| Exposure | A listener, ufw rule, ingress-guard rule, or `DOCKER-USER` DROP count that differs from the baseline, or ufw or ingress-guard inactive. |
 | Updates | Pending security updates, a required reboot, `NEEDRESTART-KSTA` 2 or 3 (a newer kernel is installed), or services under `NEEDRESTART-SVC`. |
 | Waste | Detached processes, unused images or volumes, stale worktrees, caches: a finding only under pressure on that resource or when it grows without bound. Reclaiming 3 GB from a disk at 4% gains nothing and risks something. |
 
@@ -42,8 +42,9 @@ Try to disprove each candidate finding before reporting or acting on it. When ev
 
 - **In use or abandoned.** Detached (reparented to init) means the launcher exited, not that the process is unused; a missing tty means nothing, because agent shells have none. Walk the parent chain with `ps -o ppid=` up to PID 1, not `pstree | head`. Evidence of use: established connections in the listener table, refreshed with `sudo ss -tniO state established '( sport = :PORT )'` and read through `lastsnd`/`lastrcv`; a live owning session (`CLAUDE_CODE_SESSION_ID` and `HERDR_PANE_ID` in `/proc/PID/environ`, compared with live sessions); recent writes under its working directory. Zero connections does not prove disuse: tailnet clients reach Docker-published ports through NAT, which host sockets never show. A docker scope in `/proc/PID/cgroup` means the process belongs to a container.
 - **Reclaimable or needed.** `docker system df` counts every image without a container as reclaimable, including rollback tags and images run on demand (`supabase test db` runs `pg_prove`). `supabase stop` keeps the project's volumes on purpose. A re-pullable image is safer to remove than any volume.
-- **Exposed or filtered.** Published Docker ports bypass ufw's INPUT chain; `DOCKER-USER` decides who reaches them. `tailscale serve status` does not show Tailscale SSH port forwards.
-- **Counted or hidden.** Use `journalctl -q`, or `-- No entries --` counts as a line. Services that log to stderr land at info priority even when the line says `ERROR`, so `-p err` alone misses them. Without `sudo`, `ss -p` hides other users' socket owners. `sudo sshd -G` prints sshd's effective configuration; `sshd -T` fails while socket activation leaves `/run/sshd` absent.
+- **Exposed or filtered.** Published Docker ports bypass ufw's INPUT chain; `DOCKER-USER` decides who reaches them. ingress-guard drops tailnet traffic at prerouting, before ufw allows `tailscale0`, so read its accepted ports before calling a listener tailnet-reachable. `tailscale serve status` does not show Tailscale SSH port forwards.
+- **Written or loaded.** A file on disk is not the running configuration until its daemon loads it. Compare the files with what the daemon reports it loaded: `networkctl status IFACE` names the network file and drop-ins, and `systemctl show -p DropInPaths -p NeedDaemonReload UNIT` covers units.
+- **Counted or hidden.** Use `journalctl -q`, or `-- No entries --` counts as a line. sudo logs every command line, so `journalctl --grep 'Failed to start X'` also matches your own earlier searches; select systemd's own messages with `_PID=1` or `-u UNIT`. Services that log to stderr land at info priority even when the line says `ERROR`, so `-p err` alone misses them. Without `sudo`, `ss -p` hides other users' socket owners. `sudo sshd -G` prints sshd's effective configuration; `sshd -T` fails while socket activation leaves `/run/sshd` absent.
 - **Quantified.** State sizes in absolute and percentage terms, and growth as a rate.
 
 ## 4. Decide
@@ -53,7 +54,7 @@ Try to disprove each candidate finding before reporting or acting on it. When ev
 | Verified, reversible defect in `w`'s files or the system configuration | false error noise from a package hook, a misconfigured unit or timer, a retention gap | Fix when the request authorizes fixes. |
 | Interrupts work in progress | killing a process, restarting docker, tailscaled, sshd, caddy, cloudflared, or networking; rebooting; upgrading packages | Ask, giving the evidence and the expected disruption. |
 | Destroys data | volumes, databases, backups, files that cannot be regenerated | Ask; never act on inference. |
-| Another user's, or outward-facing | another user's processes or files, `/srv/mathblox`, DNS, Cloudflare, GitHub | Report; act only on an explicit request. |
+| Another user's, or outward-facing | another user's processes or files, DNS, Cloudflare, GitHub | Report; act only on an explicit request. |
 | Deliberate, or not worth it | listed in `known-state.md`; waste without pressure | Leave it, and say why. |
 
 i9 is remote and its only uplink is Wi-Fi. Treat every netplan, networkd, ufw, or Tailscale change as interrupting work. When one is approved, run `sudo netplan try` in the background, confirm connectivity, then accept with `sudo pkill -USR1 -f '^/usr/bin/python3 /usr/sbin/netplan try'` (anchored, so it cannot match the `sudo pkill` itself); any other ending, including its timeout, reverts the change.
