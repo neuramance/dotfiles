@@ -1,6 +1,6 @@
 # i9 known state
 
-Facts and decisions that change how audit signals are judged. Date each decision and open finding, give its reason and rollback, and delete an entry once its subject is gone.
+Facts and decisions that earlier audits recorded, which change how audit signals are judged. An entry can be stale, wrong, or incomplete, and the machine changes between runs: confirm each one against this run's evidence before relying on it, and correct it when the evidence disagrees. Date each decision and open finding, give its reason and rollback, and delete an entry once its subject is gone.
 
 ## Host
 
