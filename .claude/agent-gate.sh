@@ -182,7 +182,7 @@ fingerprint() {
     date -u +%F
     git rev-parse HEAD --symbolic-full-name HEAD 2>&1
     git ls-files --stage -z | git hash-object --stdin
-    git --no-optional-locks status --porcelain --ignored -z -- . ':(exclude).next' 2>&1 | git hash-object --stdin
+    git --no-optional-locks status --porcelain --ignored -z -- . "${outputs[@]}" 2>&1 | git hash-object --stdin
     git for-each-ref
     git config --list
     env | LC_ALL=C sort | grep -vE "$volatile"
@@ -234,7 +234,12 @@ while IFS= read -r root <&3; do
     continue
   fi
   gated=$((gated + 1))
-  prune=(-path ./.git -o -path ./.next)
+  prune=(-path ./.git -o -path ./.next -o -name '*.tsbuildinfo')
+  outputs=(':(exclude).next' ':(exclude,glob)**/*.tsbuildinfo')
+  if compgen -G 'next.config.*' >/dev/null; then
+    prune+=(-o -path ./out)
+    outputs+=(':(exclude)out')
+  fi
   for cache in .cache .tmp .vite .vitest-cache; do prune+=(-o -path "./node_modules/$cache"); done
   [[ -f Cargo.toml ]] && prune+=(-o -path ./target)
   [[ -f pyproject.toml ]] && prune+=(-o -path ./.venv -o -path ./mutants -o -path ./.pytest_cache -o -path ./.ruff_cache -o -name __pycache__)

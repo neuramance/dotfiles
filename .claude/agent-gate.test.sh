@@ -38,6 +38,8 @@ fi
 if [ -f "$work/next-during-run" ]; then
   mkdir -p "$repo/.next/types" && printf x >>"$repo/.next/types/routes.ts"
 fi
+[ -f "$work/buildinfo-during-run" ] && printf x >>"$repo/tsconfig.tsbuildinfo"
+[ -f "$work/export-during-run" ] && mkdir -p "$repo/out" && printf x >>"$repo/out/index.html"
 [ -f "$work/unverified" ] && echo '   not verified · notes.md: no focused check covers this file'
 exit 0
 EOF
@@ -264,6 +266,19 @@ printf 'next source edit\n' >"$repo/tracked.txt"
 expect 'tracked edit reruns a gate that rewrites Next build output' 1 0
 expect 'Stop skips again after Next build output was rewritten' 0 0 'skipped'
 rm "$work/next-during-run"
+touch "$work/buildinfo-during-run"
+printf 'incremental\n' >"$repo/tracked.txt"
+expect 'gate that creates TypeScript build info runs' 1 0
+expect 'second Stop skips after the gate created TypeScript build info' 0 0 'skipped'
+rm "$work/buildinfo-during-run"
+touch "$work/export-during-run"
+printf 'export\n' >"$repo/tracked.txt"
+expect 'gate that writes out/ outside a Next project runs' 1 0
+expect 'outside a Next project a rewritten out/ is not trusted' 1 0
+printf 'export default {};\n' >"$repo/next.config.mjs"
+expect 'gate that rewrites the static export of a Next project runs' 1 0
+expect 'second Stop skips after the gate rewrote the static export' 0 0 'skipped'
+rm "$work/export-during-run" "$repo/next.config.mjs"
 printf '[project]\nname = "x"\n' >"$repo/pyproject.toml"
 expect 'python project runs the gate' 1 0
 touch "$work/pycache-during-run"
