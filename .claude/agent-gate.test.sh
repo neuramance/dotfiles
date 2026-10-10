@@ -9,6 +9,7 @@ mkdir -p "$TMPDIR" || exit 2
 repo=$work/repo
 runs=$work/runs
 : >"$runs"
+: >"$work/arguments"
 mkdir -p "$repo/scripts" "$repo/node_modules/pkg" "$work/bin" || exit 2
 printf 'v1\n' >"$work/node-version"
 printf '2026-01-01\n' >"$work/today"
@@ -22,6 +23,7 @@ git -C "$repo" init -q -b main || exit 2
 cat >"$repo/scripts/agent-verify" <<EOF
 #!/bin/sh
 printf x >>"$runs"
+printf '%s\n' "\$@" >"$work/arguments"
 [ -f "$work/red" ] && exit 1
 if [ -f "$work/slow" ]; then sleep 300 & echo \$! >"$work/sleep-pid"; wait; fi
 [ -f "$work/create-during-run" ] && printf 'transient\n' >"$repo/appeared.txt"
@@ -33,6 +35,10 @@ if [ -f "$work/cache-during-run" ]; then
     mkdir -p "$repo/node_modules/\$cache" && printf x >>"$repo/node_modules/\$cache/entry"
   done
 fi
+if [ -f "$work/next-during-run" ]; then
+  mkdir -p "$repo/.next/types" && printf x >>"$repo/.next/types/routes.ts"
+fi
+[ -f "$work/unverified" ] && echo '   not verified · notes.md: no focused check covers this file'
 exit 0
 EOF
 chmod +x "$repo/scripts/agent-verify"
@@ -52,10 +58,11 @@ event_cwd=
 unset event_file
 stderr_pattern=
 expect() {
-  local name=$1 runs_expected=$2 status_expected=$3 pattern=${4:-} before output status ran
+  local name=$1 runs_expected=$2 status_expected=$3 pattern=${4:-} before output status ran payload
   before=$(wc -c <"$runs")
-  output=$(printf '{"hook_event_name":"%s","cwd":"%s","session_id":"%s","turn_id":"%s","stop_hook_active":%s,"tool_input":{"file_path":"%s"}}' \
-    "$hook_event" "${event_cwd:-$repo}" "$session_id" "$turn_id" "$stop_active" "${event_file-$repo/tracked.txt}" |
+  payload=${event_payload-$(printf '{"hook_event_name":"%s","cwd":"%s","session_id":"%s","turn_id":"%s","stop_hook_active":%s,"tool_input":{"file_path":"%s"}}' \
+    "$hook_event" "${event_cwd:-$repo}" "$session_id" "$turn_id" "$stop_active" "${event_file-$repo/tracked.txt}")}
+  output=$(printf '%s' "$payload" |
     perl -e 'alarm 60; exec @ARGV' "$hook_path" 2>"$work/stderr")
   status=$?
   output+=$(<"$work/stderr")
@@ -67,6 +74,68 @@ expect() {
     failed=1
   fi
 }
+stderr_pattern='agent-gate: invalid hook payload:'
+for event_payload in '' '{' '[]' 'null' 'true' '1' '"Stop"' '{}'
+do
+  expect "invalid JSON payload is rejected: ${event_payload:-empty stdin}" 0 2
+done
+for event_payload in \
+  "{\"hook_event_name\":\"Unknown\",\"cwd\":\"$repo\"}" \
+  '{"hook_event_name":null}' \
+  '{"hook_event_name":1}' \
+  '{"hook_event_name":"Stop"}{"hook_event_name":"Stop"}'
+do
+  expect "invalid hook event is rejected: $event_payload" 0 2
+done
+for value in null false 1 '[]' '{}' '""'; do
+  event_payload="{\"hook_event_name\":\"PostToolUse\",\"tool_input\":{\"file_path\":$value}}"
+  expect "invalid file_path is rejected: $value" 0 2
+done
+for cwd in '' ',"cwd":"relative"' ',"cwd":null' ',"cwd":5'; do
+  event_payload="{\"hook_event_name\":\"PostToolUse\",\"tool_input\":{\"file_path\":\"tracked.txt\"}$cwd}"
+  expect "relative edit without absolute cwd is rejected: ${cwd:-absent cwd}" 0 2
+done
+unset event_payload
+stderr_pattern=
+hook_event=PostToolUse
+event_file=tracked.txt
+expect 'relative edit resolves against event cwd outside the process cwd' 1 0
+if [[ $(<"$work/arguments") == "$repo/tracked.txt" ]]; then
+  echo 'ok - relative edit passes the absolute file to the gate'
+else
+  echo "not ok - relative edit passes the absolute file to the gate: $(<"$work/arguments")"
+  failed=1
+fi
+event_file=$repo/tracked.txt
+touch "$work/unverified"
+expect 'an edit the repository could not verify is reported to Claude' 1 0 '"additionalContext": "   not verified · notes.md: no focused check covers this file"'
+codex_output=$(printf '{"hook_event_name":"PostToolUse","cwd":"%s","turn_id":"codex-turn","tool_input":{"file_path":"%s"}}' "$repo" "$repo/tracked.txt" | "$hook_path" 2>&1)
+if [[ -z $codex_output ]]; then
+  echo 'ok - a Codex edit the repository could not verify gets no Claude hook output'
+else
+  echo "not ok - a Codex edit the repository could not verify gets no Claude hook output: $codex_output"
+  failed=1
+fi
+rm -f "$work/unverified"
+verified_output=$(printf '{"hook_event_name":"PostToolUse","cwd":"%s","tool_input":{"file_path":"%s"}}' "$repo" "$repo/tracked.txt" | "$hook_path" 2>&1)
+if [[ -z $verified_output ]]; then
+  echo 'ok - a verified edit prints nothing'
+else
+  echo "not ok - a verified edit prints nothing: $verified_output"
+  failed=1
+fi
+printf 'option-like\n' >"$repo/-z.ts"
+event_file=-z.ts
+expect 'option-like relative edit is verified from event cwd' 1 0
+if [[ $(<"$work/arguments") == "$repo/-z.ts" && ! -s $work/stderr ]]; then
+  echo 'ok - option-like edit passes an absolute argument without utility errors'
+else
+  echo "not ok - option-like edit passes an absolute argument without utility errors: $(<"$work/arguments") $(<"$work/stderr")"
+  failed=1
+fi
+rm "$repo/-z.ts"
+unset event_file
+hook_event=Stop
 expect 'without opt-in the first Stop runs the gate' 1 0
 expect 'without opt-in an unchanged Stop still runs the gate' 1 0
 git -C "$repo" config agent-gate.skipUnchanged true
@@ -89,7 +158,7 @@ mkdir "$repo/empty"
 expect 'new empty directory runs the gate' 1 0
 rmdir "$repo/empty"
 expect 'removed empty directory runs the gate' 1 0
-mkdir -p "$repo/.next/types" && printf 'stale\n' >"$repo/.next/types/routes.ts"
+mkdir -p "$repo/vendor/types" && printf 'stale\n' >"$repo/vendor/types/routes.ts"
 expect 'ignored file the gate can read runs the gate' 1 0
 mkdir -p "$repo/vendor/nested" && git -C "$repo/vendor/nested" init -q && printf 'a\n' >"$repo/vendor/nested/file.ts"
 expect 'new nested repository runs the gate' 1 0
@@ -113,7 +182,7 @@ ln -s "$work/outside-dir" "$repo/linked-dir"
 expect 'new symlinked directory runs the gate' 1 0
 printf 'broken\n' >"$work/outside-dir/flag"
 expect 'edit behind a symlinked directory outside the checkout runs the gate' 1 0
-ln -s "$work/missing" "$repo/.next/broken-link"
+ln -s "$work/missing" "$repo/vendor/broken-link"
 expect 'new broken symlink in an ignored directory runs the gate' 1 0
 printf 'staged\n' >"$repo/staged.txt"
 expect 'new file before staging runs the gate' 1 0
@@ -187,6 +256,14 @@ printf 'cached\n' >"$repo/tracked.txt"
 expect 'gate that writes only its tool caches runs' 1 0
 expect 'state verified while the gate wrote only tool caches is skipped' 0 0 'skipped'
 rm "$work/cache-during-run"
+touch "$work/next-during-run"
+printf 'next build\n' >"$repo/tracked.txt"
+expect 'gate that creates Next build output runs' 1 0
+expect 'second Stop skips after the gate created Next build output' 0 0 'skipped'
+printf 'next source edit\n' >"$repo/tracked.txt"
+expect 'tracked edit reruns a gate that rewrites Next build output' 1 0
+expect 'Stop skips again after Next build output was rewritten' 0 0 'skipped'
+rm "$work/next-during-run"
 printf '[project]\nname = "x"\n' >"$repo/pyproject.toml"
 expect 'python project runs the gate' 1 0
 touch "$work/pycache-during-run"
@@ -366,7 +443,9 @@ expect 'cwd and recorded repository are deduplicated' 1 0
 hook_event=PostToolUse
 event_file=
 cp "$TMPDIR/agent-gate/session_B" "$work/record-before"
+event_payload=$(jq -n --arg cwd "$event_cwd" --arg session "$session_id" '{hook_event_name: "PostToolUse", cwd: $cwd, session_id: $session, tool_input: {command: "apply_patch data"}}')
 expect 'other hosts without a file path do not verify' 0 0
+unset event_payload
 if cmp -s "$TMPDIR/agent-gate/session_B" "$work/record-before"; then
   echo 'ok - other hosts without a file path do not record'
 else
@@ -395,7 +474,7 @@ stderr_pattern=
 expect 'unchanged recorded repositories share one skip message' 0 0 "agent-gate: $work/C\nagent-gate: $work/B"
 touch "$work/B-red" "$work/C-red"
 for name in B C; do git -C "$work/$name" config agent-gate.skipUnchanged false; done
-stderr_pattern="agent-gate: $work/C"$'\nC failed\n'"agent-gate: $work/B"$'\nB failed'
+stderr_pattern="agent-gate: $work/C"$'\nC failed\n'"agent-gate: full log: $work/C/.git/agent-gate-failure.log"$'\n'"agent-gate: $work/B"$'\nB failed'
 expect 'all failing repositories have separate headers and diagnostics' 2 2 'B failed'
 stderr_pattern=
 rm "$work/B-red" "$work/C-red"
@@ -407,7 +486,7 @@ session_id=budget
 for name in slow-one slow-two; do
   event_file=$work/$name/tracked.txt
   expect "record $name before its slow gate" 1 0
-  git -C "$work/$name" config agent-gate.stopDeadline 2
+  git -C "$work/$name" config agent-gate.stopDeadline 5
   touch "$work/$name-slow"
 done
 hook_event=Stop
@@ -576,6 +655,175 @@ if [[ $status == 2 && $elapsed -lt 30 && $(<"$work/stderr") == *'did not finish 
   echo 'ok - a slow formatter and a hung focused check still finish inside the 30 s hook timeout'
 else
   echo "not ok - a slow formatter and a hung focused check still finish inside the 30 s hook timeout: status=$status elapsed=$elapsed $(<"$work/stderr")"
+  failed=1
+fi
+logrepo=$work/logrepo
+mkdir -p "$logrepo/scripts"
+git -C "$logrepo" init -q -b main
+for ((i = 1; i <= 150; i++)); do printf 'diagnostic %03d\n' "$i"; done >"$work/complete-output"
+cat >"$logrepo/scripts/agent-verify" <<EOF
+#!/bin/sh
+printf x >>"$runs"
+cat "$work/complete-output"
+[ ! -f "$work/log-slow" ] || exec sleep 300
+exit 1
+EOF
+chmod +x "$logrepo/scripts/agent-verify"
+session_id=
+event_cwd=$logrepo
+event_file=$logrepo/file.txt
+full_log=$logrepo/.git/agent-gate-failure.log
+printf 'do not overwrite\n' >"$work/protected"
+ln -s "$work/protected" "$full_log"
+for hook_event in PostToolUse Stop; do
+  expect "$hook_event failure reports its full log" 1 2 "agent-gate: full log: $full_log"
+  if [[ -f $full_log && ! -L $full_log ]] && cmp -s "$work/complete-output" "$full_log" &&
+    [[ $(stat -c %a "$full_log") == 600 && $(<"$work/protected") == 'do not overwrite' &&
+       $(tail -n 1 "$work/stderr") == "agent-gate: full log: $full_log" && $(wc -l <"$work/stderr") -le 103 ]]; then
+    echo "ok - $hook_event preserves complete private output without following symlinks"
+  else
+    echo "not ok - $hook_event preserves complete private output without following symlinks"
+    failed=1
+  fi
+  printf 'replacement\n' >>"$work/complete-output"
+done
+touch "$work/log-slow"
+git -C "$logrepo" config agent-gate.stopDeadline 1
+expect 'deadline failure reports its full log' 1 2 "agent-gate: full log: $full_log"
+if [[ -f $full_log && $(<"$full_log") == *replacement* && $(<"$full_log") == *'FAIL [deadline]'* &&
+      $(tail -n 1 "$work/stderr") == "agent-gate: full log: $full_log" ]]; then
+  echo 'ok - deadline log retains gate output and the timeout diagnostic'
+else
+  echo 'not ok - deadline log retains gate output and the timeout diagnostic'
+  failed=1
+fi
+rm "$work/log-slow" "$full_log"
+printf '#!/bin/sh\nprintf x >>"%s"\nexit 0\n' "$runs" >"$logrepo/scripts/agent-verify"
+for hook_event in PostToolUse Stop; do
+  expect "$hook_event successful gate runs without creating a failure log" 1 0
+  if [[ ! -e $full_log ]]; then
+    echo "ok - $hook_event success leaves no new failure log"
+  else
+    echo "not ok - $hook_event success leaves no new failure log"
+    failed=1
+  fi
+done
+if [[ -z $(find "$TMPDIR" -maxdepth 1 -name 'agent-gate.*' -print) ]]; then
+  echo 'ok - temporary output logs are removed after failures and successes'
+else
+  echo 'not ok - temporary output logs are removed after failures and successes'
+  failed=1
+fi
+signalrepo=$work/signals
+mkdir -p "$signalrepo/scripts"
+git -C "$signalrepo" init -q -b main
+cat >"$signalrepo/scripts/agent-verify" <<'EOF'
+#!/usr/bin/env perl
+use strict;
+use warnings;
+my $child = fork // die $!;
+if ($child == 0) {
+  setpgrp;
+  $SIG{$_} = sub {
+    open my $exit, ">", "child-exited" or die $!;
+    print {$exit} "exited\n";
+    close $exit;
+    exit 0;
+  } for qw(TERM INT HUP);
+  open my $pid, ">", "child-pid" or die $!;
+  print {$pid} "$$\n";
+  close $pid;
+  sleep 60 while 1;
+}
+$SIG{TERM} = sub {
+  sleep 3 if -e "delayed";
+  kill "TERM", -$child;
+  waitpid $child, 0;
+  sleep 60 if -e "stubborn";
+  open my $exit, ">", "supervisor-exited" or die $!;
+  print {$exit} "cleaned\n";
+  close $exit;
+  exit 0;
+};
+open my $pid, ">", "supervisor-pid" or die $!;
+print {$pid} "$$\n";
+close $pid;
+sleep 60 while 1;
+EOF
+chmod +x "$signalrepo/scripts/agent-verify"
+jq -n --arg file "$signalrepo/file.txt" '{hook_event_name: "PostToolUse", tool_input: {file_path: $file}}' >"$work/signal-event.json"
+for signal_case in TERM:pid INT:pid HUP:pid TERM:group INT:group HUP:group delayed:pid delayed:group; do
+  signal=${signal_case%:*}
+  target=${signal_case#*:}
+  rm -f "$signalrepo/child-pid" "$signalrepo/supervisor-pid" "$signalrepo/child-exited" "$signalrepo/supervisor-exited" "$signalrepo/delayed"
+  [[ $signal != delayed ]] || { touch "$signalrepo/delayed"; signal=TERM; }
+  perl -e 'setpgrp; $SIG{INT} = "DEFAULT"; alarm 45; exec @ARGV' "$hook_path" <"$work/signal-event.json" >"$work/signal-stdout" 2>"$work/signal-stderr" &
+  hook_pid=$!
+  for ((i = 0; i < 100; i++)); do
+    [[ -s $signalrepo/child-pid && -s $signalrepo/supervisor-pid ]] && break
+    sleep 0.05
+  done
+  target_pid=$hook_pid
+  [[ $target != group ]] || target_pid=-$hook_pid
+  kill -"$signal" -- "$target_pid" 2>/dev/null
+  wait "$hook_pid" 2>/dev/null
+  status=$?
+  status_expected=143
+  [[ $signal != INT ]] || status_expected=130
+  for ((i = 0; i < 40; i++)); do
+    [[ -s $signalrepo/child-exited && -s $signalrepo/supervisor-exited ]] &&
+      ! kill -0 "$(<"$signalrepo/child-pid")" 2>/dev/null &&
+      ! kill -0 "$(<"$signalrepo/supervisor-pid")" 2>/dev/null && break
+    sleep 0.05
+  done
+  if [[ $status == "$status_expected" && -s $signalrepo/child-exited && -s $signalrepo/supervisor-exited ]] &&
+    ! kill -0 "$(<"$signalrepo/child-pid")" 2>/dev/null && ! kill -0 "$(<"$signalrepo/supervisor-pid")" 2>/dev/null &&
+    ! kill -0 -- "-$hook_pid" 2>/dev/null; then
+    echo "ok - interruption $signal_case reaps the gate and its detached child with status $status_expected"
+  else
+    echo "not ok - interruption $signal_case reaps the gate and its detached child with status $status_expected: got status=$status child-exited=$([[ -s $signalrepo/child-exited ]] && echo yes || echo no) supervisor-exited=$([[ -s $signalrepo/supervisor-exited ]] && echo yes || echo no)"
+    failed=1
+  fi
+  [[ ! -s $signalrepo/supervisor-pid ]] || kill -TERM -- "-$(<"$signalrepo/supervisor-pid")" 2>/dev/null
+  [[ ! -s $signalrepo/child-pid ]] || kill -TERM -- "-$(<"$signalrepo/child-pid")" 2>/dev/null
+  kill -TERM -- "-$hook_pid" 2>/dev/null
+  for ((i = 0; i < 80; i++)); do
+    [[ -s $signalrepo/child-pid && -s $signalrepo/supervisor-pid ]] &&
+      ! kill -0 "$(<"$signalrepo/child-pid")" 2>/dev/null &&
+      ! kill -0 "$(<"$signalrepo/supervisor-pid")" 2>/dev/null && break
+    sleep 0.05
+  done
+done
+touch "$signalrepo/delayed"
+git -C "$signalrepo" config agent-gate.stopDeadline 1
+rm -f "$signalrepo/child-exited" "$signalrepo/supervisor-exited"
+status=$(jq -n --arg cwd "$signalrepo" '{hook_event_name: "Stop", cwd: $cwd}' |
+  perl -e 'alarm 30; exec @ARGV' "$hook_path" >"$work/signal-stdout" 2>"$work/signal-stderr"; echo $?)
+if [[ $status == 2 && -s $signalrepo/child-exited && -s $signalrepo/supervisor-exited ]] &&
+  ! kill -0 "$(<"$signalrepo/child-pid")" 2>/dev/null && ! kill -0 "$(<"$signalrepo/supervisor-pid")" 2>/dev/null; then
+  echo 'ok - deadline allows three-second supervisor cleanup of its detached child'
+else
+  echo "not ok - deadline allows three-second supervisor cleanup of its detached child: status=$status child-exited=$([[ -s $signalrepo/child-exited ]] && echo yes || echo no) supervisor-exited=$([[ -s $signalrepo/supervisor-exited ]] && echo yes || echo no)"
+  failed=1
+fi
+kill -TERM -- "-$(<"$signalrepo/child-pid")" 2>/dev/null
+rm -f "$signalrepo/delayed" "$signalrepo/child-exited" "$signalrepo/supervisor-exited"
+touch "$signalrepo/stubborn"
+started=$SECONDS
+status=$(jq -n --arg cwd "$signalrepo" '{hook_event_name: "Stop", cwd: $cwd}' |
+  perl -e 'alarm 30; exec @ARGV' "$hook_path" >"$work/signal-stdout" 2>"$work/signal-stderr"; echo $?)
+elapsed=$((SECONDS - started))
+if [[ $status == 2 && -s $signalrepo/child-exited && ! -e $signalrepo/supervisor-exited && $elapsed -ge 9 && $elapsed -lt 13 ]] &&
+  ! kill -0 "$(<"$signalrepo/child-pid")" 2>/dev/null && ! kill -0 "$(<"$signalrepo/supervisor-pid")" 2>/dev/null; then
+  echo 'ok - deadline kills and reaps a stubborn supervisor after eight seconds of grace'
+else
+  echo "not ok - deadline kills and reaps a stubborn supervisor after eight seconds of grace: status=$status elapsed=$elapsed"
+  failed=1
+fi
+if [[ -z $(find "$TMPDIR" -maxdepth 1 -name 'agent-gate.*' -print) ]]; then
+  echo 'ok - interrupted runs remove their temporary logs'
+else
+  echo 'not ok - interrupted runs remove their temporary logs'
   failed=1
 fi
 exit "$failed"
