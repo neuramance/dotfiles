@@ -1,9 +1,10 @@
 [Unit]
-Description=Deploy neuramance.com within a minute of a push to main
+Description=Deploy neuramance.com within seconds of a push to main
 
 [Timer]
-OnActiveSec=1min
-OnUnitInactiveSec=1min
+OnActiveSec=10s
+OnUnitInactiveSec=10s
+AccuracySec=1s
 
 [Install]
 WantedBy=timers.target

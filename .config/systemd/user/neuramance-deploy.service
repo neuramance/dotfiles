@@ -6,4 +6,6 @@ Type=oneshot
 Environment=PATH=%h/.local/share/mise/shims:/usr/local/bin:/usr/bin:/bin
 ExecStart=/srv/neuramance/repo/scripts/deploy
 Nice=10
+SyslogLevel=notice
+LogLevelMax=notice
 TimeoutStartSec=25min
