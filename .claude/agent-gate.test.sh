@@ -46,7 +46,7 @@ printf '.next/\nvendor/\nnode_modules/\ntarget/\n' >"$repo/.gitignore"
 printf '{}\n' >"$repo/package.json"
 printf 'one\n' >"$repo/tracked.txt"
 printf 'module.exports = 1\n' >"$repo/node_modules/pkg/index.js"
-commit() { git -C "$repo" -c user.name=agent-gate-test -c user.email=test@example.invalid commit -qm "$1"; }
+commit() { git -C "$repo" -c user.name=agent-gate-test -c user.email=test@example.invalid -c commit.gpgsign=false commit -qm "$1"; }
 git -C "$repo" add -A && commit initial || exit 2
 failed=0
 hook_event=Stop
@@ -201,7 +201,7 @@ git -C "$repo" switch -q other
 expect 'switching to a branch at the same commit runs the gate' 1 0
 git -C "$repo" switch -q --detach
 expect 'detaching HEAD runs the gate' 1 0
-git -C "$repo" -c user.name=agent-gate-test -c user.email=test@example.invalid commit -q --allow-empty -m detached
+git -C "$repo" -c user.name=agent-gate-test -c user.email=test@example.invalid -c commit.gpgsign=false commit -q --allow-empty -m detached
 expect 'detached commit runs the gate' 1 0
 git -C "$repo" switch -q main
 expect 'returning to main runs the gate' 1 0
@@ -338,7 +338,7 @@ exit 0
 EOF
   chmod +x "$directory/scripts/agent-verify"
   git -C "$directory" add -A
-  git -C "$directory" -c user.name=agent-gate-test -c user.email=test@example.invalid commit -qm initial
+  git -C "$directory" -c user.name=agent-gate-test -c user.email=test@example.invalid -c commit.gpgsign=false commit -qm initial
 done
 session_id=session_B
 event_file=$work/B/tracked.txt
@@ -678,7 +678,7 @@ ln -s "$work/protected" "$full_log"
 for hook_event in PostToolUse Stop; do
   expect "$hook_event failure reports its full log" 1 2 "agent-gate: full log: $full_log"
   if [[ -f $full_log && ! -L $full_log ]] && cmp -s "$work/complete-output" "$full_log" &&
-    [[ $(stat -c %a "$full_log") == 600 && $(<"$work/protected") == 'do not overwrite' &&
+    [[ $(stat -c %a "$full_log" 2>/dev/null || stat -f %Lp "$full_log") == 600 && $(<"$work/protected") == 'do not overwrite' &&
        $(tail -n 1 "$work/stderr") == "agent-gate: full log: $full_log" && $(wc -l <"$work/stderr") -le 103 ]]; then
     echo "ok - $hook_event preserves complete private output without following symlinks"
   else
