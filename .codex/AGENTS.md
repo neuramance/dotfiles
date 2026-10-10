@@ -52,6 +52,10 @@ Do not create documentation files unless asked.
 
 When you point the user to a file, write its absolute path. Sessions often run over SSH inside herdr, where iTerm2 opens only absolute paths on Cmd-click.
 
+## Dev servers
+
+On i9, bind a dev server to `127.0.0.1` on a port from 3000 to 3099 and give the user `http://localhost:<port>`: the Mac's `i9-tunnel` forwards those ports to i9's loopback, hot reload included. Never bind a server or proxy you start to i9's tailnet address or to all interfaces (`0.0.0.0`, `::`, or a default such as `next dev` without `-H`) unless the user asks: i9 is shared with other people's tailnet devices, which `tailscale status` hides, and they can reach its ports 3000-3999, 5173 and 8000-8999.
+
 ## Quality gates are one-way
 
 A red gate (linter, ceiling, verify script, hook) means the work is not done: report the failing output. Fix the code. Never loosen a ceiling, add a suppression or per-file override, widen ignores, loosen counting options, weaken a gate or its hooks, or bypass with --no-verify. Over a ceiling, extract along a real seam. Change a check only when independent evidence proves it defective, and show the corrected check accepts a compliant case and rejects a violating one.
