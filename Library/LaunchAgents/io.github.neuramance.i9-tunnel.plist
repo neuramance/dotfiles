@@ -8,7 +8,7 @@
 	<array>
 		<string>/bin/bash</string>
 		<string>-c</string>
-		<string>exec &gt;"$HOME/Library/Logs/i9-tunnel.log" 2&gt;&amp;1; for port in {3000..3099} {54321..54324}; do forwards+=(-L "$port:127.0.0.1:$port"); done; exec /usr/bin/ssh -N -p 2222 -l i9-tunnel -i "$HOME/.ssh/i9-tunnel" -o IdentitiesOnly=yes -o BatchMode=yes -o HostKeyAlias=i9 -o ConnectTimeout=10 -o ServerAliveInterval=15 -o ServerAliveCountMax=3 "${forwards[@]}" i9</string>
+		<string>exec &gt;"$HOME/Library/Logs/i9-tunnel.log" 2&gt;&amp;1; for port in {3000..3099} {54321..54324}; do forwards+=(-L "$port:127.0.0.1:$port"); done; exec /usr/bin/ssh -N -p 2222 -l i9-tunnel -i "$HOME/.ssh/i9-tunnel" -o IdentitiesOnly=yes -o IdentityAgent=none -o BatchMode=yes -o HostKeyAlias=i9 -o ConnectTimeout=10 -o ServerAliveInterval=15 -o ServerAliveCountMax=3 "${forwards[@]}" i9</string>
 	</array>
 	<key>RunAtLoad</key>
 	<true/>
