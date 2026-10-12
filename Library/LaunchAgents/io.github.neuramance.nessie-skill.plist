@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>io.github.neuramance.nessie-skill</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/bin/bash</string>
+		<string>-c</string>
+		<string>exec &gt;&gt;"$HOME/Library/Logs/nessie-skill.log" 2&gt;&amp;1; bundled=/Applications/Nessie.app/Contents/Resources; for pair in SKILL.md:.claude SKILL.codex.md:.codex; do src=$bundled/${pair%%:*}; dst=$HOME/${pair#*:}/skills/nessie/SKILL.md; if [ -f "$src" ] &amp;&amp; [ -d "${dst%/*}" ] &amp;&amp; { [ -L "$dst" ] || ! cmp -s "$src" "$dst"; }; then rm -f "$dst" &amp;&amp; install -m 644 "$src" "$dst" &amp;&amp; echo "$(date) refreshed $dst"; fi; done</string>
+	</array>
+	<key>WatchPaths</key>
+	<array>
+		<string>/Applications/Nessie.app</string>
+	</array>
+	<key>RunAtLoad</key>
+	<true/>
+</dict>
+</plist>

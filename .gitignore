@@ -18,6 +18,7 @@
 !.claude/hooks/**
 !.claude/skills/
 !.claude/skills/**
+.claude/skills/nessie/
 !.claude/commands/
 !.claude/commands/**
 !.claude/rules/
@@ -66,6 +67,7 @@
 !Library/LaunchAgents/io.github.neuramance.i9-tunnel.plist
 !Library/LaunchAgents/io.github.neuramance.agent-sounds.plist
 !Library/LaunchAgents/io.github.neuramance.agent-sounds-tunnel.plist
+!Library/LaunchAgents/io.github.neuramance.nessie-skill.plist
 !.hushlogin
 !.psqlrc
 !.tmux.conf

@@ -84,7 +84,6 @@ cargo "cargo-mutants"
 cargo "cargo-nextest"
 cargo "cargo-semver-checks"
 cargo "cargo-shear"
-uv "pynessie", with: ["marshmallow<4"]
 uv "ruff"
 npm "@earendil-works/pi-coding-agent"
 npm "@google/gemini-cli"
