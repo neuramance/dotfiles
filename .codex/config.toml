@@ -443,7 +443,3 @@ enabled = false
 
 [apps.asdk_app_69a1d78e929881919bba0dbda1f6436d]
 enabled = false
-
-[[skills.config]]
-path = "/Users/w/.codex/skills/submit-skill-feedback/SKILL.md"
-enabled = false

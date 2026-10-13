@@ -8,11 +8,13 @@
 	<array>
 		<string>/bin/bash</string>
 		<string>-c</string>
-		<string>exec &gt;&gt;"$HOME/Library/Logs/nessie-skill.log" 2&gt;&amp;1; bundled=/Applications/Nessie.app/Contents/Resources; for pair in SKILL.md:.claude SKILL.codex.md:.codex; do src=$bundled/${pair%%:*}; dst=$HOME/${pair#*:}/skills/nessie/SKILL.md; if [ -f "$src" ] &amp;&amp; [ -d "${dst%/*}" ] &amp;&amp; { [ -L "$dst" ] || ! cmp -s "$src" "$dst"; }; then rm -f "$dst" &amp;&amp; install -m 644 "$src" "$dst" &amp;&amp; echo "$(date) refreshed $dst"; fi; done</string>
+		<string>exec &gt;&gt;"$HOME/Library/Logs/nessie-skill.log" 2&gt;&amp;1; bundled=/Applications/Nessie.app/Contents/Resources; for pair in SKILL.md:.claude SKILL.codex.md:.codex; do src=$bundled/${pair%%:*}; dst=$HOME/${pair#*:}/skills/nessie/SKILL.md; if [ -f "$src" ] &amp;&amp; [ -d "${dst%/*}" ] &amp;&amp; { [ -L "$dst" ] || ! cmp -s "$src" "$dst"; }; then rm -f "$dst" &amp;&amp; install -m 644 "$src" "$dst" &amp;&amp; echo "$(date) refreshed $dst"; fi; done; for unwanted in "$HOME/.claude/skills/submit-skill-feedback" "$HOME/.codex/skills/submit-skill-feedback"; do if [ -e "$unwanted" ]; then rm -rf "$unwanted" &amp;&amp; echo "$(date) removed $unwanted"; fi; done</string>
 	</array>
 	<key>WatchPaths</key>
 	<array>
 		<string>/Applications/Nessie.app</string>
+		<string>/Users/w/.claude/skills</string>
+		<string>/Users/w/.codex/skills</string>
 	</array>
 	<key>RunAtLoad</key>
 	<true/>
