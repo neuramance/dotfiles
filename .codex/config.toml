@@ -379,6 +379,12 @@ trusted_hash = "sha256:6ea51dab1d0fc985d6b412406fb01bb6c80cd78e094122872296a6139
 [hooks.state."/home/w/code/nm/site/.codex/hooks.json:post_tool_use:0:0"]
 trusted_hash = "sha256:da886a52e1ce141bc8d7e68505897a975707ae221cebfd1657e72f7b61105952"
 
+[hooks.state."/home/w/code/airsheen-kb/.codex/hooks.json:post_tool_use:0:0"]
+trusted_hash = "sha256:e3c83efc77ff8670aa7cd243340df0e27d54aaa734020d6a0730588b4b7e390a"
+
+[hooks.state."/home/w/code/airsheen-kb/.codex/hooks.json:stop:0:0"]
+trusted_hash = "sha256:3fe536d3ebaaae54d54cf51de11260527bc6b29452d0cc15469d00e92d6b0453"
+
 [desktop]
 followUpQueueMode = "queue"
 dock-icon-preference = "app-default"
