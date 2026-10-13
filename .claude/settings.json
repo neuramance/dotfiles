@@ -60,7 +60,7 @@
           {
             "type": "command",
             "command": "$HOME/.claude/agent-gate.sh",
-            "timeout": 30
+            "timeout": 90
           }
         ]
       }

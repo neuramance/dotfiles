@@ -26,6 +26,7 @@ printf x >>"$runs"
 printf '%s\n' "\$@" >"$work/arguments"
 [ -f "$work/red" ] && exit 1
 if [ -f "$work/slow" ]; then sleep 300 & echo \$! >"$work/sleep-pid"; wait; fi
+[ -f "$work/edit-sleep" ] && sleep "\$(cat "$work/edit-sleep")"
 [ -f "$work/create-during-run" ] && printf 'transient\n' >"$repo/appeared.txt"
 if [ -f "$work/pycache-during-run" ]; then
   mkdir -p "$repo/.pytest_cache" "$repo/pkg/__pycache__" && printf x >>"$repo/.pytest_cache/v" && printf x >>"$repo/pkg/__pycache__/m.pyc"
@@ -309,6 +310,18 @@ expect 'gate past its deadline on the retry ends the turn' 1 0 'still fails afte
 stop_active=false
 kill "$(cat "$work/sleep-pid")" 2>/dev/null
 rm "$work/slow"
+hook_event=PostToolUse
+printf '3\n' >"$work/edit-sleep"
+git -C "$repo" config agent-gate.editDeadline 1
+expect 'edit past its configured deadline fails' 1 2 'within 1 s'
+git -C "$repo" config agent-gate.editDeadline 6
+expect 'edit within its configured deadline passes' 1 0
+git -C "$repo" config agent-gate.editDeadline 999
+printf '1\n' >"$work/edit-sleep"
+expect 'an edit deadline above the cap still verifies the edit' 1 0
+git -C "$repo" config --unset agent-gate.editDeadline
+rm "$work/edit-sleep"
+hook_event=Stop
 pyrepo=$work/pyrepo
 mkdir -p "$pyrepo/scripts" "$pyrepo/.venv/bin"
 git -C "$pyrepo" init -q -b main

@@ -160,7 +160,9 @@ if [[ -n $file ]]; then
     rm -f -- "$formatted"
   fi
   new_log || { echo "agent-gate: cannot create a log file" >&2; exit 2; }
-  if within $((SECONDS < 20 ? 20 - SECONDS : 1)) "$verify" "$file"; then
+  budget=$(git config --type=int --get agent-gate.editDeadline) || budget=20
+  ((budget <= 80)) || budget=80
+  if within $((SECONDS < budget ? budget - SECONDS : 1)) "$verify" "$file"; then
     unverified=$(grep -F 'not verified' "$log")
     [[ -z $unverified || $settings != .claude/settings.json ]] ||
       jq -n --arg context "$unverified" '{hookSpecificOutput: {hookEventName: "PostToolUse", additionalContext: $context}}'
