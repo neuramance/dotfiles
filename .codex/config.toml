@@ -90,7 +90,7 @@ trust_level = "trusted"
 [projects."/home/w"]
 trust_level = "trusted"
 
-[projects."/Users/w/code/sb/ls_test"]
+[projects."/Users/w/code/sb/ls"]
 trust_level = "trusted"
 
 [projects."/Users/w/code/umath_1"]
