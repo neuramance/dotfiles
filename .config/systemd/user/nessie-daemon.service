@@ -1,0 +1,15 @@
+[Unit]
+Description=Nessie daemon: upload this machine's Claude Code sessions to Nessie Cloud
+
+[Service]
+Type=forking
+Environment=NERA_HOST_APP=nessie-daemon
+Environment=NERA_HOST_APP_VERSION=0.5.360
+ExecStart=%h/.local/share/nessie-daemon/node_modules/@nessielabs/daemon/vendor/nera/linux-x64/nessie-cli daemon start
+ExecStop=%h/.local/share/nessie-daemon/node_modules/@nessielabs/daemon/vendor/nera/linux-x64/nessie-cli daemon stop
+Restart=on-failure
+RestartSec=30
+TimeoutStartSec=60
+
+[Install]
+WantedBy=default.target

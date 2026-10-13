@@ -56,6 +56,7 @@
 !.config/systemd/user/
 !.config/systemd/user/neuramance-deploy.service
 !.config/systemd/user/neuramance-deploy.timer
+!.config/systemd/user/nessie-daemon.service
 !.local/
 !.local/bin/
 !.local/bin/wifi-speed
