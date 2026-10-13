@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>io.github.neuramance.i9-claude-sync</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/bin/bash</string>
+		<string>-c</string>
+		<string>exec &gt;&gt;"$HOME/Library/Logs/i9-claude-sync.log" 2&gt;&amp;1; date; ssh_command="ssh -p 2222 -l w -i $HOME/.ssh/i9-claude-sync -o IdentitiesOnly=yes -o IdentityAgent=none -o BatchMode=yes -o HostKeyAlias=i9 -o ConnectTimeout=10 -o ServerAliveInterval=15 -o ServerAliveCountMax=4"; for pause in 60 300 0; do /opt/homebrew/bin/rsync -a --timeout=300 -e "$ssh_command" i9: "$HOME/.claude/projects/" &amp;&amp; exit 0; sleep "$pause"; done; osascript -e 'display notification "See ~/Library/Logs/i9-claude-sync.log, then run launchctl kickstart gui/$(id -u)/io.github.neuramance.i9-claude-sync." with title "i9 Claude Code sync failed"'; exit 1</string>
+	</array>
+	<key>StartCalendarInterval</key>
+	<dict>
+		<key>Hour</key>
+		<integer>12</integer>
+		<key>Minute</key>
+		<integer>0</integer>
+	</dict>
+</dict>
+</plist>

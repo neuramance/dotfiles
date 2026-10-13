@@ -70,6 +70,7 @@
 !Library/LaunchAgents/io.github.neuramance.agent-sounds.plist
 !Library/LaunchAgents/io.github.neuramance.agent-sounds-tunnel.plist
 !Library/LaunchAgents/io.github.neuramance.nessie-skill.plist
+!Library/LaunchAgents/io.github.neuramance.i9-claude-sync.plist
 !.hushlogin
 !.psqlrc
 !.tmux.conf

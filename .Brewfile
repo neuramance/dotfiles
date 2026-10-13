@@ -49,6 +49,8 @@ brew "poppler"
 brew "postgresql@17"
 # Reattach process (e.g., tmux) to background
 brew "reattach-to-user-namespace"
+# Utility that provides fast incremental file transfer
+brew "rsync"
 # Static analysis and lint tool, for (ba)sh scripts
 brew "shellcheck"
 # Terminal multiplexer
