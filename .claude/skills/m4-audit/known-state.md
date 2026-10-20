@@ -14,7 +14,7 @@ Facts and decisions that earlier audits recorded, which change how audit signals
 
 - The application firewall is on with stealth mode, and it automatically allows built-in and downloaded signed software; its allow-list includes Homebrew's `node@24`, Chrome, and zoom.us. A non-loopback listener from a signed program is therefore reachable from the local network. SIP and Gatekeeper are on.
 - Expected non-loopback listeners: launchd on 22 for sshd (Remote Login), ControlCenter (AirPlay Receiver) on 5000 and 7000, rapportd (Continuity) and Tailscale (`io.tailscale.ipn`) on ephemeral TCP ports, Tailscale on 41641/udp, netbiosd on 137-138/udp, mDNSResponder and Chrome on 5353/udp, and sharingd, syslogd, and replicatord on ephemeral UDP ports.
-- Expected loopback listeners: `ssh` from the `i9-tunnel` LaunchAgent on 3000-3099, 54321-54324, 54331 and 54341, forwarding to i9's loopback; launchd on 127.0.0.1:47123 for the `agent-sounds` socket, which `agent-sounds-tunnel` forwards from i9; figma_agent on 44950 and 44960; Notion and Tailscale on ephemeral ports.
+- Expected loopback listeners: `ssh` from the `i9-tunnel` LaunchAgent on 3000-3099, 54321-54324, 54331, 54341, 54351, 54361 and 54371, forwarding to i9's loopback; launchd on 127.0.0.1:47123 for the `agent-sounds` socket, which `agent-sounds-tunnel` forwards from i9; figma_agent on 44950 and 44960; Notion and Tailscale on ephemeral ports.
 
 ## Expected processes and services
 
