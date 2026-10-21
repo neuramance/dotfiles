@@ -11,6 +11,9 @@ if ! sudo -n true 2>/dev/null; then
   exit 1
 fi
 
+section resources
+"${BASH_SOURCE[0]%/*}/resources.sh"
+
 section host
 printf '%s, %s, kernel %s, %s threads, load %s\n' "$(hostname)" "$(uptime -p)" "$(uname -r)" "$(nproc)" "$(cut -d' ' -f1-3 /proc/loadavg)"
 if [[ -e /run/reboot-required ]]; then

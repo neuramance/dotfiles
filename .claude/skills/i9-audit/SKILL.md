@@ -69,9 +69,9 @@ i9 is remote and its only uplink is Wi-Fi. Treat every netplan, networkd, ufw, o
 
 ## 6. Report
 
-Lead with a one-sentence verdict, then:
+Open with the resource table: run `scripts/resources.sh` (read-only, under a second) as the last command before writing, so the table reflects any change this run made, and paste its output unchanged. Follow it with a one-sentence verdict, then:
 
-1. Health: one row per area, with its numbers.
+1. Health: one row per area, with the numbers the resource table does not already show.
 2. Findings, most severe first: claim, evidence, impact.
 3. Changes made: what changed, before and after, rollback.
 4. Left alone: each item and the evidence for leaving it.
