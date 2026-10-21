@@ -1,3 +1,9 @@
+---
+paths:
+  - "**/*.rs"
+  - "**/Cargo.toml"
+---
+
 # Rust
 
 These rules are requirements for Rust work, not preferences: apply "least code" only among designs that meet them. Meet each rule's intent. Code that passes the gate but defeats a rule's purpose, such as matching `Ok(()) | Err(_)` to drop an error, is a violation. If a rule can't be met, name it and the reason in your report instead of working around it.
