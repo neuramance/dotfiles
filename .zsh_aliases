@@ -51,6 +51,9 @@ alias tmdev="script -c tmux /dev/null"
 alias tma="tmux attach"
 alias tmka="tmux kill-server"
 
+# herdr
+alias hri9="herdr --remote i9 --remote-keybindings server"
+
 # echo PATH formatted (must be sourced after PATH is fully set)
 alias echopath='print -l $path'
 
