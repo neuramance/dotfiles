@@ -367,9 +367,6 @@ trusted_hash = "sha256:a0cb350ebf4ea28a6110207b30ab4ebbdb19529135787738ab2384129
 [hooks.state."/home/w/.codex/hooks.json:stop:0:0"]
 trusted_hash = "sha256:43a196c0ac3b0ce4fb6a8723c8e8c61b40aa801dac270555f10d43d49a7015f2"
 
-[hooks.state."/home/w/.codex/hooks.json:stop:1:0"]
-trusted_hash = "sha256:7b499eba69c28926605275164e8568860cba27bb61556b6e5e34336b53757bf6"
-
 [hooks.state."/home/w/.codex/hooks.json:pre_tool_use:0:0"]
 trusted_hash = "sha256:c5a03baf7498ccebcdb7ffc55f76e2ea5e4df72be565b0bbc693c8b4999189fe"
 

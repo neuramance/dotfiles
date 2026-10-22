@@ -52,18 +52,6 @@
     "standards-review": "user-invocable-only"
   },
   "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/agent-gate.sh",
-            "timeout": 90
-          }
-        ]
-      }
-    ],
     "Notification": [
       {
         "matcher": "",
@@ -82,11 +70,6 @@
           {
             "type": "command",
             "command": "$HOME/.claude/play-notification.sh"
-          },
-          {
-            "type": "command",
-            "command": "$HOME/.claude/agent-gate.sh",
-            "timeout": 300
           }
         ]
       }

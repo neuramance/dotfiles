@@ -41,15 +41,6 @@
             "type": "command"
           }
         ]
-      },
-      {
-        "hooks": [
-          {
-            "command": "$HOME/.claude/agent-gate.sh",
-            "timeout": 300,
-            "type": "command"
-          }
-        ]
       }
     ]
   }

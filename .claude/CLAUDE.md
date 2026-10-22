@@ -13,8 +13,8 @@ Build the correct, irreducible solution with the least code on the simplest arch
 - Introduce an abstraction only for three real, divergent uses or a true external boundary. No boolean mode parameters, shallow wrappers, or helpers that exist only to satisfy a metric.
 - Flat, linear code with guard clauses. Make illegal states unrepresentable. Keep behavior where it is used.
 - Validate untrusted input at the edge, then trust the interior. Never mask invariant violations with silent fallbacks.
-- For a bug fix, first write a test that fails because of the bug, then make it pass. Fix the shared cause.
-- Derive test expectations from requirements, never from the code's current output. No self-comparisons, copied actual results, production logic reused as the oracle, or mocks of the behavior under test. Every new test must catch a concrete defect.
+- For a bug fix, fix the shared cause.
+- Write tests, evals, or verification scripts only when the user asks for them; this overrides any rule, skill, or repository instruction that calls for them. Derive a requested test's expectations from requirements, never from the code's current output. No self-comparisons, copied actual results, production logic reused as the oracle, or mocks of the behavior under test. Every new test must catch a concrete defect.
 - Run the relevant checks before claiming done. If you cannot verify, say so.
 
 ## Production safeguards (never cut for simplicity)
