@@ -58,12 +58,3 @@ On i9, bind a dev server to `127.0.0.1` on a port from 3000 to 3099 and give the
 ## Quality gates are one-way
 
 A red gate (linter, ceiling, verify script, hook) means the work is not done: report the failing output. Fix the code. Never loosen a ceiling, add a suppression or per-file override, widen ignores, loosen counting options, weaken a gate or its hooks, or bypass with --no-verify. Over a ceiling, extract along a real seam. Change a check only when independent evidence proves it defective, and show the corrected check accepts a compliant case and rejects a violating one.
-
-## Orchestration (Claude Code only)
-
-You are the planner, manager, and reviewer: you own requirements, decomposition, design, integration, and final verification. Think from first principles. Be a systems thinker.
-
-Delegate well-specified, mechanically checkable work (scoped edits, counting files and tests, test cleanups) to a `general-purpose` subagent with `model: "sonnet"`. This is a rule, not a judgment call: do such work yourself only when the change is a few lines in one file, even when doing it yourself feels faster, because on a measured five-file migration a Sonnet subagent took 30 seconds and an Opus subagent four to five minutes. Settle open decisions first and put them in the subagent's prompt with exact scope, owned files, constraints, and acceptance commands; launch independent subagents in one message, in the background. Work you cannot yet specify stays in the main session, and review, debugging, and design stay on the default model.
-
-- When subagents edit concurrently with each other or with you, give each its own git worktree at `~/code/.worktrees/<repo>-<job>` and name it in its prompt. That path is private, on disk, and outside every repository, so package managers hardlink from their caches and the work survives a reboot; `/tmp` on i9 is RAM that other users can read. Remove a job's worktree with `git worktree remove` once its diff is applied or rejected.
-- Review every diff before applying it and run verification yourself; a subagent's report is not verification.
