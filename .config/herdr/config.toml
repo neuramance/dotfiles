@@ -20,6 +20,24 @@ overlay1 = "#ffffff"
 
 [keys]
 prefix = "backtick"
+close_pane = ""
+close_tab = ""
+
+[[keys.command]]
+key = "prefix+x"
+type = "popup"
+description = "Close pane"
+width = 32
+height = 5
+command = 'printf "Close pane? [y/N] "; stty -icanon -echo; case $(dd bs=1 count=1 2>/dev/null) in [yY]) "$HERDR_BIN_PATH" pane close "$HERDR_ACTIVE_PANE_ID";; esac'
+
+[[keys.command]]
+key = "prefix+shift+x"
+type = "popup"
+description = "Close tab"
+width = 32
+height = 5
+command = 'printf "Close tab? [y/N] "; stty -icanon -echo; case $(dd bs=1 count=1 2>/dev/null) in [yY]) "$HERDR_BIN_PATH" tab close "$HERDR_ACTIVE_TAB_ID";; esac'
 
 [ui]
 agent_panel_sort = "priority"
