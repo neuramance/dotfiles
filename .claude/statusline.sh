@@ -21,11 +21,11 @@ ctx_color=""
 if [ -n "$used_pct" ]; then
   pct_int=${used_pct%.*}
   if [ "$pct_int" -ge 90 ] 2>/dev/null; then
-    ctx_color="\033[38;2;244;63;94m"
+    ctx_color="\033[31m"
   elif [ "$pct_int" -ge 70 ] 2>/dev/null; then
-    ctx_color="\033[38;2;245;158;11m"
+    ctx_color="\033[33m"
   else
-    ctx_color="\033[38;2;0;196;92m"
+    ctx_color="\033[32m"
   fi
 fi
 
@@ -33,12 +33,12 @@ fi
 out=""
 user=$(whoami)
 host=$(hostname -s)
-user_color="\033[38;2;37;99;235m"; [ "$user" = "root" ] && user_color="\033[38;2;244;63;94m"
-host_color="\033[38;2;217;70;239m"; [ "$host" = "i9" ] && host_color="\033[38;2;244;63;94m"
+user_color="\033[34m"; [ "$user" = "root" ] && user_color="\033[31m"
+host_color="\033[35m"; [ "$host" = "i9" ] && host_color="\033[31m"
 out+="${user_color}${user}\033[0m"
 out+="\033[38;2;148;163;184m@\033[0m"
 out+="${host_color}${host}\033[0m"
-out+=":\033[38;2;0;196;92m${short_cwd}\033[0m"
+out+=":\033[32m${short_cwd}\033[0m"
 
 if [ -n "$branch" ]; then
   out+=" \033[38;2;139;92;246m(${branch})\033[0m"
@@ -50,6 +50,6 @@ fi
 
 short_model=$(echo "$model" | sed -E 's/^Claude (Sonnet|Opus|Haiku) ([0-9.]+).*/\1\2/; s/^Sonnet/So/; s/^Opus/Op/; s/^Haiku/Ha/; s/^([A-Z][a-z])[a-z]* ([0-9.]+).*/\1\2/')
 [[ "$model" == *"1M"* ]] && short_model="${short_model}-1M"
-out+=" \033[38;2;0;0;0m${short_model}\033[0m"
+out+=" \033[97m${short_model}\033[0m"
 
 printf '%b' "$out"
