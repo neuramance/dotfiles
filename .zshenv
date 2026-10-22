@@ -5,6 +5,7 @@ skip_global_compinit=1
 [ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
 
 export PATH="$PATH:$HOME/.foundry/bin"
+export PATH="$PATH:/usr/lib/postgresql/18/bin"
 
 export PATH="$HOME/.local/share/mise/shims:$HOME/.local/bin:$PATH"
 
