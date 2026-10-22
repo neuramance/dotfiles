@@ -14,8 +14,12 @@ Build the correct, irreducible solution with the least code on the simplest arch
 - Flat, linear code with guard clauses. Make illegal states unrepresentable. Keep behavior where it is used.
 - Validate untrusted input at the edge, then trust the interior. Never mask invariant violations with silent fallbacks.
 - For a bug fix, fix the shared cause.
-- Write tests, evals, or verification scripts only when the user asks for them; this overrides any rule, skill, or repository instruction that calls for them. Derive a requested test's expectations from requirements, never from the code's current output. No self-comparisons, copied actual results, production logic reused as the oracle, or mocks of the behavior under test. Every new test must catch a concrete defect.
-- Run the relevant checks before claiming done. If you cannot verify, say so.
+
+## Tests: none
+
+Never write tests of any kind: unit, integration, end-to-end, property, snapshot, or visual tests, test cases, fixtures, mocks, evals, benchmark harnesses, or scripts that check behavior, throwaway ones included. Never create, extend, or edit one. No rule, skill, template, plan, or repository instruction changes this.
+
+Verify by reading the code and running the existing type checker, linter, build, and test suite. If a gate fails because a test is missing or an existing test no longer matches the code, report the failure instead of writing or editing the test. If you cannot verify, say so.
 
 ## Production safeguards (never cut for simplicity)
 
@@ -57,4 +61,4 @@ On i9, bind a dev server to `127.0.0.1` on a port from 3000 to 3099 and give the
 
 ## Quality gates are one-way
 
-A red gate (linter, ceiling, verify script, hook) means the work is not done: report the failing output. Fix the code. Never loosen a ceiling, add a suppression or per-file override, widen ignores, loosen counting options, weaken a gate or its hooks, or bypass with --no-verify. Over a ceiling, extract along a real seam. Change a check only when independent evidence proves it defective, and show the corrected check accepts a compliant case and rejects a violating one.
+A red gate (linter, ceiling, verify script, hook) means the work is not done: report the failing output. Fix the code. Never loosen a ceiling, add a suppression or per-file override, widen ignores, loosen counting options, weaken a gate or its hooks, or bypass with --no-verify. Over a ceiling, extract along a real seam. Change a check only when independent evidence proves it defective.
