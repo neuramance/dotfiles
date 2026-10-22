@@ -1,15 +1,22 @@
 onboarding = false
 
 [theme]
-name = "catppuccin-latte"
-auto_switch = false
+name = "catppuccin"
+auto_switch = true
 
-[theme.custom]
+[theme.custom.light]
 panel_bg = "#ffffff"
 accent = "#000000"
 surface0 = "#d4d4d4"
 overlay0 = "#000000"
 overlay1 = "#000000"
+
+[theme.custom.dark]
+panel_bg = "#111111"
+accent = "#ffffff"
+surface0 = "#3c3c3c"
+overlay0 = "#ffffff"
+overlay1 = "#ffffff"
 
 [keys]
 prefix = "backtick"
