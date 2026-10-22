@@ -16,7 +16,6 @@ Build the correct, irreducible solution with the least code on the simplest arch
 - For a bug fix, fix the shared cause.
 - Write tests, evals, or verification scripts only when the user asks for them; this overrides any rule, skill, or repository instruction that calls for them. Derive a requested test's expectations from requirements, never from the code's current output. No self-comparisons, copied actual results, production logic reused as the oracle, or mocks of the behavior under test. Every new test must catch a concrete defect.
 - Run the relevant checks before claiming done. If you cannot verify, say so.
-- Before writing or reviewing Python or Rust, read `~/.claude/rules/python.md` or `~/.claude/rules/rust.md`; its rules are requirements.
 
 ## Production safeguards (never cut for simplicity)
 
