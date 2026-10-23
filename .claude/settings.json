@@ -1,5 +1,7 @@
 {
   "apiKeyHelper": "$HOME/.claude/tfy-key.sh",
+  "syncClaudeAiSkills": false,
+  "syncClaudeAiPlugins": false,
   "env": {
     "ANTHROPIC_BASE_URL": "https://tfy.promptlens.trilogy.com",
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "anthropic-primary/claude-opus-5-5[1m]",
@@ -96,7 +98,8 @@
   "enabledPlugins": {
     "pyright-lsp@claude-plugins-official": true,
     "typescript-lsp@claude-plugins-official": true,
-    "rust-analyzer-lsp@claude-plugins-official": true
+    "rust-analyzer-lsp@claude-plugins-official": true,
+    "vercel@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "claude-plugins-official": {
@@ -109,7 +112,7 @@
   "effortLevel": "xhigh",
   "modelSettings": {
     "claude-opus-5-5": {
-      "effortLevel": "high"
+      "effortLevel": "xhigh"
     }
   },
   "awaySummaryEnabled": false,
@@ -123,7 +126,5 @@
   "skipWorkflowUsageWarning": true,
   "theme": "dark",
   "agentPushNotifEnabled": true,
-  "skipAutoPermissionPrompt": true,
-  "syncClaudeAiSkills": false,
-  "syncClaudeAiPlugins": false
+  "skipAutoPermissionPrompt": true
 }
