@@ -4,6 +4,7 @@ _sudo() { if command -v sudo &>/dev/null; then sudo "$@"; else "$@"; fi }
 # shell
 alias c="clear"
 alias cd..="cd .."
+alias cd...="cd ../../.."
 alias zconf="code ~/.zshrc"
 alias ls="eza -bhlF --no-user --no-permissions --no-time --group-directories-first"
 alias sl="eza -bhlF --no-user --no-permissions --no-time --group-directories-first"
