@@ -12,7 +12,6 @@
 !.codex/skills/git-sync/**
 !.claude/
 !.claude/*.sh
-!.claude/settings.json
 !.claude/CLAUDE.md
 !.claude/hooks/
 !.claude/hooks/**
