@@ -15,15 +15,9 @@ export LESSHISTFILE="$HOME/.cache/less-history"
 export IPYTHONDIR="$HOME/.config/ipython"
 export BAT_THEME="ansi"
 
-# python
-export PATH="`python3 -m site --user-base`/bin:$PATH"
-
 # bun
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
-
-# uv Python package manager
-[ -f "$HOME/.local/bin/env" ] && . "$HOME/.local/bin/env"
 
 # aliases (sourced last so PATH is fully set for echopath)
 [ -f "$HOME/.zsh_aliases" ] && source "$HOME/.zsh_aliases"

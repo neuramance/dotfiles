@@ -28,7 +28,11 @@ Facts and decisions that earlier audits recorded, which change how audit signals
 
 ## Accepted decisions
 
-None yet.
+- 2026-10-27: herdr comes from its own installer in `~/.local/bin`, as on i9, and is updated with `herdr update`. Homebrew's copy was removed: `~/.local/bin` precedes Homebrew on `PATH`, so it never ran while `brew upgrade` kept updating it. Verified with `which -a herdr` (one path) and `herdr status` (client and server 0.9.3, compatible). Rollback: `brew install herdr` and restore `herdr` in `brew_pkgs` in `~/.config/scripts/mac-setup.sh`.
+- 2026-10-27: `python@3.14` stays installed on request and listed in `~/.Brewfile`, because `~/.config/gcloud/virtenv` and `~/code/python-template/.venv` are built on it. Homebrew's autoremove deleted it once as an unneeded dependency, which broke both venvs until it was reinstalled. Rollback: remove the line from `~/.Brewfile`.
+- The mise shims ahead of Homebrew on `PATH` are not duplicate installs: `~/.config/mise/config.m4.toml` sets `node = "homebrew"`, so `node`, `npm`, `npx`, and `corepack` resolve to Homebrew's node, and mise serves the `.node-version` and `.nvmrc` pins in `~/code` (24 for most projects, 22 for `sb/SBHub`) from `node@24` and its own 22.23.2. Observed 2026-10-27.
+- 2026-10-27: each tool has one install. `gemini` and `ntn` are the npm globals `~/.Brewfile` declares; the bun global `@google/gemini-cli` 0.1.1 that shadowed `gemini` 0.53.1 and the standalone `~/.local/bin/ntn` were removed (the npm `ntn` reads the same keychain login, verified with `ntn doctor`; `ntn update` replaces the running binary in place). uv's unused cpython 3.13.5 and 3.11.13 were uninstalled, so `python3.13` is Homebrew's. Rollback: `bun add -g @google/gemini-cli`, `curl -fsSL https://ntn.dev | bash`, `uv python install 3.13 3.11`.
+- 2026-10-27: zsh PATH lines that look duplicated are deliberate. macOS's `path_helper` in `/etc/zprofile` moves the `~/.local/bin` and mise entries from `.zshenv` behind Homebrew and `/usr/bin` in login shells, so `.zprofile` prepends them again; `.zshrc` prepends `~/.local/bin` once more to keep it ahead of `~/.bun/bin`. `/usr/lib/postgresql/18/bin` in `.zshenv` exists only on i9. The grok installer's block in `.zshrc` runs a second `compinit -C` (about 6 ms of a 70 ms startup) that loads grok's completions from `~/.zcompdump`; it is left to the installer. The Solana, `python3 -m site --user-base`, and uv `env` lines were removed: their directories exist on neither host or were already on `PATH`.
 
 ## Open findings
 

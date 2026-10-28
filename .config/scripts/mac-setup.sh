@@ -23,7 +23,7 @@ fi
 # --- Homebrew formulae -----------------------------------------------------
 # Tools assumed by the dotfiles / scripts under ~/.local/bin.
 # jq is used by wifi-speed; node provides npm for global CLI installs below.
-brew_pkgs=(jq node herdr)
+brew_pkgs=(jq node)
 for pkg in "${brew_pkgs[@]}"; do
   if brew list --formula "$pkg" &>/dev/null; then
     echo "$pkg already installed."
@@ -38,6 +38,13 @@ if brew list --cask 1password-cli &>/dev/null; then
 else
   echo "Installing 1password-cli..."
   brew install --cask 1password-cli
+fi
+
+if [[ -x "$HOME/.local/bin/herdr" ]]; then
+  echo "herdr already installed."
+else
+  echo "Installing herdr..."
+  curl -fsSL --max-time 60 https://herdr.dev/install.sh | sh
 fi
 
 # --- Global npm CLIs -------------------------------------------------------
