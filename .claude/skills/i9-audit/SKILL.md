@@ -12,7 +12,7 @@ Produce an evidence-backed account of what on i9 is broken, at risk, or wasteful
 - A question ("how is…", "is anything…") authorizes inspection and a report. "Fix", "clean up", "address", or "optimize" authorizes the changes the decision table allows. Approval of one change does not extend to another class of change.
 - Run on i9. From another host, run the same commands through `ssh i9`.
 - i9 is shared: act only on `w`'s processes, files, and the system configuration; report what belongs to other users. Other sessions change the machine while you work, so recheck a target immediately before acting on it.
-- Never print secrets. Read single keys (`sudo netplan get ethernets.enp3s0`) rather than whole files from `/etc/netplan`, `/etc/cloudflared`, restic configuration, or environment files, and never print their values.
+- Never print secrets. Read single keys (`sudo netplan get ethernets.enp3s0`) rather than whole files from `/etc/netplan`, `/etc/cloudflared`, or environment files, and never print their values.
 
 ## 1. Collect
 
