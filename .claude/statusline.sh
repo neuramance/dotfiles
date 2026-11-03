@@ -72,7 +72,7 @@ case $family in
   Fable) model_color=$'\e[38;2;244;114;182m' ;;
   *) model_color=$text ;;
 esac
-out+="  ${model_color}${short}${reset}"
+out+=" ${model_color}${short}${reset}"
 case $model in *1M*) out+="${muted}·1M${reset}" ;; esac
 
 if [ -n "$pct" ]; then
