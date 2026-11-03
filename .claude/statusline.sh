@@ -1,55 +1,85 @@
 #!/usr/bin/env bash
-input=$(cat)
+IFS=$'\x1f' read -r cwd model pct worktree < <(jq -r '[
+  .workspace.current_dir // .cwd // "",
+  .model.display_name // .model.id // "",
+  (.context_window.used_percentage | if . == null then "" else floor | tostring end),
+  .workspace.git_worktree // ""
+] | join("\u001f")')
+cwd=${cwd:-$PWD}
 
-# Extract fields from JSON input via grep (no jq dependency)
-cwd=$(echo "$input" | grep -o '"current_dir":"[^"]*"' | head -1 | sed 's/"current_dir":"//;s/"$//')
-[ -z "$cwd" ] && cwd=$(echo "$input" | grep -o '"workspace":"[^"]*"' | head -1 | sed 's/"workspace":"//;s/"$//')
-cwd="${cwd:-$PWD}"
-model=$(echo "$input" | grep -o '"display_name":"[^"]*"' | head -1 | sed 's/"display_name":"//;s/"$//')
-[ -z "$model" ] && model=$(echo "$input" | grep -o '"model":"[^"]*"' | head -1 | sed 's/"model":"//;s/"$//')
-used_pct=$(echo "$input" | grep -o '"used_percentage":[0-9.]*' | head -1 | sed 's/"used_percentage"://')
+reset=$'\e[0m'
+bold=$'\e[1m'
+text=$'\e[38;2;226;232;240m'
+muted=$'\e[38;2;148;163;184m'
+red=$'\e[38;2;248;113;113m'
+yellow=$'\e[38;2;250;204;21m'
+green=$'\e[38;2;74;222;128m'
+violet=$'\e[38;2;167;139;250m'
+teal=$'\e[38;2;45;212;191m'
 
-# Shorten cwd
-home=$(echo ~)
-short_cwd=$(echo "$cwd" | sed "s|^$home|~|")
+compact() {
+  local slashes=${1//[^\/]/}
+  if [ ${#slashes} -lt 3 ]; then printf '%s' "$1"; return; fi
+  local rest=${1%/*}
+  printf '…/%s/%s' "${rest##*/}" "${1##*/}"
+}
 
-# Git branch
-branch=$(git -C "$cwd" rev-parse --abbrev-ref HEAD 2>/dev/null)
+host=${HOSTNAME%%.*}
+host_color=$muted
+[ "$host" = i9 ] && host_color=$red
+user_color=$'\e[38;2;56;189;248m'
+[ "$EUID" -eq 0 ] && user_color=$red
+out="${user_color}${USER:-$(id -un)}${muted}@${bold}${host_color}${host}${reset} "
 
-# Context window % color: green <70, yellow 70-89, red 90+
-ctx_color=""
-if [ -n "$used_pct" ]; then
-  pct_int=${used_pct%.*}
-  if [ "$pct_int" -ge 90 ] 2>/dev/null; then
-    ctx_color="\033[31m"
-  elif [ "$pct_int" -ge 70 ] 2>/dev/null; then
-    ctx_color="\033[33m"
-  else
-    ctx_color="\033[32m"
+export GIT_OPTIONAL_LOCKS=0
+if info=$(git -C "$cwd" rev-parse --path-format=absolute --show-prefix --git-common-dir 2>/dev/null); then
+  prefix=${info%%$'\n'*}
+  common=${info#*$'\n'}
+  repo=${common%/.git}
+  repo=${repo##*/}
+  repo=${repo%.git}
+  [ "$common" = "$HOME/.git" ] && repo="~"
+  out+="${bold}${text}${repo}${reset}"
+  [ -n "$prefix" ] && out+="${muted}/$(compact "${prefix%/}")${reset}"
+
+  branch=$(git -C "$cwd" symbolic-ref --short -q HEAD || git -C "$cwd" rev-parse --short -q HEAD)
+  glyph=⎇
+  branch_color=$violet
+  if [ -n "$worktree" ]; then
+    glyph=⧉
+    branch_color=$teal
+    [ "$branch" = "worktree-$worktree" ] && branch=$worktree
   fi
+  [ ${#branch} -gt 28 ] && branch="${branch:0:27}…"
+  [ -n "$branch" ] && out+=" ${branch_color}${glyph} ${branch}${reset}"
+else
+  case $cwd in
+    "$HOME" | "$HOME"/*) loc="~${cwd#"$HOME"}" ;;
+    *) loc=$cwd ;;
+  esac
+  out+="${bold}${text}$(compact "$loc")${reset}"
 fi
 
-# Build output
-out=""
-user=$(whoami)
-host=$(hostname -s)
-user_color="\033[34m"; [ "$user" = "root" ] && user_color="\033[31m"
-host_color="\033[35m"; [ "$host" = "i9" ] && host_color="\033[31m"
-out+="${user_color}${user}\033[0m"
-out+="\033[38;2;148;163;184m@\033[0m"
-out+="${host_color}${host}\033[0m"
-out+=":\033[32m${short_cwd}\033[0m"
+name=${model#Claude }
+family=${name%% *}
+version=${name#* }
+short=$name
+[ "$family" != "$name" ] && short="${family:0:2}${version%% *}"
+case $family in
+  Opus) model_color=$'\e[38;2;251;191;36m' ;;
+  Sonnet) model_color=$'\e[38;2;96;165;250m' ;;
+  Haiku) model_color=$'\e[38;2;52;211;153m' ;;
+  Fable) model_color=$'\e[38;2;244;114;182m' ;;
+  *) model_color=$text ;;
+esac
+out+="  ${model_color}${short}${reset}"
+case $model in *1M*) out+="${muted}·1M${reset}" ;; esac
 
-if [ -n "$branch" ]; then
-  out+=" \033[38;2;139;92;246m(${branch})\033[0m"
+if [ -n "$pct" ]; then
+  level=$green
+  [ "$pct" -ge 70 ] && level=$yellow
+  [ "$pct" -ge 90 ] && level=$red
+  out+=" ${level}${pct}%${reset}"
 fi
 
-if [ -n "$used_pct" ]; then
-  out+=" ${ctx_color}${pct_int}%\033[0m"
-fi
-
-short_model=$(echo "$model" | sed -E 's/^Claude (Sonnet|Opus|Haiku) ([0-9.]+).*/\1\2/; s/^Sonnet/So/; s/^Opus/Op/; s/^Haiku/Ha/; s/^([A-Z][a-z])[a-z]* ([0-9.]+).*/\1\2/')
-[[ "$model" == *"1M"* ]] && short_model="${short_model}-1M"
-out+=" \033[97m${short_model}\033[0m"
-
-printf '%b' "$out"
+printf '%s' "$out"
