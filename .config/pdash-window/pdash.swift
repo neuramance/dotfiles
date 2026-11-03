@@ -5,7 +5,19 @@ let dashboard = URL(string: "http://localhost:3030/")!
 
 final class TitlebarDragArea: NSView {
     override func mouseDown(with event: NSEvent) {
-        window?.performDrag(with: event)
+        guard let window else { return }
+        let start = event.locationInWindow
+        while let next = window.nextEvent(matching: [.leftMouseDragged, .leftMouseUp]) {
+            if next.type == .leftMouseUp {
+                nextResponder?.mouseDown(with: event)
+                nextResponder?.mouseUp(with: next)
+                return
+            }
+            if hypot(next.locationInWindow.x - start.x, next.locationInWindow.y - start.y) > 3 {
+                window.performDrag(with: event)
+                return
+            }
+        }
     }
 }
 
