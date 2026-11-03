@@ -49,6 +49,8 @@
 !.config/mise/
 !.config/mise/config.i9.toml
 !.config/mise/config.m4.toml
+!.config/pdash-window/
+!.config/pdash-window/**
 !.config/rustfmt.toml
 !.config/scripts/
 !.config/scripts/**
@@ -57,6 +59,7 @@
 !.config/systemd/user/neuramance-deploy.service
 !.config/systemd/user/neuramance-deploy.timer
 !.config/systemd/user/nessie-daemon.service
+!.config/systemd/user/pdash.service
 !.local/
 !.local/bin/
 !.local/bin/wifi-speed
@@ -70,6 +73,7 @@
 !Library/LaunchAgents/io.github.neuramance.agent-sounds-tunnel.plist
 !Library/LaunchAgents/io.github.neuramance.nessie-skill.plist
 !Library/LaunchAgents/io.github.neuramance.i9-claude-sync.plist
+!Library/LaunchAgents/io.github.neuramance.pdash.plist
 !.hushlogin
 !.psqlrc
 !.tmux.conf

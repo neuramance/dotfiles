@@ -128,6 +128,21 @@ sudo sshd -t && sudo systemctl reload ssh
 
 The tunnels check i9's host key against its `i9` entry in `known_hosts` (`HostKeyAlias=i9`), because sshd and Tailscale SSH present the same key. On a new Mac, create the key with `ssh-keygen -t ed25519 -N '' -C i9-tunnel@m4 -f ~/.ssh/i9-tunnel` and rerun the `printf … authorized_keys` line on i9; [`local-state`](#local-state) backs it up with the rest of `~/.ssh`. After replacing i9, run `ssh-keygen -R i9` and `ssh i9` once on the Mac to trust its new host key; the tunnels reconnect on their own.
 
+## `pdash`
+
+[pdash](https://github.com/neuramance/pdash) is a dashboard that Claude Code edits on i9 and Next hot-reloads. On i9, `~/.config/systemd/user/pdash.service` runs its `pnpm dev` in `~/code/pdash`, which binds `next dev` to `127.0.0.1:3030`. Lingering starts it at boot, and it restarts 5 seconds after any exit, a clean one or a SIGTERM included, so only `systemctl --user stop pdash` keeps it down. After cloning the repository there and running `pnpm install` in it, start it with `systemctl --user enable --now pdash`.
+
+On the Mac, `~/Applications/pdash.app` shows `http://localhost:3030`, which [`i9-tunnel`](#i9-tunnel) forwards, in a window with no browser interface. Its source, `.config/pdash-window/pdash.swift`, puts a WKWebView in a window whose transparent title bar lets the page fill it: the window buttons sit over the page's margin, and a strip as tall as the title bar drags the window while passing scrolling and right-clicks to the page. Chrome's installed-app window keeps a title bar, hiding it with Window Controls Overlay needs CSS that pdash's style linter refuses, and Electron would ship a second Chromium for one page. When a load fails, as when Next reloads the page while the tunnel is still down after the Mac wakes, the app loads it again every 2 seconds until it answers, where Chrome leaves an error page; it also reloads when WebKit's content process dies. `~/Library/LaunchAgents/io.github.neuramance.pdash.plist` opens it at login with `open`, so LaunchServices starts it as an app. A LaunchAgent that runs the binary itself makes it a launchd job of the daemon class, throttled in CPU and I/O and capped at 32 threads, and scrolling lagged that way. Quitting it keeps it closed until the next login or `open -a ~/Applications/pdash.app`. Build it, or rebuild it after quitting it and changing the source, with:
+
+```sh
+app=~/Applications/pdash.app
+mkdir -p "$app/Contents/MacOS"
+cp ~/.config/pdash-window/Info.plist "$app/Contents/"
+swiftc -O -parse-as-library ~/.config/pdash-window/pdash.swift -o "$app/Contents/MacOS/pdash"
+codesign --force --sign - "$app"
+open -a "$app"
+```
+
 ## herdr on i9
 
 Agents run in i9's herdr session. Attach to it from the Mac with `herdr --remote i9 --remote-keybindings server`, aliased to `hri9` in `.zsh_aliases`, rather than running `herdr` inside `ssh i9`: the panes and their processes stay on i9, the Mac draws the interface, and Ctrl+V sends the Mac's clipboard image, such as a screenshot taken with Cmd-Ctrl-Shift-4, to a temporary file on i9 and pastes its path, which Claude Code attaches as an image. Inside `ssh i9`, herdr runs entirely on i9 and a dropped screenshot arrives as a Mac path that i9 cannot open. `--remote-keybindings server` takes key bindings from i9's herdr server instead of the Mac's, because a remote attach with the Mac's bindings drops custom commands, and `prefix+x` and `prefix+shift+x` are custom commands that ask before closing a pane or tab. herdr's own sounds are off in `.config/herdr/config.toml`, because [`agent-sounds`](#agent-sounds) plays them for every pane.
