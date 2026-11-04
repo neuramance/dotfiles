@@ -54,6 +54,7 @@ alias tmka="tmux kill-server"
 
 # herdr
 alias hri9="herdr --remote i9 --remote-keybindings server"
+alias hri9eth="herdr --remote i9eth --remote-keybindings server"
 
 alias i9eth="ssh i9eth"
 
