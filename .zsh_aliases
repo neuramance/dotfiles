@@ -17,8 +17,8 @@ alias gits="git status"
 alias gita="git add ."
 alias gitd="git diff"
 alias gitc="git commit"
-alias gitp="git push"
-alias gitpu="git pull"
+alias gitp="git pull"
+alias gitpu="git push"
 alias glg="git log --graph --pretty=format:'%C(blue)%h %C(reset)%ad%C(magenta)%d %C(brightblack)%s' --abbrev=4 --all --date=format:'%y-%m-%d %H:%M'"
 
 # python
