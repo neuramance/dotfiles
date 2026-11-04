@@ -5,6 +5,7 @@ Description=pdash dashboard: next dev with hot reload on 127.0.0.1:3030
 Type=simple
 WorkingDirectory=%h/code/pdash
 Environment=PATH=%h/.local/share/mise/shims:%h/.local/bin:/usr/local/bin:/usr/bin:/bin
+EnvironmentFile=-%h/.config/pdash/ul-posthog.env
 ExecStart=%h/.local/share/mise/shims/pnpm dev
 Restart=always
 RestartSec=5
