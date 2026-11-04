@@ -70,6 +70,15 @@ final class Dashboard: NSObject, NSApplicationDelegate, WKNavigationDelegate {
         webView.load(URLRequest(url: dashboard))
     }
 
+    func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction) async -> WKNavigationActionPolicy {
+        guard navigationAction.navigationType == .linkActivated,
+              let url = navigationAction.request.url,
+              url.host != dashboard.host || url.port != dashboard.port
+        else { return .allow }
+        NSWorkspace.shared.open(url)
+        return .cancel
+    }
+
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
         loadAgain(after: error)
     }
