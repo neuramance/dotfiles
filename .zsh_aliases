@@ -65,6 +65,7 @@ alias echopath='print -l $path'
 alias ccd="claude --dangerously-skip-permissions --chrome"
 alias cdw="claude --dangerously-skip-permissions --chrome -w"
 alias ccdw='ccd -w "$(date +%y%m%d-%H%M%S)-$(od -An -N2 -tx1 /dev/urandom | tr -d " ")"'
+alias clup="claude update"
 
 alias senv="source .venv/bin/activate"
 
