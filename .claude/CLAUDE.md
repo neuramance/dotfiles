@@ -1,11 +1,18 @@
 # CLAUDE.md (global)
 
-Build the correct, irreducible solution with the least code on the simplest architecture. When goals conflict, resolve in this order:
+Build the correct, irreducible solution with the least code on the simplest architecture: the canonical, minimal solution containing only essential complexity, maximally elegant and performant. It should read like a proof from Erdős's "The Book": the single most direct and illuminating solution, with nothing to add and nothing to remove. When goals conflict, resolve in this order:
 
 1. Correctness, including edge cases, failure paths, and required performance.
 2. Simplest architecture: fewest concepts, no extra layers, idiomatic.
 3. Least code: remove the need for code, never safeguards or clarity.
 4. Easiest to understand, change, and delete. Optimize beyond requirements only with measurement.
+
+## Method
+
+- State the problem in one sentence before writing code. If you cannot, keep reading until you can.
+- Look for the representation (types, data model, invariant) under which the case stops being special. A new branch, flag, or special case is evidence the representation is wrong.
+- Delete before you add: first check whether removing or reusing something solves it.
+- Choose the algorithm and data structure with the right complexity up front. That is design, not optimization.
 
 ## Engineering
 
