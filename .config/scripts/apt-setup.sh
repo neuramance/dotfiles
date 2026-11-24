@@ -37,4 +37,13 @@ if [ ! -f /etc/apt/sources.list.d/github-cli.list ]; then
 fi
 $SUDO apt install -y gh
 
+if [ "$(dpkg --print-architecture)" = amd64 ] && ! command -v google-chrome-stable &>/dev/null; then
+  echo "Installing Google Chrome, whose package adds Google's apt repository..."
+  chrome_deb=$(mktemp --suffix=.deb)
+  wget -qO "$chrome_deb" --timeout=60 https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+  chmod 644 "$chrome_deb"
+  $SUDO apt install -y "$chrome_deb"
+  rm -f "$chrome_deb"
+fi
+
 echo "All packages installed."

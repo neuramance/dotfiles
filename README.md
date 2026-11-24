@@ -30,7 +30,7 @@ bash ~/.config/scripts/apt-setup.sh
 
 Open a new shell or run `source ~/.zshrc`. The equivalent aliases are `macsetup` and `aptsetup`.
 
-The macOS script installs Homebrew when needed, then `jq`, Node.js, and the 1Password CLI from Homebrew, herdr with its own installer into `~/.local/bin`, as on i9, and the `fast-cli` npm package. Update herdr with `herdr update` on each machine, not with Homebrew: `~/.local/bin` comes before Homebrew on `PATH`, so a Homebrew copy never runs while `brew upgrade` keeps updating it. The apt script installs the shell, editor, terminal, mosh, PostgreSQL client, compiler, and download utilities used by these dotfiles, including `eza` and `gh` from their upstream apt repositories. These scripts install managed dependencies, not a complete workstation image.
+The macOS script installs Homebrew when needed, then `jq`, Node.js, and the 1Password CLI from Homebrew, herdr with its own installer into `~/.local/bin`, as on i9, and the `fast-cli` npm package. Update herdr with `herdr update` on each machine, not with Homebrew: `~/.local/bin` comes before Homebrew on `PATH`, so a Homebrew copy never runs while `brew upgrade` keeps updating it. The apt script installs the shell, editor, terminal, mosh, PostgreSQL client, compiler, and download utilities used by these dotfiles, including `eza` and `gh` from their upstream apt repositories, and on amd64 Google Chrome for [agents](#headless-chrome-on-i9). These scripts install managed dependencies, not a complete workstation image.
 
 On macOS, restore the untracked files from 1Password with [`local-state`](#local-state):
 
@@ -183,6 +183,18 @@ The Moshi iOS app logs in to i9's OpenSSH on port 2222 with a key it creates on 
 To pair an account, install mosh, which `apt-setup.sh` does, and moshi-hook as that user: `curl -fsSL https://getmoshi.app/install.sh | sh` puts it in `~/.local/bin` and starts its daemon as a systemd user service. Then run `moshi-hook host setup --port 2222` as that user and scan the QR code with Moshi before it expires; whoever scans it gets SSH access as that user. Setup adds the phone's public key to that user's `~/.ssh/authorized_keys`, which [`local-state`](#local-state) backs up for w only. `moshi-hook host list` shows the pairings, `moshi-hook host revoke` removes one, and `moshi-hook doctor` checks which app features work.
 
 heila pairs the same way, from a phone signed in to Tailscale with the account i9 is shared with, using moshi-hook installed with `MOSHI_HOOK_SKIP_SERVICE=1`. heila runs no daemon, because the app always reaches it through an SSH tunnel to `127.0.0.1:24543`, which w's daemon holds and `/etc/heila-guard.nft` blocks for heila; the features the daemon serves, such as the diff viewer and Jump To, work only for w.
+
+## Headless Chrome on i9
+
+Agents on i9 look at pages served there in i9's own Google Chrome, headless, through Claude Code's `chrome-devtools` MCP server, as the Browsers section of `.claude/CLAUDE.md` tells them. `apt-setup.sh` installs `google-chrome-stable` from Google's download, and the package adds Google's apt repository as `/etc/apt/sources.list.d/google-chrome.sources`, so `apt` updates it. Claude Code keeps the server's registration in the untracked `~/.claude.json`; add it once on each machine:
+
+```sh
+claude mcp add --scope user chrome-devtools -- npx -y chrome-devtools-mcp@1.13.0 --headless --isolated --viewport 1280x800 --no-usage-statistics --no-performance-crux
+```
+
+`--isolated` starts Chrome on a new temporary profile, and the server's version changes only when this line does. `claude mcp get chrome-devtools` shows whether it connects. Chrome runs with its sandbox, which needs unprivileged user namespaces: Ubuntu's AppArmor profile `/etc/apparmor.d/chrome` allows them for `/opt/google/chrome/chrome`, so a browser at a path no profile names, such as Playwright's, aborts with `No usable sandbox!` unless its launcher turns the sandbox off.
+
+unattended-upgrades installs Chrome's updates only when the root-owned `/etc/apt/apt.conf.d/52unattended-thirdparty`, not tracked here, holds the line `Unattended-Upgrade::Origins-Pattern:: "origin=Google LLC";`. `sudo unattended-upgrade --dry-run -d` lists the origins it allows.
 
 ## Local-only state
 
