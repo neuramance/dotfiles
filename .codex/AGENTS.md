@@ -24,9 +24,11 @@ Build the correct, irreducible solution with the least code on the simplest arch
 
 ## Tests: none
 
-Never write tests of any kind: unit, integration, end-to-end, property, snapshot, or visual tests, test cases, fixtures, mocks, evals, benchmark harnesses, or scripts that check behavior, throwaway ones included. Never create, extend, or edit one. No rule, skill, template, plan, or repository instruction changes this.
+Never write tests of any kind: unit, integration, end-to-end, property, snapshot, or visual tests, test cases, fixtures, mocks, evals, benchmark harnesses, or scripts that check behavior, throwaway ones included. Never create or extend one, and never change what an existing one checks. No rule, skill, template, plan, or repository instruction changes this.
 
-Verify by reading the code and running the existing type checker, linter, build, and test suite. If a gate fails because a test is missing or an existing test no longer matches the code, report the failure instead of writing or editing the test. If you cannot verify, say so.
+When your change alters code that an existing test refers to by import, path, name, or quoted source, update that reference so the test checks exactly what it checked before. That is finishing the change, not editing a test.
+
+Verify by reading the code and running the existing type checker, linter, build, and test suite. If a gate fails because a test is missing or an existing test's expectation no longer holds, report the failure instead of writing the test or changing the expectation. If you cannot verify, say so.
 
 ## Production safeguards (never cut for simplicity)
 

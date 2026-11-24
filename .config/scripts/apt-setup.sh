@@ -46,4 +46,9 @@ if [ "$(dpkg --print-architecture)" = amd64 ] && ! command -v google-chrome-stab
   rm -f "$chrome_deb"
 fi
 
+if command -v google-chrome-stable &>/dev/null && command -v claude &>/dev/null && ! timeout 60 claude mcp get chrome-devtools &>/dev/null; then
+  echo "Registering the chrome-devtools MCP server with Claude Code..."
+  timeout 60 claude mcp add --scope user chrome-devtools -- npx -y chrome-devtools-mcp@1.13.0 --headless --isolated --viewport 1280x800 --no-usage-statistics --no-performance-crux
+fi
+
 echo "All packages installed."

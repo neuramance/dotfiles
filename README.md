@@ -186,13 +186,7 @@ heila pairs the same way, from a phone signed in to Tailscale with the account i
 
 ## Headless Chrome on i9
 
-Agents on i9 look at pages served there in i9's own Google Chrome, headless, through Claude Code's `chrome-devtools` MCP server, as the Browsers section of `.claude/CLAUDE.md` tells them. `apt-setup.sh` installs `google-chrome-stable` from Google's download, and the package adds Google's apt repository as `/etc/apt/sources.list.d/google-chrome.sources`, so `apt` updates it. Claude Code keeps the server's registration in the untracked `~/.claude.json`; add it once on each machine:
-
-```sh
-claude mcp add --scope user chrome-devtools -- npx -y chrome-devtools-mcp@1.13.0 --headless --isolated --viewport 1280x800 --no-usage-statistics --no-performance-crux
-```
-
-`--isolated` starts Chrome on a new temporary profile, and the server's version changes only when this line does. `claude mcp get chrome-devtools` shows whether it connects. Chrome runs with its sandbox, which needs unprivileged user namespaces: Ubuntu's AppArmor profile `/etc/apparmor.d/chrome` allows them for `/opt/google/chrome/chrome`, so a browser at a path no profile names, such as Playwright's, aborts with `No usable sandbox!` unless its launcher turns the sandbox off.
+Agents on i9 look at pages served there in i9's own Google Chrome, headless, through Claude Code's `chrome-devtools` MCP server, as the Browsers section of `.claude/CLAUDE.md` tells them. `apt-setup.sh` installs `google-chrome-stable` from Google's download, and the package adds Google's apt repository as `/etc/apt/sources.list.d/google-chrome.sources`, so `apt` updates it. Claude Code keeps the server's registration in the untracked `~/.claude.json`, so `apt-setup.sh` also adds it at user scope when `claude` is installed and the server is not registered yet: on a new machine, run `aptsetup` again after installing Claude Code and Node. Its `--isolated` starts Chrome on a new temporary profile, and the server's version, pinned in that script, changes only there. `claude mcp get chrome-devtools` shows whether it connects. Chrome runs with its sandbox, which needs unprivileged user namespaces: Ubuntu's AppArmor profile `/etc/apparmor.d/chrome` allows them for `/opt/google/chrome/chrome`, so a browser at a path no profile names, such as Playwright's, aborts with `No usable sandbox!` unless its launcher turns the sandbox off.
 
 unattended-upgrades installs Chrome's updates only when the root-owned `/etc/apt/apt.conf.d/52unattended-thirdparty`, not tracked here, holds the line `Unattended-Upgrade::Origins-Pattern:: "origin=Google LLC";`. `sudo unattended-upgrade --dry-run -d` lists the origins it allows.
 
