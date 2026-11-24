@@ -62,5 +62,7 @@ fi
 #   curl             — used by wifi-speed for Cloudflare endpoints
 #   system_profiler  — used by wifi-speed for WiFi context (SSID, RSSI, etc.)
 
+bash "$(dirname "$0")/claude-browser-setup.sh"
+
 echo
 echo "mac-setup complete. Try: wifi-speed"

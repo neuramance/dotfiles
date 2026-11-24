@@ -62,8 +62,8 @@ alias i9eth="ssh i9eth"
 alias echopath='print -l $path'
 
 # Claude Code
-alias ccd="claude --dangerously-skip-permissions --chrome"
-alias cdw="claude --dangerously-skip-permissions --chrome -w"
+alias ccd="claude --dangerously-skip-permissions"
+alias cdw="claude --dangerously-skip-permissions -w"
 alias ccdw='ccd -w "$(date +%y%m%d-%H%M%S)-$(od -An -N2 -tx1 /dev/urandom | tr -d " ")"'
 alias clup="claude update"
 
