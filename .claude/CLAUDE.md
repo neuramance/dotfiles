@@ -72,7 +72,7 @@ On i9, bind a dev server to `127.0.0.1` on a port from 3000 to 3099 and give the
 
 Drive a browser through the `chrome-devtools` MCP tools: this machine's own Google Chrome, headless, with a new empty profile each session. On i9 it reaches dev servers on loopback. Sign in to an app under test with that project's test account, never with the user's own credentials.
 
-The user's signed-in Chrome on their Mac (`claude-in-chrome`) exists only in a session started with `--chrome`, and each action there takes about 15 times as long. When the work needs the user's own logins, or the user wants to watch, ask for such a session instead of working around it.
+The user's signed-in Chrome on their Mac (`claude-in-chrome`) exists only in a session started with `--chrome`, and each action there takes about 15 times as long. When the work needs the user's own logins, or the user wants to watch, ask them to exit and resume this conversation with `ccd --resume --chrome` instead of working around it.
 
 A project's existing browser suite or script runs the browser that project pins. Never download a browser (`playwright install`, Puppeteer's Chromium, Chrome for Testing) and never pass `--no-sandbox`.
 
