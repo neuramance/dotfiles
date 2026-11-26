@@ -68,6 +68,10 @@ When you point the user to a file, write its absolute path. Sessions often run o
 
 On i9, bind a dev server to `127.0.0.1` on a port from 3000 to 3099 and give the user `http://localhost:<port>`: the Mac's `i9-tunnel` forwards those ports to i9's loopback, hot reload included. Never bind a server or proxy you start to i9's tailnet address or to all interfaces (`0.0.0.0`, `::`, or a default such as `next dev` without `-H`) unless the user asks: i9 is shared with other people's tailnet devices, which `tailscale status` hides, and they can reach its ports 3000-3999, 5173 and 8000-8999.
 
+## Scratch space
+
+On i9, `/tmp`, the session scratchpad included, is RAM that every session shares, capped at 46 GiB. Keep build output and second checkouts on disk: point `CARGO_TARGET_DIR` or the tool's equivalent under `~/.cache`, and make a git worktree instead of copying a repository.
+
 ## Browsers
 
 Drive a browser through the `chrome-devtools` MCP tools: this machine's own Google Chrome, headless, with a new empty profile each session. On i9 it reaches dev servers on loopback. Sign in to an app under test with that project's test account, never with the user's own credentials.
