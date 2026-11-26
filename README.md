@@ -128,6 +128,21 @@ sudo sshd -t && sudo systemctl reload ssh
 
 The tunnels check i9's host key against its `i9` entry in `known_hosts` (`HostKeyAlias=i9`), because the cable address and port 2222 reach the same sshd as `ssh i9`. On a new Mac, create the key with `ssh-keygen -t ed25519 -N '' -C i9-tunnel@m4 -f ~/.ssh/i9-tunnel` and rerun the `printf … authorized_keys` line on i9; [`local-state`](#local-state) backs it up with the rest of `~/.ssh`. After replacing i9, run `ssh-keygen -R i9` and `ssh i9` once on the Mac to trust its new host key; the tunnels reconnect on their own.
 
+## `i9-netconsole`
+
+`~/Library/LaunchAgents/io.github.neuramance.i9-netconsole.plist` listens on the cable address, UDP `10.42.0.1:6666`, and appends each kernel message i9 sends, stamped with the Mac's time, to `~/Library/Logs/i9-netconsole.log`. i9's kernel sends warnings and worse there (everything once it panics) straight from the network driver, so the cause of a hang reaches the Mac even when i9's disk or userspace has stopped. A line reads `<time> <level>,<sequence>,<microseconds since boot>,-;<message>`. Messages sent while the cable is out or the Mac is asleep are lost; macOS restarts the listener every 10 seconds until the cable address exists.
+
+On i9, three pieces turn a hang into a record and a reboot. `netconsole.service` loads the sender, addressed to the Mac adapter's MAC, because the Mac drops a unicast datagram sent to the broadcast MAC. `kernel.hung_task_panic` panics when a task has been blocked for 120 seconds, which kdump saves to `/var/crash` before rebooting. systemd arms the Intel TCO watchdog, which resets the machine when PID 1 has not run for 10 minutes; that is long enough for the hung-task panic and its dump to finish first. To recreate them on i9, with `en7`'s address from `networksetup -listallhardwareports` on the Mac in place of `<en7 MAC address>`:
+
+```sh
+printf '[Unit]\nDescription=Load the Intel TCO watchdog driver, which Ubuntu deny-lists for automatic loading\nDefaultDependencies=no\nBefore=sysinit.target\n\n[Service]\nType=oneshot\nRemainAfterExit=yes\nExecStart=/usr/sbin/modprobe iTCO_wdt\n\n[Install]\nWantedBy=sysinit.target\n' | sudo tee /etc/systemd/system/iTCO_wdt.service >/dev/null
+printf '[Unit]\nDescription=Send kernel messages to m4 over the direct Ethernet link\nBindsTo=sys-subsystem-net-devices-enp3s0.device\nAfter=sys-subsystem-net-devices-enp3s0.device\n\n[Service]\nType=oneshot\nRemainAfterExit=yes\nExecStart=/usr/sbin/modprobe netconsole netconsole=+6665@10.42.0.2/enp3s0,6666@10.42.0.1/%s\nExecStop=/usr/sbin/modprobe -r netconsole\n\n[Install]\nWantedBy=multi-user.target\n' '<en7 MAC address>' | sudo tee /etc/systemd/system/netconsole.service >/dev/null
+sudo mkdir -p /etc/systemd/system.conf.d
+printf '[Manager]\nRuntimeWatchdogSec=10min\n' | sudo tee /etc/systemd/system.conf.d/watchdog.conf >/dev/null
+printf 'kernel.hung_task_panic = 1\nkernel.hung_task_check_interval_secs = 30\nkernel.printk = 5 4 1 7\n' | sudo tee /etc/sysctl.d/90-hang-capture.conf >/dev/null
+sudo systemctl daemon-reload && sudo systemctl enable --now iTCO_wdt netconsole && sudo systemctl restart systemd-sysctl && sudo systemctl daemon-reexec
+```
+
 ## `pdash`
 
 [pdash](https://github.com/neuramance/pdash) is a dashboard that Claude Code edits on i9 and Next hot-reloads. On i9, `~/.config/systemd/user/pdash.service` runs its `pnpm dev` in `~/code/pdash`, which binds `next dev` to `127.0.0.1:3030`. Lingering starts it at boot, and it restarts 5 seconds after any exit, a clean one or a SIGTERM included, so only `systemctl --user stop pdash` keeps it down. After cloning the repository there and running `pnpm install` in it, start it with `systemctl --user enable --now pdash`.

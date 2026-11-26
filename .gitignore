@@ -74,6 +74,7 @@
 !Library/LaunchAgents/io.github.neuramance.nessie-skill.plist
 !Library/LaunchAgents/io.github.neuramance.i9-claude-sync.plist
 !Library/LaunchAgents/io.github.neuramance.pdash.plist
+!Library/LaunchAgents/io.github.neuramance.i9-netconsole.plist
 !.hushlogin
 !.psqlrc
 !.tmux.conf
