@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+dir=$PWD
+until [[ -x $dir/node_modules/.bin/turbo ]]; do
+  [[ -n $dir ]] || { echo "turbo-gate: no node_modules/.bin/turbo at or above $PWD" >&2; exit 127; }
+  dir=${dir%/*}
+done
+
+second_lane_needs_kib=$((47 * 1024 * 1024))
+exec 8>"$HOME/.cache/turbo-gate.1.lock" 9>"$HOME/.cache/turbo-gate.2.lock"
+
+take_lane() {
+  flock --nonblock 8 && return
+  (($(awk '$1 == "MemAvailable:" {print $2}' /proc/meminfo) >= second_lane_needs_kib)) && flock --nonblock 9
+}
+
+keep_lane_until_this_process_exits() {
+  tail --pid=$$ --sleep-interval=0.1 --follow /dev/null </dev/null >/dev/null 2>&1 &
+}
+
+if ! take_lane; then
+  echo "turbo-gate: waiting for a turbo run on this machine to end; this one starts by itself" >&2
+  until take_lane; do
+    ((SECONDS < 900)) || { echo "turbo-gate: no turn in 15 minutes" >&2; exit 75; }
+    sleep 0.2
+  done
+fi
+
+unset TURBO_BINARY_PATH
+keep_lane_until_this_process_exits
+exec "$dir/node_modules/.bin/turbo" "$@" 8>&- 9>&-
