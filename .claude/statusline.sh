@@ -52,6 +52,16 @@ if info=$(git -C "$cwd" rev-parse --path-format=absolute --show-prefix --git-com
   fi
   [ ${#branch} -gt 28 ] && branch="${branch:0:27}…"
   [ -n "$branch" ] && out+=" ${branch_color}${glyph} ${branch}${reset}"
+
+  if [ -n "$worktree" ]; then
+    server=$(systemctl --user show --property=ActiveState --property=Description "dev-server-$repo-$worktree" 2>/dev/null)
+    case $server in
+      *ActiveState=active*)
+        url=${server#*Description=}
+        out+=" ${muted}${url%%$'\n'*}${reset}"
+        ;;
+    esac
+  fi
 else
   case $cwd in
     "$HOME" | "$HOME"/*) loc="~${cwd#"$HOME"}" ;;
